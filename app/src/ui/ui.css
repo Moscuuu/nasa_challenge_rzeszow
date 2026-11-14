@@ -148,6 +148,9 @@ button {
   margin: 6px 0;
   font: 300 2.5rem/1 var(--f-mono);
 }
+.card-body .card-score--mini {
+  font-size: 1.25rem;
+}
 .card-score small {
   font-size: 0.875rem;
   color: var(--mute);
@@ -252,6 +255,14 @@ button {
   z-index: 50;
   background: var(--bg);
   pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.intro-veil p {
+  margin: 0;
+  font: 400 0.75rem/1.2 var(--f-body);
+  letter-spacing: 0.08em;
+  color: var(--dim);
 }
 .card {
   position: relative;

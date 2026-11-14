@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { ScoreMap } from "../data/scoreMap";
-import { HEAT_CORE, HEAT_HALO, HEAT_MAX, HEAT_MIN_ALL, HEAT_MIN_TOP, MASK_EPS, PULSE_CLEAR_MIN } from "./heat";
+import { HEAT_CORE, HEAT_DIM, HEAT_HALO, HEAT_MAX, HOT_CONTOUR, HEAT_MIN_ALL, HEAT_MIN_TOP, MASK_EPS, PULSE_CLEAR_MIN } from "./heat";
 
 /**
  * Frost white (--frost). The overlay has no other colour: colour lives only in the satellite imagery.
@@ -78,6 +78,11 @@ const fragmentShader = /* glsl */ `
     return max(core, ${f(HEAT_HALO)} * smoothstep(0.02, 0.5, halo));
   }
 
+  float topDimAlpha(float hot, float halo) {
+    float lit = max(smoothstep(0.15, 0.5, hot), 0.7 * smoothstep(0.02, 0.5, halo));
+    return ${f(HEAT_DIM)} * (1.0 - lit);
+  }
+
   float pulseClear(float angle, float radius) {
     if (radius <= 0.0) return 1.0;
     return ${f(PULSE_CLEAR_MIN)} + ${f(1 - PULSE_CLEAR_MIN)} * smoothstep(0.0, radius, angle);
@@ -89,6 +94,8 @@ const fragmentShader = /* glsl */ `
     float mask = rg.g;
     float score = mask > 0.0 ? min(1.0, rg.r / max(mask, ${f(MASK_EPS)})) : 0.0; // unpackTexel
     float heat;
+    float dim = 0.0;
+    float hotEdge = 0.0;
     if (uShowAll > 0.5) {
       heat = heatAlpha(score, mask, uThreshold, true);
     } else {
@@ -96,20 +103,27 @@ const fragmentShader = /* glsl */ `
       float hot = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y), 1.5).b;
       float halo = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y), 4.5).b;
       heat = topHeatAlpha(hot, halo, mask);
+      dim = topDimAlpha(hot, halo);
+      hotEdge = ${f(HOT_CONTOUR)} * (1.0 - smoothstep(0.0, max(fwidth(hot), 1e-4), abs(hot - 0.5))) * step(0.5, mask);
     }
 
     float ang = acos(clamp(dot(normalize(vPos), uOrigin), -1.0, 1.0));
     // Reveal: only within uReveal radians of uOrigin (soft 0.05 rad edge). uReveal = PI shows all.
-    heat *= uReveal >= PI - 0.001 ? 1.0 : 1.0 - smoothstep(uReveal - 0.05, uReveal, ang);
+    float rev = uReveal >= PI - 0.001 ? 1.0 : 1.0 - smoothstep(uReveal - 0.05, uReveal, ang);
+    heat *= rev;
+    dim *= rev;
+    hotEdge *= rev;
     // Thin the heat under the pulse rings so they read on dense heat.
     heat *= pulseClear(ang, uPulseRadius);
 
     // Permafrost contour: the 0.5 iso-line of the filtered mask, about one screen pixel wide.
     float edge = 1.0 - smoothstep(0.0, max(fwidth(mask), 1e-4), abs(mask - 0.5));
 
-    float a = max(heat, uOutline * edge);
+    // Frost marks (fill, permafrost line, hot contour) over a black dimming of the base imagery.
+    float mark = max(max(heat, uOutline * edge), hotEdge);
+    float a = mark + dim * (1.0 - mark);
     if (a < 0.003) discard;
-    gl_FragColor = vec4(uColor, a);
+    gl_FragColor = vec4(uColor * (mark / a), a);
   }
 `;
 

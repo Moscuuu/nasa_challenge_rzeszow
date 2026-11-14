@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { appStore } from "../state/store";
 import type { EarthGlobeHandle } from "../scene/EarthGlobe";
 import type { MarsGlobeHandle } from "../scene/MarsGlobe";
@@ -17,9 +17,19 @@ export function useMotion(
   marsRef: RefObject<MarsGlobeHandle | null>,
   earthRef: RefObject<EarthGlobeHandle | null>,
   enabled: boolean,
+  failed = false,
 ): boolean {
   const [kind] = useState<IntroKind>(() => (enabled ? chooseIntro(readSeen(), prefersReducedMotion()) : "none"));
   const [veil, setVeil] = useState(kind !== "none");
+
+  const failedRef = useRef(failed);
+  failedRef.current = failed;
+  // Data failed to load: drop the veil so the error is visible.
+  useEffect(() => {
+    if (!failed) return;
+    motion.introActive = false;
+    setVeil(false);
+  }, [failed]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -28,13 +38,24 @@ export function useMotion(
     const started = performance.now();
     motion.introActive = kind !== "none"; // from the first frame: the card must not build on its own before the intro does
 
-    const skip = () => void intro?.progress(1);
+    let skipped = false;
+    // A skip before the intro has started just ends the veil; the intro then jumps straight to its end.
+    const skip = () => {
+      skipped = true;
+      if (intro) intro.progress(1);
+      else endIntro();
+    };
     const endIntro = () => {
       motion.introActive = false;
       window.removeEventListener("pointerdown", skip, true);
       window.removeEventListener("keydown", skip, true);
       setVeil(false);
     };
+
+    if (kind !== "none") {
+      window.addEventListener("pointerdown", skip, true);
+      window.addEventListener("keydown", skip, true);
+    }
 
     const ready = () => {
       motion.mars = marsRef.current;
@@ -44,15 +65,18 @@ export function useMotion(
         if (!scenes) raf = requestAnimationFrame(ready);
         return;
       }
+      if (failedRef.current) {
+        endIntro();
+        return;
+      }
       if (!(scenes && appStore.getState().manifest !== null)) {
         if (performance.now() - started > READY_TIMEOUT_MS) endIntro();
         else raf = requestAnimationFrame(ready);
         return;
       }
       markSeen();
-      window.addEventListener("pointerdown", skip, true);
-      window.addEventListener("keydown", skip, true);
       intro = introTimeline(kind, endIntro);
+      if (skipped) intro.progress(1);
     };
     raf = requestAnimationFrame(ready);
 

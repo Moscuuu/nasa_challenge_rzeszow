@@ -63,7 +63,7 @@ export function AnalogCard({ error }: { error?: string | null }) {
     body = (
       <>
         <p className="card-place">{formatCoords(s.earthHit.lat, s.earthHit.lon)}</p>
-        <p className="card-score">Similarity {s.earthHit.score.toFixed(2)}</p>
+        <p className="card-score card-score--mini">Similarity {s.earthHit.score.toFixed(2)}</p>
         <p className="card-note">Outside top cells — no feature details</p>
       </>
     );

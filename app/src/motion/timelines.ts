@@ -1,6 +1,7 @@
 import gsap from "gsap";
 import type { Cell, LayerId } from "../data/types";
 import { prefersReducedMotion, type IntroKind } from "./intro";
+import { appStore } from "../state/store";
 import { motion } from "./registry";
 
 type Tl = gsap.core.Timeline;
@@ -97,7 +98,8 @@ export function pickSiteTimeline(lat: number, lon: number, cell: Cell): Tl {
   const echo = () => {
     motion.holdFly = false;
     earth?.setPulseVisible(true);
-    earth?.flyTo(cell.lat, cell.lon);
+    const f = appStore.getState().focus;
+    earth?.flyTo(f?.lat ?? cell.lat, f?.lon ?? cell.lon);
   };
   const end = () => {
     mars?.radar(lat, lon, null);

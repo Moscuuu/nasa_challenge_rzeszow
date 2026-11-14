@@ -40,3 +40,21 @@ export function facesCamera(pointWorld: THREE.Vector3, camera: THREE.Camera): bo
   const toCamera = camera.getWorldPosition(new THREE.Vector3()).sub(pointWorld).normalize();
   return normal.dot(toCamera) > 0.05;
 }
+
+/** Id of the pin whose screen position is nearest to `p`, or null when none is within `maxDist` px. */
+export function nearestPin(
+  p: { x: number; y: number },
+  pins: ReadonlyArray<{ id: string; x: number; y: number }>,
+  maxDist: number,
+): string | null {
+  let best: string | null = null;
+  let bestD = maxDist;
+  for (const pin of pins) {
+    const d = Math.hypot(pin.x - p.x, pin.y - p.y);
+    if (d <= bestD) {
+      bestD = d;
+      best = pin.id;
+    }
+  }
+  return best;
+}

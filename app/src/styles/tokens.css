@@ -114,6 +114,13 @@ body {
   cursor: pointer;
 }
 
+/* Mouse clicks are routed to the nearest pin by the Mars slot (pins overlap), so buttons never steal them. */
+@media (pointer: fine) {
+  .pin {
+    pointer-events: none;
+  }
+}
+
 /* Far side of the globe: faded out, not clickable, still reachable with Tab. */
 .pin--far {
   opacity: 0;
@@ -141,6 +148,7 @@ body {
   transition: opacity 150ms ease;
 }
 
+.pin--hot .pin-label,
 .pin:hover .pin-label,
 .pin:focus-visible .pin-label,
 .pin[aria-pressed="true"] .pin-label {

@@ -2,9 +2,9 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, type Mutab
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html, PerspectiveCamera, useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { useAppStore } from "../state/store";
+import { appStore, useAppStore } from "../state/store";
 import type { MarsSite } from "../data/types";
-import { facesCamera, isClick, ll2v, rotationFor } from "./geo";
+import { facesCamera, isClick, ll2v, nearestPin, rotationFor } from "./geo";
 import { unitRing } from "./Pulse";
 import { useTextureSize } from "./useTextureSize";
 
@@ -25,6 +25,7 @@ const PIN_R = 1.01;
 const RADAR_RINGS = 3;
 const RADAR_R = 1.004;
 const RADAR_MAX = 0.5; // globe radii
+const PICK_RADIUS = 28; // px: a click this close to a pin picks the nearest one
 
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
@@ -62,6 +63,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     hovered: false, // pointer is over the Mars slot
   });
   const { width, height } = useThree((s) => s.size);
+  const getThree = useThree((s) => s.get);
   const intro = useRef({ zoom: 1, pins: 1 });
   const radarRef = useRef<{ lat: number; lon: number; p: number | null }>({ lat: 0, lon: 0, p: null });
   const radarGroup = useRef<THREE.Group>(null);
@@ -106,21 +108,47 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     },
   }));
 
-  // Drag to rotate, on the whole slot. Pin buttons keep their own clicks.
+  // Drag to rotate, and pick the pin nearest the pointer. The pin buttons overlap on the small
+  // globe, so mouse clicks never go to a button: they are routed here by screen distance.
   useEffect(() => {
     const el = slot.current;
     if (!el) return;
     const m = motion.current;
     let last = { x: 0, y: 0 };
     let down: { x: number; y: number } | null = null;
+    /** Visible pins in screen space (client px). */
+    const screenPins = () => {
+      const g = globe.current;
+      const { camera } = getThree();
+      if (!g || intro.current.pins < 1) return [];
+      const rect = el.getBoundingClientRect(); // the Mars view fills its slot
+      g.updateWorldMatrix(true, false);
+      const v = new THREE.Vector3();
+      const out: Array<{ id: string; x: number; y: number }> = [];
+      for (const site of appStore.getState().sites) {
+        v.copy(ll2v(site.lat, site.lon, PIN_R)).applyMatrix4(g.matrixWorld);
+        if (!facesCamera(v, camera)) continue;
+        v.project(camera);
+        out.push({ id: site.id, x: rect.left + (v.x * 0.5 + 0.5) * rect.width, y: rect.top + (0.5 - v.y * 0.5) * rect.height });
+      }
+      return out;
+    };
+    const nearest = (e: PointerEvent) => nearestPin({ x: e.clientX, y: e.clientY }, screenPins(), PICK_RADIUS);
+    let hot: string | null = null;
+    const setHot = (id: string | null) => {
+      if (id === hot) return;
+      hot = id;
+      el.style.cursor = id ? "pointer" : "";
+      el.querySelectorAll<HTMLElement>("button.pin").forEach((b) => b.classList.toggle("pin--hot", b.dataset.site === id));
+    };
     const onDown = (e: PointerEvent) => {
-      if ((e.target as Element).closest("button")) return;
       down = last = { x: e.clientX, y: e.clientY };
       m.dragging = true;
       m.target = null;
       el.setPointerCapture(e.pointerId);
     };
     const onMove = (e: PointerEvent) => {
+      if (!m.dragging) setHot(nearest(e));
       if (!m.dragging || !globe.current) return;
       const dx = e.clientX - last.x;
       const dy = e.clientY - last.y;
@@ -134,11 +162,18 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     const onUp = (e: PointerEvent) => {
       if (!m.dragging) return;
       m.dragging = false;
-      if (down && isClick(down, { x: e.clientX, y: e.clientY })) m.vx = m.vy = 0;
+      if (down && isClick(down, { x: e.clientX, y: e.clientY })) {
+        m.vx = m.vy = 0;
+        const id = nearest(e);
+        if (id) void appStore.getState().selectSite(id);
+      }
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
     };
     const onEnter = () => (m.hovered = true);
-    const onLeave = () => (m.hovered = false);
+    const onLeave = () => {
+      m.hovered = false;
+      setHot(null);
+    };
     el.addEventListener("pointerenter", onEnter);
     el.addEventListener("pointerleave", onLeave);
     el.addEventListener("pointerdown", onDown);
@@ -154,7 +189,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
     };
-  }, [slot]);
+  }, [slot, getThree]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fit the globe (radius 1, with margin) in the slot whatever its aspect.
   const fit = () => {
@@ -296,7 +331,10 @@ function Pin({ site, index, count, intro, selected, slot, onSelect, onFocusChang
           className="pin"
           aria-label={site.name}
           aria-pressed={selected}
-          onClick={onSelect}
+          data-site={site.id}
+          onClick={(e) => {
+            if (e.detail === 0) onSelect(); // keyboard / assistive tech; pointer clicks are routed by the slot
+          }}
           onFocus={() => onFocusChange(true)}
           onBlur={() => onFocusChange(false)}
         >

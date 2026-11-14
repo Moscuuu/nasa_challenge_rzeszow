@@ -7,9 +7,13 @@ export const HEAT_MIN_TOP = 0.3;
 /** Opacity at score 0 in "Show all" mode. */
 export const HEAT_MIN_ALL = 0.04;
 /** Opacity of a fully hot, fully permafrost pixel in "top 10 %" mode. */
-export const HEAT_CORE = 0.8;
+export const HEAT_CORE = 0.2;
 /** Peak opacity of the soft halo around hot regions. */
-export const HEAT_HALO = 0.32;
+export const HEAT_HALO = 0.08;
+/** Darkening of the satellite base away from the hot regions in "top 10 %" mode (hot areas read as lit). */
+export const HEAT_DIM = 0.6;
+/** Opacity of the 1 px frost contour around the hot regions. */
+export const HOT_CONTOUR = 0.9;
 /** Share of the heat left at the pulse centre, so the rings stay visible on dense heat. */
 export const PULSE_CLEAR_MIN = 0.45;
 /** Largest pulse ring radius, in globe radii (≈ radians on the unit sphere). */
@@ -48,6 +52,20 @@ export function heatAlpha(score: number, mask: number, threshold: number, showAl
 export function topHeatAlpha(hot: number, halo: number, mask: number): number {
   const core = mask < 0.5 ? 0 : HEAT_CORE * smoothstep(0.2, 0.6, hot);
   return Math.max(core, HEAT_HALO * smoothstep(0.02, 0.5, halo));
+}
+
+/**
+ * "Top 10 %" mode darkening of the base imagery (black overlay opacity). 0 inside hot regions, a
+ * little lit around them (halo), HEAT_DIM elsewhere: snow and ice that is not hot goes dark.
+ */
+export function topDimAlpha(hot: number, halo: number): number {
+  const lit = Math.max(smoothstep(0.15, 0.5, hot), 0.7 * smoothstep(0.02, 0.5, halo));
+  return HEAT_DIM * (1 - lit);
+}
+
+/** 1 px iso-contour of the filtered hot channel at 0.5; `fw` = its screen-space derivative width. */
+export function hotContour(hot: number, fw: number): number {
+  return 1 - smoothstep(0, Math.max(fw, 1e-4), Math.abs(hot - 0.5));
 }
 
 /** Heat multiplier around the pulse: PULSE_CLEAR_MIN at its centre, 1 from `radius` outwards. */

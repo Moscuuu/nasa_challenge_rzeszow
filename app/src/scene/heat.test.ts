@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HEAT_CORE, HEAT_HALO, heatAlpha, topHeatAlpha, PULSE_CLEAR_MIN, pulseClear, unpackTexel } from "./heat";
+import { HEAT_CORE, HEAT_DIM, HEAT_HALO, hotContour, topDimAlpha, heatAlpha, topHeatAlpha, PULSE_CLEAR_MIN, pulseClear, unpackTexel } from "./heat";
 
 describe("heatAlpha", () => {
   it("is 0 where the filtered mask is below 0.5 (edge of permafrost)", () => {
@@ -72,5 +72,24 @@ describe("topHeatAlpha", () => {
   });
   it("has no core outside permafrost", () => {
     expect(topHeatAlpha(1, 0, 0.2)).toBe(0);
+  });
+});
+
+describe("topDimAlpha", () => {
+  it("leaves hot regions lit and dims the rest", () => {
+    expect(topDimAlpha(1, 1)).toBe(0);
+    expect(topDimAlpha(0, 0)).toBeCloseTo(HEAT_DIM);
+  });
+  it("lifts the dimming softly around small clusters", () => {
+    expect(topDimAlpha(0, 0.5)).toBeLessThan(HEAT_DIM);
+    expect(topDimAlpha(0, 0.5)).toBeGreaterThan(0);
+  });
+});
+
+describe("hotContour", () => {
+  it("peaks on the 0.5 iso-line and vanishes away from it", () => {
+    expect(hotContour(0.5, 0.1)).toBe(1);
+    expect(hotContour(0.9, 0.1)).toBe(0);
+    expect(hotContour(0.45, 0.1)).toBeGreaterThan(0);
   });
 });

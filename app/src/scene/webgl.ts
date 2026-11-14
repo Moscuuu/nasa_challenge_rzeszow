@@ -5,7 +5,9 @@ export function hasWebGL(): boolean {
   if (typeof window === "undefined" || typeof WebGLRenderingContext === "undefined") return false;
   try {
     const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext(); // release the probe context
+    return Boolean(gl);
   } catch {
     return false;
   }

@@ -36,12 +36,22 @@ export class ScoreMap {
 
   /** Score at the (1 - fraction) percentile of opaque pixels; 0 if there are none. */
   topThreshold(fraction: number): number {
-    const values: number[] = [];
-    for (let i = 0; i < this.data.length; i += 4) if (this.data[i + 3] !== 0) values.push(this.data[i]);
-    if (values.length === 0) return 0;
-    values.sort((a, b) => a - b);
-    const k = Math.min(values.length - 1, Math.max(0, Math.floor((1 - fraction) * values.length)));
-    return values[k] / 255;
+    const bins = new Uint32Array(256);
+    let n = 0;
+    for (let i = 0; i < this.data.length; i += 4) {
+      if (this.data[i + 3] !== 0) {
+        bins[this.data[i]]++;
+        n++;
+      }
+    }
+    if (n === 0) return 0;
+    const k = Math.min(n - 1, Math.max(0, Math.floor((1 - fraction) * n)));
+    let seen = 0;
+    for (let v = 0; v < 256; v++) {
+      seen += bins[v];
+      if (seen > k) return v / 255;
+    }
+    return 1;
   }
 
   /** Raw RGBA bytes for a shader DataTexture. */

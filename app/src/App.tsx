@@ -24,7 +24,7 @@ export default function App() {
   const earthGlobe = useRef<EarthGlobeHandle>(null);
   const [webgl] = useState(hasWebGL);
   const [error, setError] = useState<string | null>(null);
-  const veil = useMotion(marsGlobe, earthGlobe, webgl);
+  const veil = useMotion(marsGlobe, earthGlobe, webgl, error !== null);
 
   useEffect(() => {
     // Dev-only hooks for browser checks (Playwright / console).
@@ -58,7 +58,11 @@ export default function App() {
       </aside>
       <Footer />
       <Effects />
-      {veil && <div className="intro-veil" aria-hidden="true" />}
+      {veil && (
+        <div className="intro-veil" role="status">
+          <p>Loading Earth and Mars…</p>
+        </div>
+      )}
       {webgl && (
         <Suspense fallback={null}>
           <Stage eventSource={root} slots={{ mars, earth }} marsGlobe={marsGlobe} earthGlobe={earthGlobe} />
