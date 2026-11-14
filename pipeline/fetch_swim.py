@@ -30,5 +30,34 @@ def main(out_dir: Path, layers: list[str]) -> None:
         print("done", name, target.stat().st_size >> 20, "MB", flush=True)
 
 
+LANDFORMS_ZIP = "https://swim.psi.edu/output/SWIM4MIM/Global/Datasets/SWIM4MIM_G_0_1_Ancillary.zip"
+
+
+def fetch_landforms(out_dir: Path) -> None:
+    """10 landform maps (incl. polygons) from the 0-1 m geomorphology ancillary zip, into out_dir/landforms."""
+    import zipfile
+
+    target = out_dir / "landforms"
+    if target.exists() and any(target.rglob("*.tif")):
+        print("skip landforms")
+        return
+    zpath = out_dir / "SWIM4MIM_G_0_1_Ancillary.zip"
+    with requests.get(LANDFORMS_ZIP, stream=True, timeout=600, headers=HEADERS) as r:
+        r.raise_for_status()
+        with open(zpath, "wb") as f:
+            for chunk in r.iter_content(1 << 20):
+                f.write(chunk)
+    target.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zpath) as z:
+        for member in z.namelist():  # refuse path traversal
+            if member.startswith("/") or ".." in Path(member).parts:
+                raise ValueError(f"unsafe path in zip: {member}")
+        z.extractall(target)
+    print("landforms:", sorted(p.name for p in target.rglob("*") if p.is_file()))
+
+
 if __name__ == "__main__":
-    main(Path(sys.argv[1]), sys.argv[2:] or ["0_1"])
+    layers = [a for a in sys.argv[2:] if a != "landforms"]
+    main(Path(sys.argv[1]), layers or ["0_1"])
+    if "landforms" in sys.argv[2:]:
+        fetch_landforms(Path(sys.argv[1]))

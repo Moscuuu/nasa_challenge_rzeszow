@@ -2,7 +2,7 @@
 
 Output: data/interim/validation_0-1m.json (copied to out/validation.json by export.py)
 
-Usage: python -I pipeline/validate.py data/interim
+Usage: python -I pipeline/validate.py data/interim [0-1m|1-5m|gt5m]
 """
 import json
 import sys
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-LAYER = "0-1m"
+LAYER = sys.argv[2] if len(sys.argv) > 2 else "0-1m"  # Depth Layer
 RES = 0.1
 CHECKS = [  # name, role, (lon0, lat0, lon1, lat1)
     ("McMurdo Dry Valleys", "known_analog", (160.5, -78.0, 163.0, -77.2)),
@@ -29,12 +29,21 @@ def main(interim: Path) -> None:
         p = sc["percentile"][sel] * 100
         med = float(np.nanmedian(p)) if sel.any() else None
         passed = None if med is None else (med >= 90 if role == "known_analog" else med < 50)
+        # The wet-tundra contrast only tests the active layer: below ~1 m Alaska is ordinary cold
+        # permafrost, so a high rank there is expected. The result is still reported, flagged.
+        applicable = not (role == "contrast" and LAYER != "0-1m")
         checks.append({"name": name, "role": role, "cells": int(sel.sum()),
-                       "median_percentile": None if med is None else round(med, 1), "passed": passed})
+                       "median_percentile": None if med is None else round(med, 1), "passed": passed,
+                       "applicable": applicable})
         print(f"{name:32s} {role:13s} cells {int(sel.sum()):5d}  median pct {med if med is None else round(med, 1)}  passed {passed}")
+    weights = ({"temperature": 1 / 3, "ground_ice": 1 / 3, "polygons": 1 / 3} if LAYER != "gt5m"
+               else {"temperature": 0.5, "ground_ice": 0.5, "polygons": 0.0})
     out = {"layer": LAYER, "checks": checks,
-           "weights": {"temperature": 0.5, "ground_ice": 0.5, "polygons": 0.0},
-           "notes": "Polygons not yet included in the score. Percentile = position of the cell's best score among all permafrost cells."}
+           "weights": {k: round(v, 3) for k, v in weights.items()},
+           "notes": ("Percentile = position of the cell's best score among all permafrost cells. "
+                     "Equal weights over the features available for a Mars site: Deuteronilus Mensae, Phlegra Montes "
+                     "and Utopia Planitia have no SWIM polygon survey, so polygons are skipped for them. "
+                     "Polygons are not relevant below 5 m.")}
     (interim / f"validation_{LAYER}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
 
 

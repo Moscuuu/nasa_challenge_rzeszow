@@ -6,7 +6,7 @@ and shifted to local solar time by longitude.
 
 Output: data/interim/experiment_window_0-1m.json  {cell_id: {site_id: {months, hours_local, hours_per_year}}}
 
-Usage: python pipeline/experiment_window.py data/interim
+Usage: python pipeline/experiment_window.py data/interim [0-1m|1-5m|gt5m]
 """
 import json
 import sys
@@ -15,7 +15,7 @@ from pathlib import Path
 import ee
 import numpy as np
 
-LAYER = "0-1m"
+LAYER = sys.argv[2] if len(sys.argv) > 2 else "0-1m"  # Depth Layer
 RES = 0.1
 TOP_N = 2000
 BATCH = 250

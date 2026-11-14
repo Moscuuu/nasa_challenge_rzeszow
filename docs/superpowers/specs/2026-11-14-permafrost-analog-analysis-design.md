@@ -36,9 +36,26 @@ Ocenić każdą **komórkę** (0,1°) wiecznej zmarzliny na Ziemi: jak bardzo pr
 - **Mars:** SWIM4MIM wskaźnik zgodności z lodem C dla 0–1 m, średnia w oknie 1° wokół miejsca.
 - **Ocena:** obie wielkości zamienione na percentyl na tle własnej planety (Ziemia: wszystkie komórki zmarzliny; Mars: wszystkie piksele SWIM z danymi). Ocena = `1 − |percentyl_Ziemia − percentyl_Mars|`.
 
-### Spękania (później)
+## 3a. Cechy w warstwach 1–5 m i > 5 m
 
-Ziemia: przybliżenie z temperatury (reżim pękania). Mars: mapa poligonów SWIM. Dokładamy na końcu.
+| | 1–5 m | > 5 m |
+|---|---|---|
+| temperatura Ziemia | CCI GTD 2023: średnia z T2m i T5m | CCI GTD 2023: T10m |
+| temperatura Mars | model: średnia roczna na 2 m i 5 m | model: średnia roczna w najgłębszej warstwie (~5,5 m; poniżej ~1 m profil jest prawie płaski) |
+| lód Ziemia | `PFR × clip((5 − max(ALT, 1)) / 4, 0, 1)`: pewność, że warstwa 1–5 m jest zamarznięta | PFR |
+| lód Mars | SWIM C 1–5 m | SWIM C > 5 m |
+| spękania | później | nieistotne (waga 0) |
+
+- **Percentyle lodu: mid-rank** na obu planetach (remisy dostają średnią z „poniżej” i „poniżej lub równo”). SWIM w warstwach głębszych ma dużo identycznych wartości (np. 0,50).
+- **NSIDC GGD318 (ilość lodu) nie jest użyte.** Brak loginu Earthdata na maszynie analizy, a mapa nie obejmuje Antarktydy. CCI mówi tylko, *czy* jest zmarzlina, a nie *ile* jest lodu, więc w warstwach głębszych wskaźnik lodu na Ziemi jest prawie zawsze 1 i słabo rozróżnia komórki. Ulepszenie: GGD318 dla półkuli N, gdy będzie login.
+- **Temperatura w głębi nie rozróżnia miejsc na Marsie:** wszystkie 7 mają ~200–202 K, czyli są zimniejsze niż jakikolwiek grunt na Ziemi, więc ranking „najbliżej Marsa” jest dla nich identyczny. Miejsca różnią się tylko lodem, stąd remisy (`tied_site_ids` w kontrakcie 0.4).
+
+### Spękania (warstwy 0–1 m i 1–5 m; w > 5 m nieistotne)
+
+- **Ziemia:** „potencjał pękania” z CCI GST (średnia roczna temperatura powierzchni gruntu) według progów Péwé 1966 z analizy CCI: `clip((−2 °C − GST) / 18 K, 0, 1)`, czyli 0 powyżej −2 °C i 1 przy ≤ −20 °C (pękanie zimne i suche, jak u Phoenixa). **To szacunek z temperatury, a nie obserwacja poligonów**, więc częściowo liczy „zimno” drugi raz.
+- **Mars:** SWIM4MIM `SWIM4MIM_Polygons_GIS.tif` (udział zdjęć z przeglądu, na których widać poligony w skali HiRISE), średnia w oknie 1°. Poza pasem przeglądu (~47,9°S–49,0°N) i tam, gdzie piksel ma −30, traktujemy jako brak danych. **Deuteronilus Mensae, Phlegra Montes i Utopia Planitia nie mają pokrycia przeglądem**, więc cecha jest dla nich pominięta (zgodnie z zasadą „brak danych pomijamy”).
+- **Ocena:** `1 − |percentyl_Ziemia − percentyl_Mars|` (mid-rank; Mars: wśród przejrzanych pikseli).
+- **Skutek uboczny zasady:** miejsca bez danych o poligonach nie dostają kary za tę cechę, więc częściej wygrywają jako „najbliższe” (63 % top 2000 w 0–1 m). Do decyzji zespołu, czy przy wyborze najbliższego miejsca porównywać tylko cechy wspólne dla wszystkich.
 
 ## 4. Okno eksperymentu
 
@@ -81,6 +98,28 @@ Dlaczego Suche Doliny wypadają słabo: **amplituda dobowa**. W Suchych Dolinach
 Najlepsze komórki: **Ladakh / Aksai Chin (35°N 77°E, wysoka zimna pustynia)** oraz **Jakucja / Kołyma (60–70°N, 125–150°E)**.
 
 **Po dodaniu lata (drugi przebieg):** Suche Doliny 73,4 ✗, Devon 86,2 ✗, Alaska 43,0 ✓. Najlepsze 2000 komórek przesunęło się w stronę **wysokich zimnych pustyń: Karakorum / Ladakh / Pamir (30–40°N, 70–80°E)** i **Tybetu (30–35°N, 90–95°E)**. Syberia spadła, ale nadal jest w top 2000. Najlepsza komórka: 35,25°N 77,25°E (Aksai Chin), wynik 0,947, najbliższa Arcadii.
+
+## 5c. Wyniki wszystkich warstw (trzeci przebieg, mid-rank lodu)
+
+| test | 0–1 m | 1–5 m | > 5 m |
+|---|---|---|---|
+| Suche Doliny (znany analog, ≥ 90) | 65,6 ✗ | **98,3 ✓** | **98,2 ✓** |
+| Devon / Haughton (znany analog, ≥ 90) | 86,6 ✗ | **93,1 ✓** | **92,7 ✓** |
+| Alaska North Slope (kontrast, < 50) | **42,8 ✓** | 67,7 ✗ | 65,8 ✗ |
+
+**Najlepsze komórki w głębi:** wszystkie 2000 leżą w **Antarktydzie, w Górach Transantarktycznych (75–85°S, 155–170°E)**, gdzie grunt na 2–10 m ma ok. 234 K (−39 °C), najzimniej na Ziemi. W warstwach głębszych metoda sprowadza się więc do „najzimniejsza zmarzlina na Ziemi”. Każda komórka top 2000 ma ten sam remis (1–5 m: Erebus + Utopia; > 5 m: 4 miejsca), więc **warstwy głębsze nie rozróżniają miejsc na Marsie**. Zastrzeżenie: maska Antarktydy w CCI jest hojna (183 tys. km² wobec 22–45 tys. km² gruntu bez lodu), więc część komórek na 84°S może być skrajem lądolodu. Do sprawdzenia na zdjęciach przed pokazaniem jako „odkrycie”.
+
+Wniosek: znane analogi są dobrymi analogami **lodu w głębi**, ale nie **warstwy powierzchniowej** (brak marsjańskiej amplitudy dobowej). Kontrast „mokra tundra” działa tylko w 0–1 m, bo w głębi Alaska to zwykła zimna zmarzlina. Test kontrastu w warstwach głębszych to błąd założeń testu, a nie metody.
+
+## 5d. Wyniki ze spękaniami (czwarty przebieg, wszystkie 3 cechy)
+
+| test | 0–1 m | 1–5 m | > 5 m (bez spękań) |
+|---|---|---|---|
+| Suche Doliny (≥ 90) | **92,7 ✓** | **98,3 ✓** | **98,2 ✓** |
+| Devon / Haughton (≥ 90) | **96,5 ✓** | **91,6 ✓** | **92,7 ✓** |
+| Alaska North Slope (kontrast, < 50; tylko 0–1 m) | **44,2 ✓** | 67,3 (n/d) | 65,8 (n/d) |
+
+**Warstwa 0–1 m przechodzi wszystkie trzy testy.** Zastrzeżenie: spękania po stronie Ziemi są liczone z temperatury, więc część poprawy to podwójne liczenie „zimna”. Najlepsze komórki 0–1 m: **Jakucja / Kołyma (60–70°N, 125–145°E)** oraz **Pamir / Karakorum / Ladakh (30–40°N, 70–80°E)**. Najlepsza: 36,85°N 74,35°E (Karakorum), 0,944, najbliżej Deuteronilus Mensae (ocena z 2 cech: Deuteronilus nie ma danych o poligonach).
 
 ## 6. Ograniczenia
 

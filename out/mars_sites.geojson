@@ -23,21 +23,33 @@
       "summer_tmin_K": 182.05,
       "summer_tmax_K": 263.26,
       "summer_amp_K": 81.21,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 201.33,
+      "t_gt5_K": 200.56,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.5843,
-      "rank": 0.826,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.5843,
+       "rank": 0.826
+      },
+      "1-5m": {
+       "value": 0.3365,
+       "rank": 0.2651
+      },
+      "gt5m": {
+       "value": 0.1326,
+       "rank": 0.1226
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
-      "value": null,
-      "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "value": 1.0,
+      "rank": 0.9782,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
@@ -67,21 +79,33 @@
       "summer_tmin_K": 181.9,
       "summer_tmax_K": 262.08,
       "summer_amp_K": 80.18,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 200.68,
+      "t_gt5_K": 200.2,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.3821,
-      "rank": 0.6912,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.3821,
+       "rank": 0.6912
+      },
+      "1-5m": {
+       "value": 0.5488,
+       "rank": 0.8988
+      },
+      "gt5m": {
+       "value": 0.5591,
+       "rank": 0.9754
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
       "value": null,
       "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
@@ -111,21 +135,33 @@
       "summer_tmin_K": 182.19,
       "summer_tmax_K": 264.34,
       "summer_amp_K": 82.15,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 201.94,
+      "t_gt5_K": 200.89,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.2484,
-      "rank": 0.509,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.2484,
+       "rank": 0.509
+      },
+      "1-5m": {
+       "value": 0.548,
+       "rank": 0.8987
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
       "value": null,
       "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
@@ -155,21 +191,33 @@
       "summer_tmin_K": 182.39,
       "summer_tmax_K": 266.31,
       "summer_amp_K": 83.92,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 203.1,
+      "t_gt5_K": 201.52,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.1866,
-      "rank": 0.4396,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.1866,
+       "rank": 0.4396
+      },
+      "1-5m": {
+       "value": 0.4661,
+       "rank": 0.8893
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
-      "value": null,
-      "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "value": 0.6127,
+      "rank": 0.8423,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
@@ -199,21 +247,33 @@
       "summer_tmin_K": 182.41,
       "summer_tmax_K": 266.55,
       "summer_amp_K": 84.14,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 203.25,
+      "t_gt5_K": 201.6,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.1701,
-      "rank": 0.4198,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.1701,
+       "rank": 0.4198
+      },
+      "1-5m": {
+       "value": 0.3794,
+       "rank": 0.2754
+      },
+      "gt5m": {
+       "value": 0.05,
+       "rank": 0.0564
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
-      "value": null,
-      "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "value": 0.5854,
+      "rank": 0.8285,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
@@ -243,21 +303,33 @@
       "summer_tmin_K": 181.82,
       "summer_tmax_K": 261.45,
       "summer_amp_K": 79.63,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 200.33,
+      "t_gt5_K": 200.01,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.1189,
-      "rank": 0.3484,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.1189,
+       "rank": 0.3484
+      },
+      "1-5m": {
+       "value": 0.4404,
+       "rank": 0.8874
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
       "value": null,
       "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
@@ -287,21 +359,33 @@
       "summer_tmin_K": 186.18,
       "summer_tmax_K": 275.48,
       "summer_amp_K": 89.3,
-      "unit": "K (surface, mean daily; whole Mars year and local summer)",
+      "t_1_5_K": 200.76,
+      "t_gt5_K": 200.52,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
-      "value": 0.2636,
-      "rank": 0.523,
-      "unit": "SWIM ice consistency C, 0-1 m (-1..1)",
+      "0-1m": {
+       "value": 0.2636,
+       "rank": 0.523
+      },
+      "1-5m": {
+       "value": 0.5148,
+       "rank": 0.8956
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
-      "value": null,
-      "rank": null,
-      "unit": null,
-      "source": null,
-      "status": "pending"
+      "value": 0.6318,
+      "rank": 0.8513,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
      }
     },
     "chlorine_wt_pct": null,
