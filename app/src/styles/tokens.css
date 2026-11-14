@@ -29,37 +29,32 @@ body {
   font-family: var(--f-body);
 }
 
-/* Interim grid (final layout in Task 10): Mars + soil left, Earth large in the centre, card right. */
+/* Desktop: Mars + soil in a narrow left column, Earth large in the centre, card on the right. */
 .layout {
   display: grid;
   height: 100%;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 3fr) minmax(300px, 1.1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     "head head head"
     "mars earth card"
-    "soil earth card";
-  gap: 1px;
+    "soil earth card"
+    "foot foot foot";
 }
+.layout > header { grid-area: head; }
+.layout [data-slot="mars"] { grid-area: mars; }
+.layout [data-slot="soil"] { grid-area: soil; }
+.layout [data-slot="earth"] { grid-area: earth; }
+.layout [data-slot="card"] { grid-area: card; }
+.layout > footer { grid-area: foot; }
 
 .layout > header {
-  grid-area: head;
-}
-.layout [data-slot="mars"] {
-  grid-area: mars;
-}
-.layout [data-slot="soil"] {
-  grid-area: soil;
-}
-.layout [data-slot="earth"] {
-  grid-area: earth;
-}
-.layout [data-slot="card"] {
-  grid-area: card;
-}
-
-.layout > header {
-  padding: 16px 24px;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -76,19 +71,23 @@ body {
   border: 1px solid var(--line);
 }
 
+/* Phone: Mars + soil side by side on top, Earth in the middle, card as the bottom sheet. */
 @media (max-width: 700px) {
   .layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-rows: auto minmax(120px, 22vh) minmax(0, 1fr) auto auto;
     grid-template-areas:
       "head head"
       "mars soil"
-      "earth earth";
+      "earth earth"
+      "card card"
+      "foot foot";
   }
+  .layout > header { padding: 8px 16px; }
   .layout [data-slot="card"] {
-    position: fixed;
-    inset: auto 0 0 0;
-    background: var(--panel);
+    max-height: 40vh;
+    overflow-y: auto;
+    border-radius: 14px 14px 0 0;
   }
 }
 
