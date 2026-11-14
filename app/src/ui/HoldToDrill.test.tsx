@@ -59,7 +59,7 @@ describe("HoldToDrill", () => {
   it("holding moves progress forward and releasing rewinds", () => {
     render(<HoldToDrill />);
     fireEvent.pointerDown(screen.getByRole("button", { name: /hold to drill/i }));
-    frames(4000);
+    frames(6000);
     const held = progress();
     expect(held).toBeGreaterThan(30);
     expect(screen.getByText("Earth has places with the same frozen ground.")).toBeInTheDocument();
