@@ -28,6 +28,13 @@ describe("useMotion veil", () => {
     expect(result.current).toBe(true);
   });
 
+  it("ignores a held key's auto-repeat right after the drill hands over", () => {
+    const [m, e] = refs();
+    const { result } = renderHook(() => useMotion(m, e, true));
+    act(() => void window.dispatchEvent(new KeyboardEvent("keydown", { code: "Space", repeat: true })));
+    expect(result.current).toBe(true);
+  });
+
   it("is dropped by any key before the scenes are ready", () => {
     const [m, e] = refs();
     const { result } = renderHook(() => useMotion(m, e, true));

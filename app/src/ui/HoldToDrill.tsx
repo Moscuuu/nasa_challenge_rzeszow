@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CAPTIONS, captionIndex, stepProgress } from "../motion/drill";
-import { prefersReducedMotion, readSeen } from "../motion/intro";
+import { markSeen, prefersReducedMotion, readSeen } from "../motion/intro";
 import { motion } from "../motion/registry";
 
 const BASE = `${import.meta.env.BASE_URL}intro/`;
@@ -32,6 +32,7 @@ export function HoldToDrill() {
     if (done.current) return;
     done.current = true;
     holding.current = false;
+    markSeen(); // also covers reduced motion, where the 3D intro never marks it
     motion.videoPlaying = false;
     setPhase("fading");
   };
@@ -42,6 +43,9 @@ export function HoldToDrill() {
     const stop = () => void (holding.current = false);
     const down = (e: KeyboardEvent) => {
       if (e.code !== "Space") return;
+      // Space on another button (Skip) activates that button instead of drilling.
+      const t = e.target as Element | null;
+      if (t?.closest?.("button") && !t.closest(".drill-hold")) return;
       e.preventDefault();
       if (!e.repeat) holding.current = true;
     };
@@ -142,6 +146,9 @@ export function HoldToDrill() {
             onPointerDown={(e) => {
               e.preventDefault();
               holding.current = true;
+              // iOS often ignores preload: a hold is a user gesture, so ask for the clip now.
+              const v = video.current;
+              if (v && v.readyState === 0) v.load();
             }}
           >
             <span className="drill-dot" aria-hidden="true" /> Hold to drill

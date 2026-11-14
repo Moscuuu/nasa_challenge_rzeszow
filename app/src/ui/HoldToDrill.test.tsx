@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { readSeen } from "../motion/intro";
 import { motion } from "../motion/registry";
 import { HoldToDrill } from "./HoldToDrill";
 
@@ -106,5 +107,28 @@ describe("HoldToDrill", () => {
     expect(screen.queryByRole("button", { name: /hold to drill/i })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /enter/i }));
     expect(motion.videoPlaying).toBe(false);
+  });
+
+  it("finishing marks the visit seen, so reduced-motion users are not blocked again", () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("reduce"), media: q, addEventListener() {}, removeEventListener() {} }));
+    render(<HoldToDrill />);
+    fireEvent.click(screen.getByRole("button", { name: /enter/i }));
+    expect(readSeen()).toBe(true);
+  });
+
+  it("Space on the Skip button does not start drilling", () => {
+    render(<HoldToDrill />);
+    const skip = screen.getByRole("button", { name: /skip/i });
+    fireEvent.keyDown(skip, { code: "Space", key: " " });
+    frames(1000);
+    expect(progress()).toBe(0);
+  });
+
+  it("first hold asks the browser to load the clip when nothing is loaded yet", () => {
+    const load = vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
+    render(<HoldToDrill />);
+    fireEvent.pointerDown(screen.getByRole("button", { name: /hold to drill/i }));
+    expect(load).toHaveBeenCalledTimes(1);
+    load.mockRestore();
   });
 });
