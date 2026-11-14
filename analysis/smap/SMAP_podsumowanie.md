@@ -70,7 +70,7 @@ Doby liczone w **lokalnym czasie słonecznym** (przesunięcie o długość geogr
 
 | region | bbox (lon/lat) | rola |
 |---|---|---|
-| `dry_valleys` | 160,5…163°E, 78…77,2°S | znany analog → **walidacja metody** (jeśli nie zamaskowany) |
+| `dry_valleys` | 160,5…163°E, 78…77,2°S | znany analog → walidacja metody. **Test: brak danych (maska lodu), patrz §7.4** |
 | `qiangtang` | 82…90°E, 33…36°N | główny kandydat z raportu Phoenix (zmarzlina, słone jeziora, sucho, wysoko) |
 | `ojos_del_salado` | 69,5…67,5°W, 28…26°S | kandydat: zmarzlina > 5000 m + salary |
 | `axel_heiberg` | 95…88°W, 78,5…81°N | kandydat: źródła solankowe przez zmarzlinę |
@@ -95,7 +95,8 @@ Identyfikatory zadań AppEEARS: `data/smap_l4/appeears_tasks.json` (pełny rok) 
 | skrypt AppEEARS | ✅ logowanie i wysłanie zadań działa; konwersja NetCDF przetestowana na pliku syntetycznym |
 | skrypt wskaźników | ✅ przetestowany na danych syntetycznych ze znanym wynikiem (np. opad 63,1 mm/rok, `frozen_below_m` = 0,099 m) |
 | zadania AppEEARS | ⏳ **w kolejce** (`pending`) |
-| test Dry Valleys: 8 kroków/dobę? maska lodu? | ⏳ czeka na zadanie testowe |
+| test Dry Valleys (1–3.07.2023) | ❌ **brak danych**: AppEEARS zwrócił same wartości wypełnienia. SPL4SMGP traktuje Antarktydę jako „permanent ice” → **Suchych Dolin nie da się walidować na SMAP** |
+| test Qiangtang (1–3.07.2023, 85–86°E, 34–35°N): 8 kroków/dobę? układ NetCDF? | ⏳ wysłany |
 | wskaźniki dla 5 regionów | ⏳ po pobraniu |
 
 ## 7. Ograniczenia
@@ -103,7 +104,7 @@ Identyfikatory zadań AppEEARS: `data/smap_l4/appeears_tasks.json` (pełny rok) 
 1. **Średnie 3-godzinne, nie ekstrema.** Amplituda dobowa jest zaniżona (test: rzeczywiste 40 K → ~37 K).
 2. **Nie ta sama wielkość co Phoenix.** Phoenix MET to powietrze na 1 m; SMAP daje powietrze na ~40–80 m, temperaturę powierzchni i gruntu. Porównujemy wskaźniki pochodne (dni bez rozmarzania, przejścia przez 0 °C), nie surowe temperatury.
 3. **Model, nie pomiar.** L4 to model GEOS z asymilacją SMAP; w miejscach bez stacji (Antarktyda, wysokie Andy) wynik zależy mocno od modelu i wymuszeń meteo.
-4. **Maska lodu.** `surface_temp` i inne zmienne wykluczają „permanent ice”. **Suche Doliny mogą wyjść jako brak danych** → wtedy walidację trzeba zrobić innym zbiorem (ERA5 / MODIS LST).
+4. **Maska lodu — potwierdzone.** SPL4SMGP wyklucza „permanent ice”; dla Suchych Dolin (test 1–3.07.2023) AppEEARS zwrócił **wyłącznie wartości wypełnienia**. Antarktyda (w tym bezlodowe Suche Doliny, najlepszy znany analog Phoenix) jest poza zasięgiem SMAP L4 → walidację trzeba zrobić innym zbiorem (ERA5 / MODIS LST / Permafrost_cci). Podobnie mogą wypaść piksele z czapami lodowymi na Axel Heiberg.
 5. **Rozdzielczość 9 km.** Piksel uśrednia dolinę, stoki i lodowce; poligonów (3–6 m) nie widać. SMAP = sito regionalne, potem kandydaci do sprawdzenia danymi o wysokiej rozdzielczości.
 6. **Brak soli.** SMAP nie mówi nic o perchloranach; ten parametr musi przyjść z innego źródła.
 7. **Jeden rok (2023).** Dla pewności warto potem powtórzyć dla 2–3 lat (zmienność roczna).

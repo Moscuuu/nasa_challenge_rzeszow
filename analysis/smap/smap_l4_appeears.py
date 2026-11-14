@@ -130,10 +130,10 @@ def submit(headers, payload):
     return r.json()["task_id"]
 
 
-def task_status(headers, task_id):
+def task_info(headers, task_id):
     r = requests.get(f"{API}/task/{task_id}", headers=headers, timeout=60)
     r.raise_for_status()
-    return r.json().get("status")
+    return r.json()
 
 
 def download_bundle(headers, task_id, dest):
@@ -226,7 +226,11 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
     state = load_state(args.out)
-    todo = [(n, b) for n, b in args.region if not os.path.exists(os.path.join(args.out, f"{n}.nc"))]
+    done_or_empty = lambda n: any(os.path.exists(os.path.join(args.out, f"{n}{ext}")) for ext in (".nc", ".empty"))
+    for n, _ in args.region:
+        if os.path.exists(os.path.join(args.out, f"{n}.empty")):
+            print(f"{n}: previous task returned no data (see {n}.empty); delete that file to retry")
+    todo = [(n, b) for n, b in args.region if not done_or_empty(n)]
     if not todo:
         print("all regions already done")
         return
@@ -249,8 +253,17 @@ def main():
     while pending:
         for n in list(pending):
             tid = state[n]["task_id"]
-            st = task_status(headers, tid)
-            if st == "done":
+            info = task_info(headers, tid)
+            st = info.get("status")
+            summary = info.get("summary") or {}
+            if st == "done" and summary.get("empty"):
+                # e.g. Antarctica: SPL4SMGP excludes permanent ice -> all fill values, no output files
+                msg = summary.get("description", "no output files")
+                print(f"{n}: done but EMPTY: {msg}", file=sys.stderr)
+                with open(os.path.join(args.out, f"{n}.empty"), "w") as fh:
+                    fh.write(f"task {tid}: {msg}\n")
+                pending.pop(n)
+            elif st == "done":
                 print(f"{n}: done, downloading")
                 paths = download_bundle(headers, tid, os.path.join(args.out, "appeears_raw", n))
                 normalise(paths, os.path.join(args.out, f"{n}.nc"), pending.pop(n))
