@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { chooseIntro, markSeen, readSeen } from "./intro";
+import { chooseIntro, clearSeen, markSeen, readSeen } from "./intro";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -32,5 +32,19 @@ describe("readSeen / markSeen", () => {
       throw new Error("blocked");
     });
     expect(() => markSeen()).not.toThrow();
+  });
+});
+
+describe("clearSeen", () => {
+  it("makes the next visit a first visit again", () => {
+    markSeen();
+    clearSeen();
+    expect(readSeen()).toBe(false);
+  });
+  it("does not throw when removeItem throws", () => {
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    expect(() => clearSeen()).not.toThrow();
   });
 });

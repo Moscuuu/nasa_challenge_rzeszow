@@ -26,3 +26,12 @@ export function markSeen(): void {
     /* storage blocked: the full intro simply plays again */
   }
 }
+
+/** Forget the visit, so the next load plays the first-visit intro (footer "Replay intro"). */
+export function clearSeen(): void {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* storage blocked: nothing stored to clear */
+  }
+}

@@ -41,6 +41,7 @@ export function useMotion(
     let skipped = false;
     // A skip before the intro has started just ends the veil; the intro then jumps straight to its end.
     const skip = () => {
+      if (motion.videoPlaying) return; // the drill intro owns clicks and keys until it hands over
       skipped = true;
       if (intro) intro.progress(1);
       else endIntro();

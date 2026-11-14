@@ -573,31 +573,138 @@ details[open] > summary .f-name::after {
   }
 }
 
-/* Opening video: above the veil, fades out into the 3D intro. */
-.intro-video {
+/* Hold-to-drill opening: above the veil, fades out into the 3D intro. */
+.drill {
   position: fixed;
   inset: 0;
   z-index: 60;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
   background: #000;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
   transition: opacity 700ms ease;
 }
-.intro-video--out {
+.drill--fading {
   opacity: 0;
   pointer-events: none;
 }
-.intro-video video {
+.drill-video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.intro-video-skip {
+/* Darken the bottom so the captions and controls read on any frame. */
+.drill::before {
+  content: "";
   position: absolute;
-  right: 24px;
-  bottom: 20px;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent 55%);
+  pointer-events: none;
+}
+.drill--flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: #fff;
+  animation: drill-flash 600ms ease-out forwards;
+}
+@keyframes drill-flash {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.drill > :not(video) {
+  position: relative;
+  z-index: 2;
+}
+.drill-caption {
+  align-self: end;
+  max-width: min(720px, calc(100% - 32px));
+  margin: 0 0 28px;
+  text-align: center;
+  font: 300 clamp(1.25rem, 3vw, 2rem)/1.25 var(--f-disp);
+  color: var(--ink);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+  animation: drill-caption 500ms ease-out;
+}
+@keyframes drill-caption {
+  from { opacity: 0; transform: translateY(6px); }
+}
+.drill-controls {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+.drill-hold {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 26px;
+  background: rgba(14, 19, 27, 0.55);
+  border: 1px solid var(--line2);
+  border-radius: 999px;
+  font: 400 0.9375rem var(--f-body);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  touch-action: none;
+}
+.drill-hold:active {
+  background: var(--ink);
+  color: var(--bg);
+}
+.drill-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 4px rgba(238, 242, 246, 0.2);
+}
+.drill-hint {
   margin: 0;
+  min-height: 1em;
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  color: rgba(238, 242, 246, 0.6);
+  color: var(--mute);
+}
+.drill-progress {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(238, 242, 246, 0.15);
+}
+.drill-progress i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+.drill-skip {
+  position: absolute !important;
+  top: 20px;
+  right: 24px;
+  min-height: 44px;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  color: var(--mute);
+  font: 400 0.8125rem var(--f-body);
+  cursor: pointer;
+}
+.drill-skip:hover {
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .drill-caption { animation: none; }
+  .drill--flash::after { animation: none; opacity: 0; }
 }
 
 /* Ambient grain + vignette over everything, below the intro veil. */
