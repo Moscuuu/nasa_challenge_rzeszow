@@ -15,17 +15,19 @@ from PIL import Image
 LAYERS = [("0-1m", "0–1 m (dig-able ice)"), ("1-5m", "1–5 m (shallow drilling)"), ("gt5m", "> 5 m (deep resources)")]
 RES = 0.1
 TOP_N = 2000
-CONTRACT_VERSION = "0.5"
+CONTRACT_VERSION = "0.8"
 FEATURES = [
     {"id": "temperature", "label": "Temperature", "comparison": "rank"},
     {"id": "ground_ice", "label": "Ground ice", "comparison": "position"},
-    {"id": "polygons", "label": "Thermal-contraction polygons", "comparison": "presence"},
+    {"id": "polygons", "label": "Thermal-contraction polygons", "comparison": "position"},
+    {"id": "dryness", "label": "Dryness (dry permafrost vs wet tundra)", "comparison": "rank"},
 ]
 SOURCES = [
     {"id": "era5_land", "label": "ERA5-Land hourly / daily aggregates (ECMWF, via Google Earth Engine), 2023", "url": "https://doi.org/10.24381/cds.e2161bac"},
     {"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5.0 (PFR, ALT, ground temperature), 2023", "url": "https://climate.esa.int/en/projects/permafrost/"},
     {"id": "swim", "label": "SWIM4MIM ice consistency composites (PSI / NASA)", "url": "https://swim.psi.edu"},
     {"id": "mars_thermal_model", "label": "Team 1-D Mars surface thermal model (A=0.25, I=250)", "url": None},
+    {"id": "smap_l4", "label": "NASA SMAP L4 SPL4SMGP v8 (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/T5RUATAQREF8"},
 ]
 KNOWN = [("McMurdo Dry Valleys", (160.5, -78.0, 163.0, -77.2)),
          ("Haughton Crater (Devon Island)", (-91.0, 74.9, -88.0, 76.0))]
@@ -60,6 +62,7 @@ def site_feature(s, layers):
         "geometry": {"type": "Point", "coordinates": [s["lon"], s["lat"]]},
         "properties": {
             "id": s["id"], "name": s["name"], "window_deg": s["window_deg"], "coords_status": s["coords_status"],
+            "coords_source": s["coords_source"],
             "features": {
                 "temperature": {**{f"{q}_K": t[q] for q in MARS_TEMP_KEYS},
                                 "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
@@ -79,10 +82,11 @@ def site_feature(s, layers):
 
 def strengths_breaks(feats):
     ok = {k: v["score"] for k, v in feats.items() if v["status"] == "ok"}
+    penalized = [k for k, v in feats.items() if v["status"] == "no_data_penalized"]
     if not ok:
-        return [], []
+        return [], penalized
     strengths = [k for k, v in sorted(ok.items(), key=lambda kv: -kv[1]) if v >= 0.8] or [max(ok, key=ok.get)]
-    breaks = [k for k, v in sorted(ok.items(), key=lambda kv: kv[1]) if v < 0.5]
+    breaks = [k for k, v in sorted(ok.items(), key=lambda kv: kv[1]) if v < 0.5] + penalized
     return strengths, breaks
 
 
@@ -100,10 +104,9 @@ def polygon_feature(sc, layer, b, k, site):
     if layer == "gt5m":
         return {"score": None, "earth_value": None, "mars_value": None, "unit": None,
                 "status": "not_relevant", "source": None}
-    if site["polygons"]["status"] != "ok":  # no SWIM polygon survey around this Mars site
-        status = "no_data"
-    else:
-        status = "ok"
+    # no SWIM polygon survey around this Mars site: counted as 0 (team rule: missing data in a feature
+    # that counts is penalised)
+    status = "ok" if site["polygons"]["status"] == "ok" else "no_data_penalized"
     return {
         "score": r3(sc["polygons"][b, k]),
         "earth_value": {"cracking_potential": r3(sc["crack"][k]), "ground_surface_temp_K": r3(sc["gst"][k])},
@@ -113,11 +116,30 @@ def polygon_feature(sc, layer, b, k, site):
     }
 
 
+def dryness_feature(sc, layer, b, k):
+    if layer != "0-1m":
+        return {"score": None, "earth_value": None, "mars_value": None, "unit": None,
+                "status": "not_relevant", "source": None}
+    qs = [str(q) for q in sc["dry_quantities"]]
+    ok = np.isfinite(sc["dryness"][b, k])
+    return {
+        "score": r3(sc["dryness"][b, k]),
+        "parts": {q: r3(sc["dry_parts"][j, k]) for j, q in enumerate(qs)},
+        "earth_value": {q: r3(sc["earth_dry"][j, k]) for j, q in enumerate(qs)},
+        "mars_value": {"wet_summer": 0.0, "precip_mm_yr": 0.0},
+        "unit": "wet_summer: surface soil wetness 0-5 cm, local summer (fraction of saturation); precip: mm/yr; ranked driest = 1",
+        # SMAP L4 has no data on permanent ice (Antarctica incl. the Dry Valleys): counted as 0
+        "status": "ok" if ok else "no_data_penalized", "source": "smap_l4",
+    }
+
+
 def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
     with np.load(interim / f"scores_{layer}.npz") as z:  # materialise once: NpzFile re-reads on every access
         sc = {k: z[k] for k in z.files}
     windows_path = interim / f"experiment_window_{layer}.json"
     windows = json.loads(windows_path.read_text(encoding="utf-8")) if windows_path.exists() else {}
+    places_path = interim / "places.json"
+    places = json.loads(places_path.read_text(encoding="utf-8")) if places_path.exists() else {}
     site_ids = [s["id"] for s in sites]
     rows, cols = sc["rows"], sc["cols"]
     lat = 90 - (rows + 0.5) * RES
@@ -139,7 +161,7 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
                 "earth_value": {f"{q}_K": r3(sc["earth_temp"][j, k]) for j, q in enumerate(quantities)},
                 "mars_value": {f"{q}_K": s["temperature"][mk] for q, mk in zip(quantities, mars_keys)},
                 "unit": unit,
-                "status": "ok" if np.isfinite(sc["temperature"][b, k]) else "no_data", "source": temp_source,
+                "status": "ok" if np.isfinite(sc["temperature"][b, k]) else "no_data_penalized", "source": temp_source,
             },
             "ground_ice": {
                 "score": r3(sc["ice"][b, k]),
@@ -150,6 +172,7 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
                 "status": "ok", "source": "esa_cci_permafrost",
             },
             "polygons": polygon_feature(sc, layer, b, k, s),
+            "dryness": dryness_feature(sc, layer, b, k),
         }
         strengths, breaks = strengths_breaks(feats)
         feats_out.append({
@@ -164,7 +187,7 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
                                   if np.isfinite(sc["overall"][i, k]) and sc["best"][k] - sc["overall"][i, k] < 1e-3],
                 "site_scores": {sid: r3(sc["overall"][i, k]) for i, sid in enumerate(site_ids)},
                 "features": feats, "strengths": strengths, "breaks_down": breaks,
-                "known_analog": known_analog(lon[k], lat[k]), "place": None,
+                "known_analog": known_analog(lon[k], lat[k]), "place": places.get(cid),
                 "experiment_window": windows.get(cid),
             },
         })

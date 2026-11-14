@@ -121,6 +121,67 @@ Wniosek: znane analogi są dobrymi analogami **lodu w głębi**, ale nie **warst
 
 **Warstwa 0–1 m przechodzi wszystkie trzy testy.** Zastrzeżenie: spękania po stronie Ziemi są liczone z temperatury, więc część poprawy to podwójne liczenie „zimna”. Najlepsze komórki 0–1 m: **Jakucja / Kołyma (60–70°N, 125–145°E)** oraz **Pamir / Karakorum / Ladakh (30–40°N, 70–80°E)**. Najlepsza: 36,85°N 74,35°E (Karakorum), 0,944, najbliżej Deuteronilus Mensae (ocena z 2 cech: Deuteronilus nie ma danych o poligonach).
 
+## 5e. Dodatki (2026-11-14 wieczór)
+
+- **Nazwy komórek (`place`):** Natural Earth 10m (domena publiczna). Najmniejszy region fizyczny zawierający środek komórki (pasmo, płaskowyż, wyspa…) + kraj, np. „Verkhoyansk Range, Russia”. 4039 z 4058 komórek top (wszystkie warstwy) ma nazwę. `pipeline/fetch_places.py`, `pipeline/places.py`.
+- **Automatyczny pomiar poligonów (ArcticDEM 2 m): nie przeszedł kontroli.** Dominujący rozstaw wzoru liczony z widma mocy wycinków 2 × 2 km (`pipeline/polygon_check.py`). Na kontroli z pewnymi poligonami (Utqiagvik, Alaska) wzór jest ledwo widoczny, bo szum DEM jest rzędu głębokości rowów (~0,2–0,5 m). Na komórce górskiej w Jakucji najsilniejszy „sygnał” dały żleby na stokach. Wynik ma flagę `validated: false` i **nie wchodzi do oceny**. Podglądy cieniowania (`out/polygon_checks/*.png`) służą do oceny wzrokowej przez człowieka. Wniosek pomocniczy: najlepsze komórki 0–1 m w Jakucji to **pasma górskie** (Wierchojańskie, Czerskiego, Suntar-Chajata), a nie płaskie równiny, gdzie zwykle występują poligony. Komórka 0,1° uśrednia doliny i stoki.
+- **Globus Marsa:** zadanie zespołu GUI (dane w `mars_sites.geojson`).
+- **Współrzędne miejsc na Marsie z publikacji** (`coords_source` w `mars_sites.py`): Arcadia: krater „Badger” w warstwie lodu Bramson 2015 (46,58°N, −165,15°); Deuteronilus: EZ Head i in. 2015 (39,11°N, 23,20°E); Erebus Montes: EZ Viola i in. 2015 (39,0°N, −167,9°). **Wcześniejsza wartość 35,7°N 175°E była błędna.** Krater w Amazonis: Posiolova 2022 / Dundas 2023 (35,1°N, −170,2°); Hellas: EZ Levy i Holt 2015 (−39,05°, 101,91°E). Przybliżone (bez opublikowanego punktu): Phlegra Montes, Utopia Planitia.
+
+### Skutek zmiany współrzędnych (piąty przebieg)
+
+| test | 0–1 m | 1–5 m | > 5 m |
+|---|---|---|---|
+| Suche Doliny (≥ 90) | 70,5 ✗ | 98,3 ✓ | 98,2 ✓ |
+| Devon / Haughton (≥ 90) | 85,3 ✗ | 93,0 ✓ | 92,7 ✓ |
+| Alaska (kontrast, < 50; tylko 0–1 m) | 43,0 ✓ | 67,6 (n/d) | 65,8 (n/d) |
+
+**Zaliczenie 0–1 m w czwartym przebiegu było kruche.** Opublikowany punkt Arcadii leży poza przeglądem poligonów SWIM, a stary, przybliżony miał pełny sygnał poligonów (1,0). Teraz dane o poligonach mają tylko 3 z 7 miejsc (Erebus, Amazonis, Hellas). Wniosek dla prezentacji: wynik warstwy 0–1 m zależy od tego, czy w pobliżu miejsca na Marsie zmapowano poligony. Uczciwie pokazać jako „ograniczenie danych”, nie jako sukces lub porażkę metody. Warstwy głębsze są stabilne.
+
+## 5f. Zasada braków danych zmieniona (decyzja zespołu, 2026-11-14 ~20:40)
+
+**Brak danych w cesze, która liczy się w danej warstwie, = 0 (kara). Cecha, która w warstwie się nie liczy, nie ma wpływu.** Zastępuje wcześniejsze „braki pomijamy, nie zerujemy” i „komórka bez temperatury nie dostaje wyniku”.
+
+Skutki (szósty przebieg):
+
+| test | 0–1 m | 1–5 m | > 5 m |
+|---|---|---|---|
+| Suche Doliny (≥ 90) | 68,1 ✗ | 91,6 ✓ | 98,2 ✓ |
+| Devon / Haughton (≥ 90) | 91,7 ✓ | 92,0 ✓ | 92,7 ✓ |
+| Alaska (kontrast, < 50; tylko 0–1 m) | 58,9 ✗ | 67,6 (n/d) | 65,8 (n/d) |
+
+- W 0–1 m i 1–5 m „najbliższym” miejscem mogą być teraz tylko miejsca z danymi o poligonach (Erebus, Amazonis, Hellas). Pozostałe 4 dostają 0 za spękania.
+- ~21 tys. komórek bez temperatury ERA5 dostaje teraz niskie wyniki zamiast wypaść z rankingu, co podnosi percentyle pozostałych o kilka punktów. To częściowo tłumaczy wzrost Alaski (43 → 59).
+
+**NSIDC GGD318 USUNIĘTE z pipeline'u (decyzja zespołu, 2026-11-14 ~21:40): to stara (1997), skompilowana mapa papierowa, a nie współczesny pomiar.** `pipeline/ice_content.py` skasowany, `score.py` i `run_all.sh` bez GGD318. Warstwy głębsze wracają do lodu tylko z CCI. Opis próbnego przebiegu zostaje dla historii:
+
+**(historia) NSIDC GGD318 uruchomione (siódmy przebieg).** Wskaźnik lodu w warstwach głębszych = pewność zmarzliny (CCI) × ilość lodu (GGD318, `ice_ord/3`). 410 928 komórek ma wartość ilości lodu.
+
+| test | 1–5 m | > 5 m |
+|---|---|---|
+| Suche Doliny (≥ 90) | **59,4 ✗** | **18,3 ✗** |
+| Devon / Haughton (≥ 90) | 97,2 ✓ | 98,3 ✓ |
+| Alaska (kontrast; n/d w głębi) | 79,6 | 72,3 |
+
+Antarktyda nie ma danych GGD318, więc zgodnie z zasadą kar dostaje 0 za lód i wypada z czołówki warstw głębszych. Suche Doliny przestają przechodzić test. To skutek braku danych, a nie wynik fizyczny. Alternatywa do decyzji zespołu: w Antarktydzie liczyć lód tylko z CCI.
+
+Wcześniejszy opis (przed uruchomieniem): **NSIDC GGD318 (ilość lodu) przygotowane, nieuruchomione:** `pipeline/ice_content.py` + `score.py` (warstwy 1–5 m i > 5 m: pewność zmarzliny × ilość lodu). Brak loginu Earthdata na maszynie analizy. **Uwaga:** GGD318 nie obejmuje Antarktydy, więc według nowej zasady kar Antarktyda dostanie 0 za lód w warstwach głębszych i wypadnie z czołówki (dziś zajmuje całe top 2000).
+
+## 5g. Suchość (SMAP L4) i pełne przeliczenie (2026-11-14 ~21:30)
+
+- **Nowa cecha „suchość”, tylko w warstwie 0–1 m** (decyzja zespołu: odróżnić suchą zmarzlinę od mokrej tundry). Składniki: letnia wilgotność gruntu 0–5 cm z **NASA SMAP L4 SPL4SMGP v8** (Earth Engine, jeden krok na dobę o 13:30 UTC, bo pełny rok trzygodzinny przekracza limit pamięci EE) oraz roczny opad z **ERA5-Land**. Opad w SMAP L4 to i tak wymuszenie z modelu GEOS, a nie pomiar SMAP. Mars = sucho, więc ranking „najsuchsze = 1”. Warstwa 0–1 m ma 4 cechy po 0,25.
+- **Antarktyda:** SMAP L4 nie ma tam danych (maska lodu stałego), więc suchość opiera się tylko na opadzie. To dane częściowe, a nie ich brak, więc nie ma kary 0.
+- **Wynik testu (ósmy przebieg, z suchością, bez GGD318, z karą za brak danych):**
+
+  | test | 0–1 m | 1–5 m | > 5 m |
+  |---|---|---|---|
+  | Suche Doliny (≥ 90) | **97,2 ✓** | 91,6 ✓ | 98,2 ✓ |
+  | Devon / Haughton (≥ 90) | 84,5 ✗ | 92,0 ✓ | 92,7 ✓ |
+  | Alaska North Slope (kontrast < 50; tylko 0–1 m) | 59,0 ✗ | 67,6 (n/d) | 65,8 (n/d) |
+
+  Suchość podnosi Suche Doliny w 0–1 m z 68 do 97. Alaska zostaje powyżej mediany: SMAP widzi ją jako mokrą (wilgotność 0,75, ocena 0,30), ale nie skrajnie, bo duża część borealnej zmarzliny Syberii jest latem jeszcze mokrzejsza. Do tego North Slope ma mało opadu (294 mm/rok, „pustynia polarna”), wysoki wynik za lód (0,92) i spękania (0,74). **Kontrast „mokra tundra poniżej mediany wszystkiej zmarzliny” jest więc za ostry jako test.** ERA5-Land zawyża opad w Tybecie (Aksai Chin 469 mm/rok), co jest znanym błędem w wysokich górach.
+- **Pełne przeliczenie** wszystkich plików pośrednich po tym, jak merge zrzutu `data/` kolegi (PR #11) nadpisał je starszą wersją. `data/` odśledzone z gita (commit `9aabc79` na gałęzi `untrack-data-snapshot`, niewypchnięty).
+
 ## 6. Ograniczenia
 
 - ERA5-Land i CCI to modele, nie pomiary. Dobowe min/max z ERA5-Land liczone w dobach UTC.

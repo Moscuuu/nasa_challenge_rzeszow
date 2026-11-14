@@ -1,0 +1,86 @@
+{
+ "validated": false,
+ "note": "Automatic spectral check on ArcticDEM 2 m. NOT a validated polygon measurement: on the control with known ice-wedge polygons (Utqiagvik) the pattern is barely visible at 2 m, and on mountain cells slope gullies produce spectral peaks. Use the hillshade previews for visual inspection only.",
+ "checks": [
+  {
+   "id": "control_utqiagvik",
+   "name": "Utqiagvik, Alaska (control: known ice-wedge polygons)",
+   "lat": 71.3,
+   "lon": -156.65,
+   "status": "ok",
+   "peak_wavelength_m": 39.8,
+   "prominence": 1.73,
+   "relief_std_m": 0.252,
+   "valid_fraction": 1.0,
+   "preview": "polygon_checks/control_utqiagvik.png"
+  },
+  {
+   "id": "control_haughton",
+   "name": "Haughton crater, Devon Island (known analog)",
+   "lat": 75.38,
+   "lon": -89.68,
+   "status": "ok",
+   "peak_wavelength_m": 58.9,
+   "prominence": 1.77,
+   "relief_std_m": 1.245,
+   "valid_fraction": 1.0,
+   "preview": "polygon_checks/control_haughton.png"
+  },
+  {
+   "id": "c_72.05_-28.25",
+   "name": "King Christian X Land, Greenland",
+   "lat": 72.05,
+   "lon": -28.25,
+   "rank_0_1m": 1,
+   "score_0_1m": 0.864,
+   "status": "ok",
+   "peak_wavelength_m": 29.7,
+   "prominence": 4.36,
+   "relief_std_m": 0.403,
+   "valid_fraction": 1.0,
+   "preview": "polygon_checks/c_72.05_-28.25.png"
+  },
+  {
+   "id": "c_78.55_-67.85",
+   "name": "Knud Ramussen Land, Greenland",
+   "lat": 78.55,
+   "lon": -67.85,
+   "rank_0_1m": 5,
+   "score_0_1m": 0.86,
+   "status": "ok",
+   "peak_wavelength_m": 36.1,
+   "prominence": 2.73,
+   "relief_std_m": 1.538,
+   "valid_fraction": 1.0,
+   "preview": "polygon_checks/c_78.55_-67.85.png"
+  },
+  {
+   "id": "c_71.35_-111.35",
+   "name": "Victoria Island, Canada",
+   "lat": 71.35,
+   "lon": -111.35,
+   "rank_0_1m": 11,
+   "score_0_1m": 0.857,
+   "status": "ok",
+   "peak_wavelength_m": 6.2,
+   "prominence": 1.22,
+   "relief_std_m": 0.934,
+   "valid_fraction": 1.0,
+   "preview": "polygon_checks/c_71.35_-111.35.png"
+  },
+  {
+   "id": "c_79.75_-73.05",
+   "name": "Queen Elizabeth Islands",
+   "lat": 79.75,
+   "lon": -73.05,
+   "rank_0_1m": 62,
+   "score_0_1m": 0.851,
+   "status": "ok",
+   "peak_wavelength_m": 58.9,
+   "prominence": 2.69,
+   "relief_std_m": 0.006,
+   "valid_fraction": 1.0,
+   "preview": "polygon_checks/c_79.75_-73.05.png"
+  }
+ ]
+}

@@ -6,48 +6,49 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -160.0,
-     42.0
+     -165.15,
+     46.58
     ]
    },
    "properties": {
     "id": "arcadia_planitia",
     "name": "Arcadia Planitia",
     "window_deg": 1.0,
-    "coords_status": "approximate",
+    "coords_status": "published",
+    "coords_source": "Bramson et al. 2015, GRL 42:6566: terraced crater 'Badger' (46.581 N, 194.85 E) inside the mapped excess-ice layer (38-52 N)",
     "features": {
      "temperature": {
-      "tmin_K": 173.3,
-      "tmax_K": 246.65,
-      "amp_K": 73.35,
-      "summer_tmin_K": 182.05,
-      "summer_tmax_K": 263.26,
-      "summer_amp_K": 81.21,
-      "t_1_5_K": 201.33,
-      "t_gt5_K": 200.56,
+      "tmin_K": 171.02,
+      "tmax_K": 240.13,
+      "amp_K": 69.11,
+      "summer_tmin_K": 181.68,
+      "summer_tmax_K": 260.41,
+      "summer_amp_K": 78.73,
+      "t_1_5_K": 199.76,
+      "t_gt5_K": 199.7,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
       "0-1m": {
-       "value": 0.5843,
-       "rank": 0.826
+       "value": 0.5795,
+       "rank": 0.8236
       },
       "1-5m": {
-       "value": 0.3365,
-       "rank": 0.2651
+       "value": 0.2573,
+       "rank": 0.2535
       },
       "gt5m": {
-       "value": 0.1326,
-       "rank": 0.1226
+       "value": 0.5156,
+       "rank": 0.9749
       },
       "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
      },
      "polygons": {
-      "value": 1.0,
-      "rank": 0.9782,
-      "status": "ok",
+      "value": null,
+      "rank": null,
+      "status": "no_data",
       "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
       "source": "swim"
      }
@@ -62,40 +63,41 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     22.0,
-     44.0
+     23.2,
+     39.11
     ]
    },
    "properties": {
     "id": "deuteronilus_mensae",
     "name": "Deuteronilus Mensae",
     "window_deg": 1.0,
-    "coords_status": "approximate",
+    "coords_status": "published",
+    "coords_source": "Head et al. 2015, First Landing Site/Exploration Zone Workshop, abstract 1033: EZ centre",
     "features": {
      "temperature": {
-      "tmin_K": 172.35,
-      "tmax_K": 243.93,
-      "amp_K": 71.58,
-      "summer_tmin_K": 181.9,
-      "summer_tmax_K": 262.08,
-      "summer_amp_K": 80.18,
-      "t_1_5_K": 200.68,
-      "t_gt5_K": 200.2,
+      "tmin_K": 174.53,
+      "tmax_K": 250.24,
+      "amp_K": 75.71,
+      "summer_tmin_K": 182.24,
+      "summer_tmax_K": 264.78,
+      "summer_amp_K": 82.55,
+      "t_1_5_K": 202.19,
+      "t_gt5_K": 201.03,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
       "0-1m": {
-       "value": 0.3821,
-       "rank": 0.6912
+       "value": 0.3573,
+       "rank": 0.6612
       },
       "1-5m": {
-       "value": 0.5488,
+       "value": 0.5485,
        "rank": 0.8988
       },
       "gt5m": {
-       "value": 0.5591,
-       "rank": 0.9754
+       "value": 0.5504,
+       "rank": 0.9753
       },
       "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
       "source": "swim"
@@ -110,7 +112,7 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mesas fringed by debris-covered glaciers and lobate aprons holding buried ice.",
-    "citation": "Plaut et al. 2009, GRL; First Landing Site/Exploration Zone Workshop 2015"
+    "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)"
    }
   },
   {
@@ -127,6 +129,7 @@
     "name": "Phlegra Montes",
     "window_deg": 1.0,
     "coords_status": "approximate",
+    "coords_source": "No published point found for Phlegra Montes itself; nearest published landing site: Barker et al. 2015 (EZ abstract 1002), Phlegra Dorsa 39 N 172 E",
     "features": {
      "temperature": {
       "tmin_K": 174.17,
@@ -166,62 +169,6 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mountain range with radar-detected ice in surrounding aprons, proposed for human exploration.",
-    "citation": "Dundas et al. 2021; Morgan et al. 2021, Nature Astronomy"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     175.0,
-     35.7
-    ]
-   },
-   "properties": {
-    "id": "erebus_montes",
-    "name": "Erebus Montes",
-    "window_deg": 1.0,
-    "coords_status": "approximate",
-    "features": {
-     "temperature": {
-      "tmin_K": 175.81,
-      "tmax_K": 254.01,
-      "amp_K": 78.2,
-      "summer_tmin_K": 182.39,
-      "summer_tmax_K": 266.31,
-      "summer_amp_K": 83.92,
-      "t_1_5_K": 203.1,
-      "t_gt5_K": 201.52,
-      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
-      "source": "mars_thermal_model"
-     },
-     "ground_ice": {
-      "0-1m": {
-       "value": 0.1866,
-       "rank": 0.4396
-      },
-      "1-5m": {
-       "value": 0.4661,
-       "rank": 0.8893
-      },
-      "gt5m": {
-       "value": 0.5,
-       "rank": 0.5992
-      },
-      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
-      "source": "swim"
-     },
-     "polygons": {
-      "value": 0.6127,
-      "rank": 0.8423,
-      "status": "ok",
-      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
-      "source": "swim"
-     }
-    },
-    "chlorine_wt_pct": null,
-    "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
     "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)"
    }
   },
@@ -230,7 +177,64 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -170.3,
+     -167.9,
+     39.0
+    ]
+   },
+   "properties": {
+    "id": "erebus_montes",
+    "name": "Erebus Montes",
+    "window_deg": 1.0,
+    "coords_status": "published",
+    "coords_source": "Viola, McEwen & Dundas 2015, Exploration Zone Workshop, abstract 1011: EZ centre (39.0 N, 192.1 E)",
+    "features": {
+     "temperature": {
+      "tmin_K": 174.58,
+      "tmax_K": 250.37,
+      "amp_K": 75.79,
+      "summer_tmin_K": 182.24,
+      "summer_tmax_K": 264.84,
+      "summer_amp_K": 82.59,
+      "t_1_5_K": 202.22,
+      "t_gt5_K": 201.05,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.3283,
+       "rank": 0.6128
+      },
+      "1-5m": {
+       "value": 0.2251,
+       "rank": 0.2464
+      },
+      "gt5m": {
+       "value": 0.0132,
+       "rank": 0.0001
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.8124,
+      "rank": 0.9185,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
+    "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -170.2,
      35.1
     ]
    },
@@ -238,7 +242,8 @@
     "id": "amazonis_posiolova",
     "name": "Amazonis Planitia (Posiolova crater)",
     "window_deg": 1.0,
-    "coords_status": "approximate",
+    "coords_status": "published",
+    "coords_source": "Posiolova et al. 2022, Science 378:412; Dundas et al. 2023, GRL: Dec 2021 ice-exposing crater (35.1 N, ~189.8 E, +-0.1 deg)",
     "features": {
      "temperature": {
       "tmin_K": 176.02,
@@ -254,12 +259,12 @@
      },
      "ground_ice": {
       "0-1m": {
-       "value": 0.1701,
-       "rank": 0.4198
+       "value": 0.1717,
+       "rank": 0.4215
       },
       "1-5m": {
-       "value": 0.3794,
-       "rank": 0.2754
+       "value": 0.3655,
+       "rank": 0.2742
       },
       "gt5m": {
        "value": 0.05,
@@ -269,8 +274,8 @@
       "source": "swim"
      },
      "polygons": {
-      "value": 0.5854,
-      "rank": 0.8285,
+      "value": 0.5933,
+      "rank": 0.8308,
       "status": "ok",
       "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
       "source": "swim"
@@ -295,6 +300,7 @@
     "name": "Utopia Planitia",
     "window_deg": 1.0,
     "coords_status": "approximate",
+    "coords_source": "Stuurman et al. 2016, GRL: deposit spans ~39-49 N in western Utopia; longitude of the centre not verified",
     "features": {
      "temperature": {
       "tmin_K": 171.85,
@@ -342,36 +348,37 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     104.0,
-     -40.0
+     101.91,
+     -39.05
     ]
    },
    "properties": {
     "id": "hellas_rim",
     "name": "Hellas rim",
     "window_deg": 1.0,
-    "coords_status": "approximate",
+    "coords_status": "published",
+    "coords_source": "Levy & Holt 2015, Exploration Zone Workshop, abstract 1037: EZ centre on the eastern Hellas rim",
     "features": {
      "temperature": {
-      "tmin_K": 171.41,
-      "tmax_K": 244.27,
-      "amp_K": 72.85,
-      "summer_tmin_K": 186.18,
-      "summer_tmax_K": 275.48,
-      "summer_amp_K": 89.3,
-      "t_1_5_K": 200.76,
-      "t_gt5_K": 200.52,
+      "tmin_K": 171.89,
+      "tmax_K": 245.54,
+      "amp_K": 73.65,
+      "summer_tmin_K": 186.26,
+      "summer_tmax_K": 276.01,
+      "summer_amp_K": 89.75,
+      "t_1_5_K": 201.07,
+      "t_gt5_K": 200.68,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
      "ground_ice": {
       "0-1m": {
-       "value": 0.2636,
-       "rank": 0.523
+       "value": 0.1513,
+       "rank": 0.3954
       },
       "1-5m": {
-       "value": 0.5148,
-       "rank": 0.8956
+       "value": 0.4639,
+       "rank": 0.8891
       },
       "gt5m": {
        "value": 0.5,
@@ -381,8 +388,8 @@
       "source": "swim"
      },
      "polygons": {
-      "value": 0.6318,
-      "rank": 0.8513,
+      "value": 0.5507,
+      "rank": 0.8127,
       "status": "ok",
       "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
       "source": "swim"
@@ -390,7 +397,7 @@
     },
     "chlorine_wt_pct": null,
     "description": "Lobate debris aprons on the eastern Hellas rim, among the few southern ice-rich candidates.",
-    "citation": "Holt et al. 2008, Science"
+    "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)"
    }
   }
  ]

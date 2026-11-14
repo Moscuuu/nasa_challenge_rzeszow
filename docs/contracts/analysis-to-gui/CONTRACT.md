@@ -1,6 +1,27 @@
 # Kontrakt danych: analiza → GUI
 
-Wersja kontraktu: **0.5** (2026-11-14). Status: **trzecia dostawa danych** w `out/`: wszystkie 3 warstwy i wszystkie 3 cechy (temperatura, lód gruntowy, spękania).
+Wersja kontraktu: **0.8** (2026-11-14).
+
+Zmiany w 0.8 (suchość):
+- **Nowa cecha `dryness`** („Dryness (dry permafrost vs wet tundra)”, `comparison: "rank"`): liczy się **tylko w `0-1m`**, gdzie warstwa 0–1 m ma teraz 4 cechy po 0,25. W `1-5m` i `gt5m` ma `status: "not_relevant"`.
+- Kształt: `{score, parts: {wet_summer, precip_mm_yr}, earth_value: {wet_summer, precip_mm_yr}, mars_value: {wet_summer: 0, precip_mm_yr: 0}, unit, status, source: "smap_l4"}`. `wet_summer` to letnia wilgotność gruntu 0–5 cm z NASA SMAP L4 (ułamek nasycenia), `precip_mm_yr` to roczny opad z ERA5-Land. Najsuchsza komórka = 1.
+- W Antarktydzie SMAP nie ma danych (maska lodu stałego), więc suchość opiera się tam tylko na opadzie: `parts.wet_summer` = `null`, `score` liczony z opadu.
+- `features[]` w manifeście ma 4 pozycje. Spękania mają teraz `comparison: "position"`.
+
+Wcześniej (0.7):
+
+Zmiany w 0.7 (zasada braków danych, decyzja zespołu):
+- **Brak danych w cesze, która liczy się w danej warstwie, = ocena 0 (kara).** Cecha, która w warstwie się nie liczy (spękania w `gt5m`), nie wpływa na wynik.
+- Nowy `status: "no_data_penalized"`: brak danych policzony jako 0. `score` cechy zostaje `null` (to nadal brak pomiaru), ale wynik ogólny liczy ją jako 0. Taka cecha trafia też do `breaks_down`. GUI powinno pokazać np. „no data (counted as 0)”.
+- Dotyczy: spękań dla Arcadii, Deuteronilus, Phlegra i Utopii (brak przeglądu SWIM) oraz temperatury w komórkach bez danych ERA5-Land. Wszystkie komórki zmarzliny mają teraz `rank` i wynik; dotąd komórki bez temperatury nie były oceniane.
+- Opis w §3 („brak danych to `null`, nigdy 0”) dotyczy **wartości** pomiarów. Wynik ogólny może zawierać karę 0 za brak danych.
+
+Wcześniej (0.6): Status: **czwarta dostawa danych** w `out/`: wszystkie 3 warstwy, 3 cechy, nazwy miejsc, opublikowane współrzędne miejsc na Marsie.
+
+Zmiany w 0.6:
+- **`place`** w komórce jest wypełnione: „<region fizyczny>, <kraj>” z Natural Earth, np. `Verkhoyansk Range, Russia`.
+- **`mars_sites.geojson`**: współrzędne 5 miejsc z publikacji (`coords_status: "published"`), 2 przybliżone (Phlegra Montes, Utopia Planitia). Nowe pole **`coords_source`** (string) mówi, skąd jest punkt.
+- **Nowy plik `polygon_checks.json` + `polygon_checks/*.png`** (opcjonalny, eksperymentalny): automatyczna próba pomiaru rozstawu poligonów na ArcticDEM 2 m. `validated: false`, bo metoda nie przeszła kontroli. **Nie pokazywać jako dowodu.** Podglądy cieniowania terenu można pokazać jako „ukształtowanie terenu w najlepszych komórkach”.
 
 Zmiany w 0.5 (spękania):
 - **`features.polygons`** w komórce: `{score, earth_value: {cracking_potential, ground_surface_temp_K}, mars_value: {swim_polygon_share}, unit, status, source}`. `status` = `ok`; `no_data`, gdy miejsce na Marsie nie ma pokrycia SWIM (Deuteronilus Mensae, Phlegra Montes, Utopia Planitia); `not_relevant` w `gt5m`.
