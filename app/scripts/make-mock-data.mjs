@@ -1,4 +1,4 @@
-// Deterministic mock data generator (contract v0.3). Run: npm run mock-data
+// Deterministic mock data generator (contract v0.5). Run: npm run mock-data
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -31,6 +31,12 @@ const SITES = [
   ["utopia_planitia", "Utopia Planitia", 117.5, 46.7, 172.8, 244.7, 0.6, 0.86, 0.41],
   ["hellas_rim", "Hellas rim", 85.0, -38.0, 176.0, 251.2, 0.3, 0.4, 0.38],
 ].map(([id, name, lon, lat, tmin, tmax, ice, rank, cl]) => ({ id, name, lon, lat, tmin, tmax, ice, rank, cl }));
+// polygons: no SWIM survey (status no_data) for these three sites
+const NO_POLY = new Set(["deuteronilus_mensae", "phlegra_montes", "utopia_planitia"]);
+for (const s of SITES) {
+  s.poly = NO_POLY.has(s.id) ? null : r2(0.5 + rnd() * 0.5);
+  s.polyRank = s.poly === null ? null : r2(0.7 + rnd() * 0.29);
+}
 const SITE_IDS = SITES.map((s) => s.id);
 const HELLAS = "hellas_rim";
 
@@ -51,11 +57,28 @@ const marsSites = {
           tmin_K: s.tmin,
           tmax_K: s.tmax,
           amp_K: r1(s.tmax - s.tmin),
-          unit: "K (surface, mean daily, whole Mars year)",
+          summer_tmin_K: r1(s.tmin + 8.7),
+          summer_tmax_K: r1(s.tmax + 16.6),
+          summer_amp_K: r1(s.tmax - s.tmin + 7.9),
+          t_1_5_K: r1(s.tmin + 28),
+          t_gt5_K: r1(s.tmin + 27.3),
+          unit: "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
           source: "mars_thermal_model",
         },
-        ground_ice: { value: s.ice, rank: s.rank, unit: "SWIM ice consistency C, 0-1 m (-1..1)", source: "swim" },
-        polygons: { value: null, rank: null, unit: null, source: null, status: "pending" },
+        ground_ice: {
+          "0-1m": { value: s.ice, rank: s.rank },
+          "1-5m": { value: r2(s.ice * 0.6), rank: r2(s.rank * 0.5) },
+          gt5m: { value: r2(s.ice * 0.3), rank: r2(s.rank * 0.3) },
+          unit: "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+          source: "swim",
+        },
+        polygons: {
+          value: s.poly,
+          rank: s.polyRank,
+          status: s.poly === null ? "no_data" : "ok",
+          unit: "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+          source: "swim",
+        },
       },
       chlorine_wt_pct: s.cl,
       description: "MOCK description of why this site is a candidate.",
@@ -107,36 +130,37 @@ for (let i = 40; hellasIdx.size < 6; i += 97) {
   if (!c.known && Math.abs(c.lon) < 179) hellasIdx.add(i % cells.length);
 }
 
-// --- per-site features and scores ---
+// --- per-site features and scores (site features stay internal; v0.5 files do not carry site_features) ---
+const mean = (a) => r2(a.reduce((x, y) => x + y, 0) / a.length);
 for (const [idx, c] of cells.entries()) {
-  c.site_features = {};
+  c.sf = {};
   c.site_scores = {};
   let maxOther = 0;
   for (const s of SITES) {
     if (s.id === HELLAS) continue;
     const t = r2(clamp(c.q + gauss() * 0.06, 0.3, 0.97));
     const g = r2(clamp(c.q + gauss() * 0.06, 0.3, 0.97));
-    c.site_features[s.id] = { temperature: t, ground_ice: g, strengths: [], breaks_down: [] };
-    c.site_scores[s.id] = r2((t + g) / 2);
+    // polygons are skipped (not zeroed) for sites without a SWIM survey
+    const p = s.poly === null ? null : r2(clamp(c.q + gauss() * 0.08, 0.2, 0.97));
+    c.sf[s.id] = { temperature: t, ground_ice: g, polygons: p };
+    c.site_scores[s.id] = mean([t, g, ...(p === null ? [] : [p])]);
     maxOther = Math.max(maxOther, c.site_scores[s.id]);
   }
   if (hellasIdx.has(idx)) {
     const t = r2(Math.min(0.99, maxOther + 0.03)); // hellas wins here
-    c.site_features[HELLAS] = { temperature: t, ground_ice: t, strengths: [], breaks_down: [] };
+    c.sf[HELLAS] = { temperature: t, ground_ice: t, polygons: t };
     c.site_scores[HELLAS] = t;
   } else {
-    c.site_features[HELLAS] = { temperature: null, ground_ice: null, strengths: [], breaks_down: [] };
+    c.sf[HELLAS] = { temperature: null, ground_ice: null, polygons: null };
     c.site_scores[HELLAS] = null;
-  }
-  for (const f of Object.values(c.site_features)) {
-    for (const k of ["temperature", "ground_ice"]) {
-      if (f[k] === null) continue;
-      if (f[k] >= 0.85) f.strengths.push(k);
-      else if (f[k] < 0.55) f.breaks_down.push(k);
-    }
   }
   c.best = SITE_IDS.filter((id) => c.site_scores[id] !== null).reduce((a, b) => (c.site_scores[b] > c.site_scores[a] ? b : a));
   c.score = c.site_scores[c.best];
+  c.tied = SITE_IDS.filter((id) => c.site_scores[id] !== null && Math.abs(c.site_scores[id] - c.score) <= 0.001);
+  const bf = c.sf[c.best];
+  const ok = ["temperature", "ground_ice", "polygons"].filter((k) => bf[k] !== null);
+  c.strengths = ok.filter((k) => bf[k] >= 0.85);
+  c.breaks_down = ok.filter((k) => bf[k] < 0.55);
 }
 
 cells.sort((a, b) => b.score - a.score || a.lat - b.lat || a.lon - b.lon);
@@ -147,10 +171,12 @@ cells.forEach((c, i) => {
 
 const HOURS = [0, 1, 2, 3, 13, 14];
 const cellFeatures = cells.map((c, idx) => {
-  const bf = c.site_features[c.best];
+  const bf = c.sf[c.best];
   const ms = SITES.find((s) => s.id === c.best);
   const tmin = r2(225 + rnd() * 20);
   const amp = r1(18 + rnd() * 14);
+  const sTmin = r2(tmin + 10 + rnd() * 5);
+  const sAmp = r1(amp + 1 + rnd() * 3);
   const win = {};
   for (const s of SITES) {
     win[s.id] =
@@ -167,15 +193,29 @@ const cellFeatures = cells.map((c, idx) => {
       percentile: c.percentile,
       score: c.score,
       best_site_id: c.best,
+      tied_site_ids: c.tied,
       site_scores: c.site_scores,
-      site_features: c.site_features,
       features: {
         temperature: {
           score: bf.temperature,
-          parts: { tmin: r2(clamp(bf.temperature + 0.02, 0, 1)), tmax: r2(clamp(bf.temperature - 0.02, 0, 1)), amp: r2(clamp(bf.temperature - 0.05, 0, 1)) },
-          earth_value: { tmin_K: tmin, tmax_K: r2(tmin + amp), amp_K: amp },
-          mars_value: { tmin_K: ms.tmin, tmax_K: ms.tmax, amp_K: r1(ms.tmax - ms.tmin) },
-          unit: "K (surface skin temperature, mean daily)",
+          parts: {
+            tmin: r2(clamp(bf.temperature + 0.02, 0, 1)),
+            tmax: r2(clamp(bf.temperature - 0.02, 0, 1)),
+            amp: r2(clamp(bf.temperature - 0.05, 0, 1)),
+            summer_tmin: r2(clamp(bf.temperature + 0.03, 0, 1)),
+            summer_tmax: r2(clamp(bf.temperature, 0, 1)),
+            summer_amp: r2(clamp(bf.temperature - 0.08, 0, 1)),
+          },
+          earth_value: { tmin_K: tmin, tmax_K: r2(tmin + amp), amp_K: amp, summer_tmin_K: sTmin, summer_tmax_K: r2(sTmin + sAmp), summer_amp_K: sAmp },
+          mars_value: {
+            tmin_K: ms.tmin,
+            tmax_K: ms.tmax,
+            amp_K: r1(ms.tmax - ms.tmin),
+            summer_tmin_K: r1(ms.tmin + 8.7),
+            summer_tmax_K: r1(ms.tmax + 16.6),
+            summer_amp_K: r1(ms.tmax - ms.tmin + 7.9),
+          },
+          unit: "K (surface skin temperature, mean daily; whole year and local summer)",
           status: "ok",
           source: "era5_land",
         },
@@ -191,10 +231,17 @@ const cellFeatures = cells.map((c, idx) => {
           status: "ok",
           source: "esa_cci_permafrost",
         },
-        polygons: { score: null, earth_value: null, mars_value: null, unit: null, status: "pending", source: null },
+        polygons: {
+          score: bf.polygons,
+          earth_value: { cracking_potential: r2(clamp(c.q + gauss() * 0.1, 0, 1)), ground_surface_temp_K: r2(tmin + 3) },
+          mars_value: { swim_polygon_share: ms.poly },
+          unit: "compared by percentile on each planet; Earth value estimated from ground temperature, not observed",
+          status: bf.polygons === null ? "no_data" : "ok",
+          source: "esa_cci_permafrost+swim",
+        },
       },
-      strengths: bf.strengths,
-      breaks_down: bf.breaks_down,
+      strengths: c.strengths,
+      breaks_down: c.breaks_down,
       known_analog: c.known,
       place: null,
       experiment_window: idx % 7 === 3 ? null : win,
@@ -213,12 +260,13 @@ writeFileSync(join(OUT, "mars_sites.geojson"), JSON.stringify(marsSites, null, 1
 // --- validation ---
 const inBox = (c, b) => c.lon >= b[0] && c.lon <= b[2] && c.lat >= b[1] && c.lat <= b[3];
 const median = (a) => (a.length ? a.slice().sort((x, y) => x - y)[Math.floor(a.length / 2)] : null);
+// bbox is only used here to pick cells; v0.5 validation files carry no bbox
 const mkCheck = (name, role, n, bbox, fallback) => {
   const median_percentile = median(cells.filter((c) => inBox(c, bbox)).map((c) => c.percentile)) ?? fallback;
-  return { name, role, cells: n, median_percentile, passed: role === "known_analog" ? median_percentile >= 90 : median_percentile < 60, bbox };
+  return { name, role, cells: n, median_percentile, passed: role === "known_analog" ? median_percentile >= 90 : median_percentile < 50, applicable: true };
 };
 writeFileSync(
-  join(OUT, "validation.json"),
+  join(OUT, "validation_0-1m.json"),
   JSON.stringify(
     {
       mock: true,
@@ -228,8 +276,8 @@ writeFileSync(
         mkCheck("Haughton Crater (Devon Island)", "known_analog", 330, [-91.0, 74.9, -88.0, 76.0], 93.0),
         mkCheck("Alaska North Slope", "contrast", 9000, [-160.0, 69.0, -145.0, 71.0], 41.0),
       ],
-      weights: { temperature: 0.5, ground_ice: 0.5, polygons: 0.0 },
-      notes: "MOCK. Polygons not yet included in the score. Percentile = position of the cell's best score among all permafrost cells.",
+      weights: { temperature: 0.333, ground_ice: 0.333, polygons: 0.333 },
+      notes: "MOCK. Equal weights over the features available for a Mars site. Percentile = position of the cell's best score among all permafrost cells.",
     },
     null,
     1,
@@ -243,7 +291,7 @@ writeFileSync(
   join(OUT, "manifest.json"),
   JSON.stringify(
     {
-      contract_version: "0.3",
+      contract_version: "0.5",
       generated_at: "2026-11-14T22:00:00Z",
       mock: true,
       cell_size_deg: 0.1,
@@ -258,7 +306,7 @@ writeFileSync(
         { id: "polygons", label: "Thermal-contraction polygons", comparison: "presence" },
       ],
       sites: SITE_IDS,
-      files: { mars_sites: "mars_sites.geojson", cells_top: { "0-1m": "cells_top_0-1m.geojson" }, score_maps: { "0-1m": scoreMaps }, validation: "validation.json" },
+      files: { mars_sites: "mars_sites.geojson", cells_top: { "0-1m": "cells_top_0-1m.geojson" }, score_maps: { "0-1m": scoreMaps }, validation: { "0-1m": "validation_0-1m.json" } },
       sources: [
         { id: "era5_land", label: "ERA5-Land hourly / daily aggregates (ECMWF, via Google Earth Engine), 2023", url: "https://doi.org/10.24381/cds.e2161bac" },
         { id: "esa_cci_permafrost", label: "ESA Permafrost CCI v5.0 (PFR, ALT), 2023", url: "https://climate.esa.int/en/projects/permafrost/" },

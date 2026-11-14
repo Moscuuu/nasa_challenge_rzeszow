@@ -1,4 +1,4 @@
-// Contract v0.3 (analysis -> GUI). Source: docs/contracts/analysis-to-gui/CONTRACT.md on branch contract-v0.3.
+// Contract v0.5 (analysis -> GUI). Source: docs/contracts/analysis-to-gui/CONTRACT.md; ground truth: repo out/.
 
 export type LayerId = "0-1m" | "1-5m" | "gt5m";
 export type FeatureId = "temperature" | "ground_ice" | "polygons";
@@ -34,21 +34,36 @@ export interface Manifest {
     mars_sites: string;
     cells_top: Partial<Record<LayerId, string>>;
     score_maps: Partial<Record<LayerId, Record<string, string>>>;
-    validation: string;
+    validation: Partial<Record<LayerId, string>>;
   };
   sources: ManifestSource[];
 }
 
-/** One Mars-site feature block (shape varies per feature; see contract). */
-export interface MarsSiteFeature {
-  value?: number | null;
-  rank?: number | null;
+/** Mars temperature block. Keys beyond the three base ones vary (summer_*, t_1_5_K, t_gt5_K): iterate, don't assume. */
+export interface MarsSiteTemperature {
   tmin_K?: number;
   tmax_K?: number;
   amp_K?: number;
+  summer_tmin_K?: number;
+  summer_tmax_K?: number;
+  summer_amp_K?: number;
+  t_1_5_K?: number;
+  t_gt5_K?: number;
   unit: string | null;
   source: string | null;
+}
+
+export interface MarsSiteIce {
+  value: number | null;
+  rank: number | null;
+}
+
+export interface MarsSitePolygons {
+  value: number | null;
+  rank: number | null;
   status?: FeatureStatus;
+  unit?: string | null;
+  source?: string | null;
 }
 
 export interface MarsSite {
@@ -59,7 +74,13 @@ export interface MarsSite {
   coords_status: string;
   description: string;
   citation: string;
-  features: Record<FeatureId, MarsSiteFeature>;
+  chlorine_wt_pct?: number | null;
+  features: {
+    temperature: MarsSiteTemperature;
+    /** per-layer values, plus unit/source */
+    ground_ice: Partial<Record<LayerId, MarsSiteIce>> & { unit?: string | null; source?: string | null };
+    polygons: MarsSitePolygons;
+  };
 }
 
 export interface SiteFeatures {
@@ -71,9 +92,11 @@ export interface SiteFeatures {
 
 export interface CellFeature {
   score: number | null;
-  parts?: Record<string, number>;
-  earth_value: Record<string, number> | null;
-  mars_value: Record<string, number> | null;
+  /** temperature only; keys vary per layer */
+  parts?: Record<string, number | null>;
+  /** keys vary per feature and layer */
+  earth_value: Record<string, number | null> | null;
+  mars_value: Record<string, number | null> | null;
   unit: string | null;
   status: FeatureStatus;
   source: string | null;
@@ -95,10 +118,13 @@ export interface Cell {
   percentile: number;
   score: number;
   best_site_id: string;
+  /** all sites within 0.001 of the best score; includes best_site_id */
+  tied_site_ids: string[];
   /** null = no data for that site in this cell (never ranked). */
   site_scores: Record<string, number | null>;
   features: Record<FeatureId, CellFeature>;
-  site_features: Record<string, SiteFeatures>;
+  /** absent in real v0.5 data (present in v0.3 mocks) */
+  site_features?: Record<string, SiteFeatures>;
   strengths: FeatureId[];
   breaks_down: FeatureId[];
   known_analog: string | null;
@@ -109,7 +135,17 @@ export interface Cell {
 export interface ValidationCheck {
   name: string;
   role: "known_analog" | "contrast";
+  cells?: number;
   median_percentile: number | null;
   passed: boolean | null;
-  bbox: [number, number, number, number];
+  /** false for contrast checks in deeper layers: do not show as a failure */
+  applicable?: boolean;
+  bbox?: [number, number, number, number];
+}
+
+export interface Validation {
+  layer: LayerId;
+  checks: ValidationCheck[];
+  weights: Record<FeatureId, number>;
+  notes: string;
 }

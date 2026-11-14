@@ -7,22 +7,24 @@ import type { Manifest } from "./types";
 const dir = join(process.cwd(), "public", "mock-data");
 const readJson = (f: string) => JSON.parse(readFileSync(join(dir, f), "utf8"));
 
-describe("mock data (contract v0.3)", () => {
+describe("mock data (contract v0.5)", () => {
   const manifest = readJson("manifest.json") as Manifest;
   const cells = readJson("cells_top_0-1m.geojson").features;
 
-  it("manifest is v0.3 with 7 sites", () => {
-    expect(manifest.contract_version).toBe("0.3");
+  it("manifest is v0.5 with 7 sites; only 0-1m available", () => {
+    expect(manifest.contract_version).toBe("0.5");
+    expect(manifest.layers.map((l) => l.available)).toEqual([true, false, false]);
     expect(manifest.mock).toBe(true);
     expect(manifest.sites).toHaveLength(7);
     expect(readJson("mars_sites.geojson").features).toHaveLength(7);
   });
 
-  it("every cell has site_features and site_scores keyed by exactly manifest.sites", () => {
+  it("every cell has site_scores keyed by exactly manifest.sites and tied_site_ids", () => {
     expect(cells.length).toBeGreaterThan(500);
     for (const c of cells) {
-      expect(Object.keys(c.properties.site_features).sort()).toEqual([...manifest.sites].sort());
       expect(Object.keys(c.properties.site_scores).sort()).toEqual([...manifest.sites].sort());
+      expect(c.properties.tied_site_ids).toContain(c.properties.best_site_id);
+      expect(typeof c.properties.features.temperature.parts).toBe("object");
     }
   });
 
@@ -38,13 +40,11 @@ describe("mock data (contract v0.3)", () => {
     expect(near.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("every validation check has a 4-number bbox", () => {
-    const v = readJson("validation.json");
+  it("validation is per layer and needs no bbox", () => {
+    expect(manifest.files.validation).toEqual({ "0-1m": "validation_0-1m.json" });
+    const v = readJson(manifest.files.validation["0-1m"]!);
+    expect(v.layer).toBe("0-1m");
     expect(v.checks.length).toBeGreaterThan(0);
-    for (const c of v.checks) {
-      expect(c.bbox).toHaveLength(4);
-      c.bbox.forEach((n: unknown) => expect(typeof n).toBe("number"));
-    }
   });
 
   it("best score map decodes to 3600x1800", () => {

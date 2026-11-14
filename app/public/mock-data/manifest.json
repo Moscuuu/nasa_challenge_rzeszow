@@ -1,5 +1,5 @@
 {
- "contract_version": "0.3",
+ "contract_version": "0.5",
  "generated_at": "2026-11-14T22:00:00Z",
  "mock": true,
  "cell_size_deg": 0.1,
@@ -63,7 +63,9 @@
     "hellas_rim": "score_0-1m_hellas_rim.png"
    }
   },
-  "validation": "validation.json"
+  "validation": {
+   "0-1m": "validation_0-1m.json"
+  }
  },
  "sources": [
   {
