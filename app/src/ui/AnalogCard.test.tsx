@@ -18,7 +18,7 @@ const sites = [
   { id: "arcadia", name: "Arcadia Planitia" },
   { id: "hellas", name: "Hellas Rim" },
 ] as MarsSite[];
-const manifest = { features: [{ id: "temperature", label: "Temperature" }, { id: "ground_ice", label: "Ground ice" }, { id: "polygons", label: "Polygons" }], layers: [] } as never;
+const manifest = { features: [{ id: "temperature", label: "Temperature" }, { id: "ground_ice", label: "Ground ice" }, { id: "polygons", label: "Polygons" }, { id: "dryness", label: "Dryness" }], layers: [] } as never;
 
 beforeEach(() =>
   appStore.setState({ manifest, sites, siteId: null, list: [cell], index: 0, earthHit: null, layerPending: false }),
@@ -31,6 +31,17 @@ describe("AnalogCard", () => {
     expect(screen.getByText("Pending")).toBeInTheDocument();
     expect(screen.getByText("Best overall")).toBeInTheDocument();
     expect(screen.getByText("1 / 1")).toBeInTheDocument();
+  });
+
+  it("shows the dryness row, penalised no-data text and the place as title", () => {
+    appStore.setState({
+      list: [{ ...cell, place: "Peary Land, Greenland", features: { ...cell.features, polygons: { ...cell.features.polygons, status: "no_data_penalized" }, dryness: { ...cell.features.ground_ice, score: 0.8 } } }],
+    });
+    render(<AnalogCard />);
+    expect(screen.getByText("Dryness")).toBeInTheDocument();
+    expect(screen.getByText("Peary Land, Greenland")).toBeInTheDocument();
+    expect(screen.getByText("No data (counted as 0)")).toBeInTheDocument();
+    expect(screen.getByText("3 of 4 features")).toBeInTheDocument();
   });
 
   it("captions vs best site and shows the test window for a fallback site", () => {

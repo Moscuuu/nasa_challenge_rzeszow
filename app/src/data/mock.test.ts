@@ -7,14 +7,15 @@ import type { Manifest } from "./types";
 const dir = join(process.cwd(), "public", "mock-data");
 const readJson = (f: string) => JSON.parse(readFileSync(join(dir, f), "utf8"));
 
-describe("mock data (contract v0.5)", () => {
+describe("mock data (contract v0.8)", () => {
   const manifest = readJson("manifest.json") as Manifest;
   const cells = readJson("cells_top_0-1m.geojson").features;
 
-  it("manifest is v0.5 with 7 sites; only 0-1m available", () => {
-    expect(manifest.contract_version).toBe("0.5");
+  it("manifest is v0.8 with 7 sites; only 0-1m available", () => {
+    expect(manifest.contract_version).toBe("0.8");
     expect(manifest.layers.map((l) => l.available)).toEqual([true, false, false]);
     expect(manifest.mock).toBe(true);
+    expect(manifest.features.map((f) => f.id)).toEqual(["temperature", "ground_ice", "polygons", "dryness"]);
     expect(manifest.sites).toHaveLength(7);
     expect(readJson("mars_sites.geojson").features).toHaveLength(7);
   });
@@ -25,6 +26,7 @@ describe("mock data (contract v0.5)", () => {
       expect(Object.keys(c.properties.site_scores).sort()).toEqual([...manifest.sites].sort());
       expect(c.properties.tied_site_ids).toContain(c.properties.best_site_id);
       expect(typeof c.properties.features.temperature.parts).toBe("object");
+      expect(c.properties.features.dryness.status).toBe("ok");
     }
   });
 

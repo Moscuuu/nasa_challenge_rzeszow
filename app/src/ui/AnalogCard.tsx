@@ -11,6 +11,7 @@ const STATUS_TEXT: Record<FeatureStatus, string> = {
   ok: "No data",
   pending: "Pending",
   no_data: "No data",
+  no_data_penalized: "No data (counted as 0)",
   not_relevant: "Not relevant",
 };
 

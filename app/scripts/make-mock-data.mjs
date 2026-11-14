@@ -1,4 +1,4 @@
-// Deterministic mock data generator (contract v0.5). Run: npm run mock-data
+// Deterministic mock data generator (contract v0.8). Run: npm run mock-data
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -142,23 +142,24 @@ for (const [idx, c] of cells.entries()) {
     const g = r2(clamp(c.q + gauss() * 0.06, 0.3, 0.97));
     // polygons are skipped (not zeroed) for sites without a SWIM survey
     const p = s.poly === null ? null : r2(clamp(c.q + gauss() * 0.08, 0.2, 0.97));
-    c.sf[s.id] = { temperature: t, ground_ice: g, polygons: p };
-    c.site_scores[s.id] = mean([t, g, ...(p === null ? [] : [p])]);
+    const d = r2(clamp(c.q + gauss() * 0.08, 0.2, 0.97));
+    c.sf[s.id] = { temperature: t, ground_ice: g, polygons: p, dryness: d };
+    c.site_scores[s.id] = mean([t, g, d, ...(p === null ? [] : [p])]);
     maxOther = Math.max(maxOther, c.site_scores[s.id]);
   }
   if (hellasIdx.has(idx)) {
     const t = r2(Math.min(0.99, maxOther + 0.03)); // hellas wins here
-    c.sf[HELLAS] = { temperature: t, ground_ice: t, polygons: t };
+    c.sf[HELLAS] = { temperature: t, ground_ice: t, polygons: t, dryness: t };
     c.site_scores[HELLAS] = t;
   } else {
-    c.sf[HELLAS] = { temperature: null, ground_ice: null, polygons: null };
+    c.sf[HELLAS] = { temperature: null, ground_ice: null, polygons: null, dryness: null };
     c.site_scores[HELLAS] = null;
   }
   c.best = SITE_IDS.filter((id) => c.site_scores[id] !== null).reduce((a, b) => (c.site_scores[b] > c.site_scores[a] ? b : a));
   c.score = c.site_scores[c.best];
   c.tied = SITE_IDS.filter((id) => c.site_scores[id] !== null && Math.abs(c.site_scores[id] - c.score) <= 0.001);
   const bf = c.sf[c.best];
-  const ok = ["temperature", "ground_ice", "polygons"].filter((k) => bf[k] !== null);
+  const ok = ["temperature", "ground_ice", "polygons", "dryness"].filter((k) => bf[k] !== null);
   c.strengths = ok.filter((k) => bf[k] >= 0.85);
   c.breaks_down = ok.filter((k) => bf[k] < 0.55);
 }
@@ -169,6 +170,7 @@ cells.forEach((c, i) => {
   c.percentile = r2(99.99 - i * 0.01);
 });
 
+const PLACES = ["Verkhoyansk Range, Russia", "Peary Land, Greenland", null, "Brooks Range, United States", "Taymyr Peninsula, Russia"];
 const HOURS = [0, 1, 2, 3, 13, 14];
 const cellFeatures = cells.map((c, idx) => {
   const bf = c.sf[c.best];
@@ -239,11 +241,20 @@ const cellFeatures = cells.map((c, idx) => {
           status: bf.polygons === null ? "no_data" : "ok",
           source: "esa_cci_permafrost+swim",
         },
+        dryness: {
+          score: bf.dryness,
+          parts: { wet_summer: r2(bf.dryness), precip_mm_yr: r2(clamp(bf.dryness - 0.03, 0, 1)) },
+          earth_value: { wet_summer: r2(0.05 + rnd() * 0.2), precip_mm_yr: r1(100 + rnd() * 250) },
+          mars_value: { wet_summer: 0, precip_mm_yr: 0 },
+          unit: "wet_summer: surface soil wetness 0-5 cm, local summer (fraction of saturation); precip: mm/yr; ranked driest = 1",
+          status: "ok",
+          source: "smap_l4",
+        },
       },
       strengths: c.strengths,
       breaks_down: c.breaks_down,
       known_analog: c.known,
-      place: null,
+      place: PLACES[idx % PLACES.length],
       experiment_window: idx % 7 === 3 ? null : win,
     },
   };
@@ -276,7 +287,7 @@ writeFileSync(
         mkCheck("Haughton Crater (Devon Island)", "known_analog", 330, [-91.0, 74.9, -88.0, 76.0], 93.0),
         mkCheck("Alaska North Slope", "contrast", 9000, [-160.0, 69.0, -145.0, 71.0], 41.0),
       ],
-      weights: { temperature: 0.333, ground_ice: 0.333, polygons: 0.333 },
+      weights: { temperature: 0.25, ground_ice: 0.25, polygons: 0.25, dryness: 0.25 },
       notes: "MOCK. Equal weights over the features available for a Mars site. Percentile = position of the cell's best score among all permafrost cells.",
     },
     null,
@@ -291,7 +302,7 @@ writeFileSync(
   join(OUT, "manifest.json"),
   JSON.stringify(
     {
-      contract_version: "0.5",
+      contract_version: "0.8",
       generated_at: "2026-11-14T22:00:00Z",
       mock: true,
       cell_size_deg: 0.1,
@@ -303,7 +314,8 @@ writeFileSync(
       features: [
         { id: "temperature", label: "Temperature", comparison: "rank" },
         { id: "ground_ice", label: "Ground ice", comparison: "position" },
-        { id: "polygons", label: "Thermal-contraction polygons", comparison: "presence" },
+        { id: "polygons", label: "Thermal-contraction polygons", comparison: "position" },
+        { id: "dryness", label: "Dryness (dry permafrost vs wet tundra)", comparison: "rank" },
       ],
       sites: SITE_IDS,
       files: { mars_sites: "mars_sites.geojson", cells_top: { "0-1m": "cells_top_0-1m.geojson" }, score_maps: { "0-1m": scoreMaps }, validation: { "0-1m": "validation_0-1m.json" } },

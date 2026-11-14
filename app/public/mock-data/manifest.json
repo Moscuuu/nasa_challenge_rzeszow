@@ -1,5 +1,5 @@
 {
- "contract_version": "0.5",
+ "contract_version": "0.8",
  "generated_at": "2026-11-14T22:00:00Z",
  "mock": true,
  "cell_size_deg": 0.1,
@@ -34,7 +34,12 @@
   {
    "id": "polygons",
    "label": "Thermal-contraction polygons",
-   "comparison": "presence"
+   "comparison": "position"
+  },
+  {
+   "id": "dryness",
+   "label": "Dryness (dry permafrost vs wet tundra)",
+   "comparison": "rank"
   }
  ],
  "sites": [

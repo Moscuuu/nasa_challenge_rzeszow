@@ -17,7 +17,8 @@ export interface CardFeatures {
   tiedSiteIds: string[];
 }
 
-const FEATURE_IDS: FeatureId[] = ["temperature", "ground_ice", "polygons"];
+/** Row order = manifest order. */
+const FEATURE_IDS: FeatureId[] = ["temperature", "ground_ice", "polygons", "dryness"];
 
 export function topForSite(cells: Cell[], siteId: string | null, n = 10): Cell[] {
   const val = (c: Cell): number | null => (siteId === null ? c.score : c.site_scores[siteId] ?? null);
@@ -53,10 +54,15 @@ export function nearestTopCell(cells: Cell[], lat: number, lon: number, radiusDe
 export function featuresFor(cell: Cell, siteId: string | null): CardFeatures {
   const sf = siteId !== null ? cell.site_features?.[siteId] : undefined;
   const rows: FeatureRow[] = FEATURE_IDS.filter((id) => cell.features[id]).map((id) => {
-    const f = cell.features[id];
+    const f = cell.features[id]!;
     let score = f.score;
-    if (sf && id !== "polygons") score = sf[id];
-    return { id, score, status: f.status };
+    let status = f.status;
+    if (sf && id in sf) {
+      // Site-specific value wins over the best-site value; null = no data for that site.
+      score = sf[id] ?? null;
+      if (score === null && status === "ok") status = "no_data";
+    }
+    return { id, score, status };
   });
   const ok = rows.filter((r) => r.status === "ok").length;
   const total = rows.filter((r) => r.status !== "not_relevant").length;

@@ -67,6 +67,19 @@ describe("featuresFor", () => {
     expect(f.breaks).toEqual(["temperature"]);
     expect(f.rows.find((r) => r.id === "temperature")!.score).toBe(0.1);
   });
+  it("derives status from site_features: null -> no_data", () => {
+    const c = mk("x", { site_features: { other: { temperature: 0.1, ground_ice: null, strengths: [], breaks_down: [] } } });
+    const ice = featuresFor(c, "other").rows.find((r) => r.id === "ground_ice")!;
+    expect(ice.score).toBeNull();
+    expect(ice.status).toBe("no_data");
+  });
+  it("counts 4 features with dryness, excluding not_relevant, ok-only in numerator", () => {
+    const four = mk("x", { features: { temperature: feat(0.8), ground_ice: feat(0.5), polygons: feat(null, "no_data_penalized"), dryness: feat(0.9) } });
+    expect(featuresFor(four, null).rows.map((r) => r.id)).toEqual(["temperature", "ground_ice", "polygons", "dryness"]);
+    expect(featuresFor(four, null).featureCount).toEqual({ ok: 3, total: 4 });
+    const deep = mk("y", { features: { temperature: feat(0.8), ground_ice: feat(0.5), polygons: feat(0.4), dryness: feat(null, "not_relevant") } });
+    expect(featuresFor(deep, null).featureCount).toEqual({ ok: 3, total: 3 });
+  });
   it("excludes not_relevant from total", () => {
     const c = mk("x", { features: { temperature: feat(0.8), ground_ice: feat(null, "not_relevant"), polygons: feat(0.4) } });
     expect(featuresFor(c, null).featureCount).toEqual({ ok: 2, total: 2 });

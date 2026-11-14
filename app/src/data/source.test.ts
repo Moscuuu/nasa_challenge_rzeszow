@@ -29,8 +29,8 @@ describe("data source", () => {
     const f = mockFetch();
     const ds = createDataSource("/mock-data", asFetch(f));
     const cells = await ds.getCells("0-1m");
-    expect(cells[0].lat).toBeCloseTo(-77.65);
-    expect(cells[0].lon).toBeCloseTo(161.45);
+    expect(cells[0].lat).toBeCloseTo(75.55);
+    expect(cells[0].lon).toBeCloseTo(-89.75);
     expect(cells[0].tied_site_ids.length).toBeGreaterThan(0);
     await ds.getCells("0-1m");
     expect(f.mock.calls.filter((c) => String(c[0]).includes("cells_top"))).toHaveLength(1);

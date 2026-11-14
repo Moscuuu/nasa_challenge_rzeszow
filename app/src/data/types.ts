@@ -1,8 +1,9 @@
-// Contract v0.5 (analysis -> GUI). Source: docs/contracts/analysis-to-gui/CONTRACT.md; ground truth: repo out/.
+// Contract v0.8 (analysis -> GUI). Source: docs/contracts/analysis-to-gui/CONTRACT.md; ground truth: repo out/.
 
 export type LayerId = "0-1m" | "1-5m" | "gt5m";
-export type FeatureId = "temperature" | "ground_ice" | "polygons";
-export type FeatureStatus = "ok" | "no_data" | "not_relevant" | "pending";
+export type FeatureId = "temperature" | "ground_ice" | "polygons" | "dryness";
+export type FeatureStatus = "ok" | "no_data" | "no_data_penalized" | "not_relevant" | "pending";
+// no_data_penalized (v0.7): score stays null, but the overall score counts the feature as 0.
 
 export interface ManifestLayer {
   id: LayerId;
@@ -13,7 +14,7 @@ export interface ManifestLayer {
 export interface ManifestFeature {
   id: FeatureId;
   label: string;
-  comparison: "rank" | "position" | "presence";
+  comparison: "rank" | "position" | "presence"; // v0.8: polygons = "position"
 }
 
 export interface ManifestSource {
@@ -86,6 +87,8 @@ export interface MarsSite {
 export interface SiteFeatures {
   temperature: number | null;
   ground_ice: number | null;
+  polygons?: number | null;
+  dryness?: number | null;
   strengths: FeatureId[];
   breaks_down: FeatureId[];
 }
@@ -122,8 +125,9 @@ export interface Cell {
   tied_site_ids: string[];
   /** null = no data for that site in this cell (never ranked). */
   site_scores: Record<string, number | null>;
-  features: Record<FeatureId, CellFeature>;
-  /** absent in real v0.5 data (present in v0.3 mocks) */
+  /** dryness is absent in v0.5 data and not_relevant below 1 m */
+  features: Record<"temperature" | "ground_ice" | "polygons", CellFeature> & { dryness?: CellFeature };
+  /** absent in real v0.5-v0.8 data (present in v0.3 mocks) */
   site_features?: Record<string, SiteFeatures>;
   strengths: FeatureId[];
   breaks_down: FeatureId[];
@@ -146,6 +150,6 @@ export interface ValidationCheck {
 export interface Validation {
   layer: LayerId;
   checks: ValidationCheck[];
-  weights: Record<FeatureId, number>;
+  weights: Partial<Record<FeatureId, number>>;
   notes: string;
 }
