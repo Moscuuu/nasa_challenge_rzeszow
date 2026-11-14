@@ -27,6 +27,90 @@ export function monthsLabel(months: number[]): string {
   return contiguous && m.length > 1 ? `${name(m[0])}–${name(m[m.length - 1])}` : m.map(name).join(", ");
 }
 
+/** Plain-word verdict for a 0..1 similarity score. */
+export function verdict(score: number): string {
+  if (score >= 0.8) return "Strong match";
+  if (score >= 0.6) return "Good match";
+  if (score >= 0.4) return "Fair match";
+  return "Weak match";
+}
+
+/** Short feature name: the manifest label up to its first parenthesis. */
+export function shortLabel(label: string): string {
+  return label.replace(/\s*\(.*$/, "");
+}
+
+/** "tmin_K" -> "tmin", "K"; "active_layer_m" -> "active layer", "m". */
+function valueRow(key: string, v: number | null): { name: string; text: string } {
+  const m = key.match(/^(.*)_(K|m|mm_yr)$/);
+  const name = (m ? m[1] : key).replace(/_/g, " ");
+  const unit = m ? ` ${m[2] === "mm_yr" ? "mm/yr" : m[2]}` : "";
+  if (v === null || v === undefined) return { name, text: "—" };
+  const num = Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2);
+  return { name, text: num + unit };
+}
+
+type Vals = Record<string, number | null> | null;
+
+/**
+ * Earth vs Mars raw values. Same keys on both planets (temperature) -> one table, side by side;
+ * different keys (each planet measured its own way) -> one block per planet.
+ */
+export function ValuesTable({ earth, mars, marsName }: { earth: Vals; mars: Vals; marsName: string }) {
+  const ek = Object.keys(earth ?? {});
+  const mk = Object.keys(mars ?? {});
+  const same = ek.length > 0 && ek.length === mk.length && ek.every((k) => mk.includes(k));
+  const block = (title: string, v: Vals) => {
+    const keys = Object.keys(v ?? {});
+    if (keys.length === 0) return null;
+    return (
+      <>
+        <tr className="f-values-sub">
+          <th colSpan={2}>{title}</th>
+        </tr>
+        {keys.map((k) => {
+          const r = valueRow(k, v![k]);
+          return (
+            <tr key={title + k}>
+              <th>{r.name}</th>
+              <td>{r.text}</td>
+            </tr>
+          );
+        })}
+      </>
+    );
+  };
+  return (
+    <table className="f-values">
+      {same ? (
+        <>
+          <thead>
+            <tr>
+              <th />
+              <th>Earth</th>
+              <th>Mars</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ek.map((k) => (
+              <tr key={k}>
+                <th>{valueRow(k, null).name}</th>
+                <td>{valueRow(k, earth![k]).text}</td>
+                <td>{valueRow(k, mars![k]).text}</td>
+              </tr>
+            ))}
+          </tbody>
+        </>
+      ) : (
+        <tbody>
+          {block("Earth", earth)}
+          {block(`Mars · ${marsName}`, mars)}
+        </tbody>
+      )}
+    </table>
+  );
+}
+
 export function AnalogCard({ error }: { error?: string | null }) {
   const s = useAppStore((st) => st);
   const manifest = s.manifest;
@@ -78,36 +162,86 @@ export function AnalogCard({ error }: { error?: string | null }) {
         <p className="card-rank">
           {isTop ? (s.siteId ? `#${s.index + 1} for ${siteName(s.siteId)}` : "Best overall") : "Selected cell"}
         </p>
-        <p className="card-sub">Global rank #{cell.rank}</p>
         <h2 className="card-place">{placeLabel(cell)}</h2>
-        <p className="card-score">{score === null ? <small>no data</small> : score.toFixed(2)}</p>
-        {f.vsSiteId && <p className="card-caption">vs {siteName(f.vsSiteId)}</p>}
+        <p className="card-sub">
+          {placeLabel(cell) !== formatCoords(cell.lat, cell.lon) && <>{formatCoords(cell.lat, cell.lon)} · </>}
+          Global rank #{cell.rank}
+        </p>
+        <div className="card-scorebox">
+          <span className="card-label">Similarity to Mars</span>
+          <p className="card-score">{score === null ? <small>no data</small> : score.toFixed(2)}</p>
+          {score !== null && (
+            <p className="card-verdict">
+              {verdict(score)}
+              {isTop && <> · better than {Math.min(cell.percentile, 99.9).toFixed(1)}% of permafrost</>}
+            </p>
+          )}
+          <p className="card-caption">0 = nothing alike · 1 = identical. One weak feature pulls it down.</p>
+        </div>
+        {f.vsSiteId && <p className="card-caption">Compared with {siteName(f.vsSiteId)}</p>}
         {f.tiedSiteIds.length > 1 && <p className="card-caption">Tied: {f.tiedSiteIds.map(siteName).join(", ")}</p>}
-        {f.featureCount.ok < f.featureCount.total && (
-          <p className="card-caption">
-            {f.featureCount.ok} of {f.featureCount.total} features
-          </p>
-        )}
+        <div className="features-head">
+          <span>
+            Features
+            {f.featureCount.ok < f.featureCount.total && (
+              <>
+                {" "}
+                · {f.featureCount.ok} of {f.featureCount.total} with data
+              </>
+            )}
+          </span>
+          <span className="features-key">✓ strong · ✗ weak</span>
+        </div>
         <ul className="features">
-          {f.rows.map((r: FeatureRow) => (
-            <li key={r.id} data-break={f.breaks.includes(r.id) ? "true" : undefined}>
-              <span className="f-mark" aria-hidden="true">
-                {f.strengths.includes(r.id) ? "✓" : f.breaks.includes(r.id) ? "✗" : ""}
-              </span>
-              <span className="f-name">{featLabel(r.id)}</span>
-              {r.status === "ok" && r.score !== null ? (
-                <span className="f-bar" role="img" aria-label={`${featLabel(r.id)} ${r.score.toFixed(2)}`}>
-                  <i style={{ width: `${Math.round(Math.max(0, Math.min(1, r.score)) * 100)}%` }} />
+          {f.rows.map((r: FeatureRow) => {
+            const full = featLabel(r.id);
+            const data = cell.features[r.id];
+            const hasValues = !!(data?.earth_value || data?.mars_value);
+            const mark = f.strengths.includes(r.id) ? "✓" : f.breaks.includes(r.id) ? "✗" : "";
+            const head = (
+              <>
+                <span className="f-mark" aria-hidden="true">
+                  {mark}
                 </span>
-              ) : (
-                <span className="f-text">{STATUS_TEXT[r.status]}</span>
-              )}
-              {r.id === "polygons" && r.status === "ok" && (
-                <small className="f-note">estimated from ground temperature</small>
-              )}
-            </li>
-          ))}
+                <span className="f-name" title={full}>
+                  {shortLabel(full)}
+                </span>
+                {r.status === "ok" && r.score !== null ? (
+                  <span className="f-score">
+                    <span className="f-bar" role="img" aria-label={`${full} ${r.score.toFixed(2)}`}>
+                      <i style={{ width: `${Math.round(Math.max(0, Math.min(1, r.score)) * 100)}%` }} />
+                    </span>
+                    <span className="f-num">{r.score.toFixed(2)}</span>
+                  </span>
+                ) : (
+                  <span className="f-text">{STATUS_TEXT[r.status]}</span>
+                )}
+              </>
+            );
+            return (
+              <li key={r.id} data-break={f.breaks.includes(r.id) ? "true" : undefined}>
+                {hasValues ? (
+                  <details>
+                    <summary className="f-row">{head}</summary>
+                    <div className="f-detail">
+                      <ValuesTable earth={data!.earth_value} mars={data!.mars_value} marsName={siteName(cell.best_site_id)} />
+                      <small className="f-unit">
+                        Mars values: {siteName(cell.best_site_id)}
+                        {data!.unit && <> · {data!.unit}</>}
+                      </small>
+                    </div>
+                  </details>
+                ) : (
+                  <div className="f-row">{head}</div>
+                )}
+                {r.id === "polygons" && r.status === "ok" && (
+                  <small className="f-note">estimated from ground temperature</small>
+                )}
+              </li>
+            );
+          })}
         </ul>
+        <p className="features-tip">Click a feature to compare Earth and Mars values.</p>
         {cell.known_analog && <span className="chip">{cell.known_analog}</span>}
         {win && (
           <p className="card-window">
@@ -117,7 +251,7 @@ export function AnalogCard({ error }: { error?: string | null }) {
       </>
     );
   } else {
-    body = <p className="card-note">{manifest ? "Pick a base site on Mars" : "Loading…"}</p>;
+    body = <p className="card-note">{manifest ? "Pick a base site on Mars to see its Earth matches" : "Loading…"}</p>;
   }
 
   const onKey = (e: KeyboardEvent) => {
@@ -133,8 +267,9 @@ export function AnalogCard({ error }: { error?: string | null }) {
           <button type="button" aria-label="Previous cell" onClick={() => s.step(-1)}>
             ←
           </button>
-          <span>
-            {s.index + 1} / {s.list.length}
+          <span className="card-nav-count">
+            Match {s.index + 1} of {s.list.length}
+            <small>← → keys to browse</small>
           </span>
           <button type="button" aria-label="Next cell" onClick={() => s.step(1)}>
             →

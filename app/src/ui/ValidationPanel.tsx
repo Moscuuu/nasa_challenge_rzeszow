@@ -10,11 +10,25 @@ export function ValidationPanel() {
   const passed = counted.filter((c) => c.passed === true).length;
   return (
     <div className="validation">
-      <button type="button" className="badge" aria-expanded={open} onClick={() => openValidation(!open)}>
-        Method check {passed}/{counted.length}
+      <button
+        type="button"
+        className={`badge${passed < counted.length ? " badge--warn" : ""}`}
+        aria-expanded={open}
+        title="Does the method rank known Mars-like places high and unlike places low?"
+        onClick={() => openValidation(!open)}
+      >
+        <span>Method check</span>
+        <span className="badge-num">
+          {passed} of {counted.length} passed
+        </span>
+        <span aria-hidden="true">{open ? "▴" : "▾"}</span>
       </button>
       {open && (
         <ul className="checks">
+          <li className="checks-intro">
+            Sanity test: places known to resemble Mars should rank high (known analog), unlike places low
+            (contrast). Click a row to fly there.
+          </li>
           {checks.map((c) => {
             const na = c.applicable === false;
             return (

@@ -142,6 +142,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       el.querySelectorAll<HTMLElement>("button.pin").forEach((b) => b.classList.toggle("pin--hot", b.dataset.site === id));
     };
     const onDown = (e: PointerEvent) => {
+      if ((e.target as Element).closest("[data-ui]")) return; // panel heading, site dropdown
       down = last = { x: e.clientX, y: e.clientY };
       m.dragging = true;
       m.target = null;

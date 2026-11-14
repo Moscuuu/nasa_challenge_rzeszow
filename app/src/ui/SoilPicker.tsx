@@ -18,7 +18,10 @@ export function SoilPicker() {
     first.current = false;
   }, [layer, count]);
   return (
-    <div className="soil" role="group" aria-label="Depth layer">
+    <div className="soil" role="group" aria-labelledby="soil-title">
+      <h2 className="panel-title" id="soil-title">
+        <span className="step">2</span> Choose soil depth
+      </h2>
       {layers.map((l, i) => (
         <button
           key={l.id}
@@ -30,7 +33,7 @@ export function SoilPicker() {
           onClick={() => void selectLayer(l.id)}
         >
           <span>{l.label}</span>
-          {!l.available && <em>coming</em>}
+          {!l.available && <em>coming soon</em>}
         </button>
       ))}
     </div>

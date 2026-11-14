@@ -8,7 +8,9 @@ import { Effects } from "./scene/Effects";
 import { hasWebGL, NO_WEBGL_MESSAGE } from "./scene/webgl";
 import { AnalogCard } from "./ui/AnalogCard";
 import { Footer } from "./ui/Footer";
+import { MapLegend } from "./ui/MapLegend";
 import { ShowAllToggle } from "./ui/ShowAllToggle";
+import { SitePicker } from "./ui/SitePicker";
 import { SoilPicker } from "./ui/SoilPicker";
 import { ValidationPanel } from "./ui/ValidationPanel";
 import "./ui/ui.css";
@@ -41,17 +43,27 @@ export default function App() {
   return (
     <div className="layout" ref={root}>
       <header>
-        <h1>Analog Finder</h1>
+        <div className="brand">
+          <h1>Analog Finder</h1>
+          <p className="tagline">Find places on Earth whose frozen ground behaves like Mars</p>
+        </div>
         <ValidationPanel />
       </header>
       <section data-slot="mars" ref={mars} aria-label="Mars, pick a base site">
+        <SitePicker />
         {!webgl && <p className="no-webgl">{NO_WEBGL_MESSAGE}</p>}
       </section>
       <section data-slot="soil" aria-label="Soil depth layer">
         <SoilPicker />
       </section>
       <section data-slot="earth" ref={earth} aria-label="Earth, similarity map">
-        <ShowAllToggle />
+        <div className="panel-head panel-head--row" data-ui>
+          <h2 className="panel-title">
+            <span className="step">3</span> Matches on Earth
+          </h2>
+          <ShowAllToggle />
+        </div>
+        <MapLegend />
       </section>
       <aside data-slot="card">
         <AnalogCard error={error} />

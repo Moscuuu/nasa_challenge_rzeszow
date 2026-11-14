@@ -158,7 +158,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     };
 
     const onDown = (e: PointerEvent) => {
-      if ((e.target as Element).closest("button")) return;
+      if ((e.target as Element).closest("button, [data-ui]")) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       el.setPointerCapture(e.pointerId);
       m.target = null;
