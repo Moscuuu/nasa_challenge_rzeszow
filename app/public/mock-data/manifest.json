@@ -1,0 +1,90 @@
+{
+ "contract_version": "0.3",
+ "generated_at": "2026-11-14T22:00:00Z",
+ "mock": true,
+ "cell_size_deg": 0.1,
+ "layers": [
+  {
+   "id": "0-1m",
+   "label": "0–1 m (dig-able ice)",
+   "available": true
+  },
+  {
+   "id": "1-5m",
+   "label": "1–5 m (shallow drilling)",
+   "available": false
+  },
+  {
+   "id": "gt5m",
+   "label": "> 5 m (deep resources)",
+   "available": false
+  }
+ ],
+ "features": [
+  {
+   "id": "temperature",
+   "label": "Temperature",
+   "comparison": "rank"
+  },
+  {
+   "id": "ground_ice",
+   "label": "Ground ice",
+   "comparison": "position"
+  },
+  {
+   "id": "polygons",
+   "label": "Thermal-contraction polygons",
+   "comparison": "presence"
+  }
+ ],
+ "sites": [
+  "arcadia_planitia",
+  "deuteronilus_mensae",
+  "phlegra_montes",
+  "erebus_montes",
+  "amazonis_posiolova",
+  "utopia_planitia",
+  "hellas_rim"
+ ],
+ "files": {
+  "mars_sites": "mars_sites.geojson",
+  "cells_top": {
+   "0-1m": "cells_top_0-1m.geojson"
+  },
+  "score_maps": {
+   "0-1m": {
+    "best": "score_0-1m_best.png",
+    "arcadia_planitia": "score_0-1m_arcadia_planitia.png",
+    "deuteronilus_mensae": "score_0-1m_deuteronilus_mensae.png",
+    "phlegra_montes": "score_0-1m_phlegra_montes.png",
+    "erebus_montes": "score_0-1m_erebus_montes.png",
+    "amazonis_posiolova": "score_0-1m_amazonis_posiolova.png",
+    "utopia_planitia": "score_0-1m_utopia_planitia.png",
+    "hellas_rim": "score_0-1m_hellas_rim.png"
+   }
+  },
+  "validation": "validation.json"
+ },
+ "sources": [
+  {
+   "id": "era5_land",
+   "label": "ERA5-Land hourly / daily aggregates (ECMWF, via Google Earth Engine), 2023",
+   "url": "https://doi.org/10.24381/cds.e2161bac"
+  },
+  {
+   "id": "esa_cci_permafrost",
+   "label": "ESA Permafrost CCI v5.0 (PFR, ALT), 2023",
+   "url": "https://climate.esa.int/en/projects/permafrost/"
+  },
+  {
+   "id": "swim",
+   "label": "SWIM4MIM ice consistency composites (PSI / NASA)",
+   "url": "https://swim.psi.edu"
+  },
+  {
+   "id": "mars_thermal_model",
+   "label": "Team 1-D Mars surface thermal model (A=0.25, I=250)",
+   "url": null
+  }
+ ]
+}
