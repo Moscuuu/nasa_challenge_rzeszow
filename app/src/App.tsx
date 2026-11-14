@@ -4,6 +4,7 @@ import { useMotion } from "./motion/useMotion";
 import { appStore } from "./state/store";
 import type { EarthGlobeHandle } from "./scene/EarthGlobe";
 import type { MarsGlobeHandle } from "./scene/MarsGlobe";
+import { Effects } from "./scene/Effects";
 import { hasWebGL, NO_WEBGL_MESSAGE } from "./scene/webgl";
 import { AnalogCard } from "./ui/AnalogCard";
 import { Footer } from "./ui/Footer";
@@ -56,6 +57,7 @@ export default function App() {
         <AnalogCard error={error} />
       </aside>
       <Footer />
+      <Effects />
       {veil && <div className="intro-veil" aria-hidden="true" />}
       {webgl && (
         <Suspense fallback={null}>
