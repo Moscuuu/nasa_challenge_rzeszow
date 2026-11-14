@@ -608,6 +608,13 @@ details[open] > summary .f-name::after {
   height: 100%;
   object-fit: cover;
 }
+/* The reversed clip sits on top, shown only while rewinding. */
+.drill-video + .drill-video {
+  opacity: 0;
+}
+.drill-video.drill-video--on {
+  opacity: 1;
+}
 /* Darken the bottom so the captions and controls read on any frame. */
 .drill::before {
   content: "";

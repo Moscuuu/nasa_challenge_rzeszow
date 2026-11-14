@@ -11,10 +11,31 @@ const frames = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
 beforeEach(() => {
   localStorage.clear();
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "requestAnimationFrame", "cancelAnimationFrame", "performance"] });
-  // jsdom has no media pipeline: give the clip a 10 s duration.
+  // jsdom has no media pipeline: give the clip a 10 s duration, record seeks, stub play/pause.
   Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 10 });
+  seeks.clear();
+  times = new WeakMap();
+  Object.defineProperty(HTMLMediaElement.prototype, "currentTime", {
+    configurable: true,
+    get(this: HTMLMediaElement) {
+      return times.get(this) ?? 0;
+    },
+    set(this: HTMLMediaElement, t: number) {
+      times.set(this, t);
+      seeks.set(this, (seeks.get(this) ?? 0) + 1);
+    },
+  });
+  vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+  vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
 });
+const seeks = new Map<HTMLMediaElement, number>();
+let times = new WeakMap<HTMLMediaElement, number>();
+const clips = (c: HTMLElement) => {
+  const [fwd, rev] = Array.from(c.querySelectorAll("video"));
+  return { fwd, rev };
+};
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.useRealTimers();
   vi.unstubAllGlobals();
   motion.videoPlaying = false;
@@ -54,6 +75,29 @@ describe("HoldToDrill", () => {
       </StrictMode>,
     );
     expect(motion.videoPlaying).toBe(true);
+  });
+
+  it("plays the forward clip while holding instead of seeking every frame", () => {
+    const { container } = render(<HoldToDrill />);
+    const { fwd } = clips(container);
+    fireEvent.pointerDown(screen.getByRole("button", { name: /hold to drill/i }));
+    frames(1000);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
+    // ~60 frames; the stub never advances, so only the switch + drift re-syncs (every >0.3 s) seek.
+    expect(seeks.get(fwd) ?? 0).toBeLessThanOrEqual(5);
+  });
+
+  it("plays the reversed clip from the mirrored time on release, at 1.5x", () => {
+    const { container } = render(<HoldToDrill />);
+    const { rev } = clips(container);
+    fireEvent.pointerDown(screen.getByRole("button", { name: /hold to drill/i }));
+    frames(2000);
+    fireEvent.pointerUp(window);
+    frames(50);
+    expect(rev.playbackRate).toBe(1.5);
+    expect(rev.currentTime).toBeGreaterThan(7.5);
+    expect(rev.currentTime).toBeLessThan(8.5);
+    expect(rev.className).toContain("drill-video--on");
   });
 
   it("Skip ends it", () => {

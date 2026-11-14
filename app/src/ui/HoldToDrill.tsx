@@ -7,13 +7,20 @@ const BASE = `${import.meta.env.BASE_URL}intro/`;
 const FLASH_MS = 600;
 const FADE_MS = 700;
 const MAX_DT = 0.1; // s: a stalled tab must not jump the clip
+const REWIND_RATE = 1.5; // matches stepProgress
+const DRIFT = 0.3; // s: re-sync a playing clip only when it drifts this far from progress
+
+type Mode = "idle" | "fwd" | "rev";
 
 type Phase = "off" | "on" | "flash" | "fading";
 
 /**
  * First-visit opening: holding the button (or Space) drives the clip forward, letting go rewinds it.
- * The clip is never played, only seeked, so it works with autoplay blocked. Reaching the end flashes
- * white and hands over to the 3D intro (useMotion waits while motion.videoPlaying is true).
+ * Progress is the clock (stepProgress); the video follows by *playing* natively, never by per-frame
+ * seeking: the forward clip while held, a pre-reversed copy (intro_rev.mp4) at 1.5x after release.
+ * A clip is seeked only when the mode switches or it drifts more than DRIFT from progress.
+ * Reaching the end flashes white and hands over to the 3D intro (useMotion waits while
+ * motion.videoPlaying is true).
  */
 export function HoldToDrill() {
   const [reduced] = useState(prefersReducedMotion);
@@ -27,6 +34,9 @@ export function HoldToDrill() {
   const holding = useRef(false);
   const done = useRef(false);
   const video = useRef<HTMLVideoElement>(null);
+  const rev = useRef<HTMLVideoElement>(null);
+  const mode = useRef<Mode>("idle");
+  const [showRev, setShowRev] = useState(false);
 
   const finish = () => {
     if (done.current) return;
@@ -66,7 +76,7 @@ export function HoldToDrill() {
     };
   }, [phase, reduced]);
 
-  // Frame loop: step progress, seek the clip to match.
+  // Frame loop: step progress, keep the playing clip in step with it.
   useEffect(() => {
     if (phase !== "on" || reduced) return;
     let raf = 0;
@@ -75,13 +85,33 @@ export function HoldToDrill() {
       const now = performance.now();
       const dt = Math.min(MAX_DT, (now - last) / 1000);
       last = now;
-      const v = video.current;
-      const duration = v?.duration ?? NaN;
+      const f = video.current;
+      const r = rev.current;
+      const duration = f?.duration ?? NaN;
       const next = stepProgress(pRef.current, holding.current, dt, duration);
       if (next !== pRef.current) {
         pRef.current = next;
         setP(next);
-        if (v && Number.isFinite(duration)) v.currentTime = next * duration;
+      }
+      if (f && r && Number.isFinite(duration)) {
+        const want: Mode = next >= 1 ? "idle" : holding.current ? "fwd" : next > 0 ? "rev" : "idle";
+        const active = want === "fwd" ? f : want === "rev" ? r : null;
+        const at = want === "rev" ? (1 - next) * duration : next * duration;
+        if (want !== mode.current) {
+          mode.current = want;
+          (want === "fwd" ? r : f).pause();
+          if (active) {
+            active.currentTime = at;
+            active.playbackRate = want === "rev" ? REWIND_RATE : 1;
+            void active.play()?.catch(() => {});
+          } else {
+            r.pause();
+            f.pause();
+          }
+          setShowRev(want === "rev");
+        } else if (active && !active.seeking && Math.abs(active.currentTime - at) > DRIFT) {
+          active.currentTime = at;
+        }
       }
       if (next >= 1) {
         holding.current = false;
@@ -125,6 +155,16 @@ export function HoldToDrill() {
         className="drill-video"
         src={`${BASE}intro.mp4`}
         poster={`${BASE}poster.jpg`}
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        onError={finish}
+      />
+      <video
+        ref={rev}
+        className={`drill-video${showRev ? " drill-video--on" : ""}`}
+        src={`${BASE}intro_rev.mp4`}
         muted
         playsInline
         preload="auto"
