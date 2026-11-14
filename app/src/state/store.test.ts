@@ -44,6 +44,26 @@ describe("app store", () => {
     expect(currentCell(s)?.id).toBe(top.id);
   });
 
+  it("stage: starts on pick; a site pick moves to explore at once; the card opens only on an Earth click", async () => {
+    const { store } = await freshStore();
+    expect(store.getState().stage).toBe("pick");
+    expect(store.getState().cardOpen).toBe(false);
+    const pending = store.getState().selectSite("hellas_rim");
+    expect(store.getState().stage).toBe("explore"); // synchronous: the layout move starts on the click
+    await pending;
+    expect(store.getState().cardOpen).toBe(false);
+    store.getState().step(1);
+    expect(store.getState().cardOpen).toBe(false);
+    const c = store.getState().list[0];
+    store.getState().clickEarth(c.lat, c.lon);
+    expect(store.getState().cardOpen).toBe(true);
+    store.getState().step(1);
+    expect(store.getState().cardOpen).toBe(true); // browsing keeps it open
+    await store.getState().selectSite(null);
+    expect(store.getState().stage).toBe("explore");
+    expect(store.getState().cardOpen).toBe(false); // new matches: wait for the next click
+  });
+
   it("selectSite hellas_rim: 6 cells, stepping wraps, focus follows", async () => {
     const { store } = await freshStore();
     await store.getState().selectSite("hellas_rim");

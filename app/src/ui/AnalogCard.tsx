@@ -116,11 +116,11 @@ export function AnalogCard({ error }: { error?: string | null }) {
   const manifest = s.manifest;
   const cell = currentCell(s);
   const cardEl = useRef<HTMLDivElement>(null);
-  const buildKey = `${s.siteId}|${s.layer}|${cell ? `${cell.lat},${cell.lon}` : ""}|${s.earthHit?.kind ?? ""}`;
-  // Card build each time the shown cell changes (the intro runs its own build).
+  const buildKey = `${s.cardOpen}|${s.siteId}|${s.layer}|${cell ? `${cell.lat},${cell.lon}` : ""}|${s.earthHit?.kind ?? ""}`;
+  // Card build when it opens and each time the shown cell changes (never while hidden or in the intro).
   useEffect(() => {
     const el = cardEl.current;
-    if (!el || !cell || motion.introActive) return;
+    if (!el || !cell || !s.cardOpen || motion.introActive) return;
     const tl = cardBuildTimeline(el);
     return () => {
       tl.progress(1);

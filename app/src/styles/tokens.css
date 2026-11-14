@@ -91,6 +91,67 @@ body {
   }
 }
 
+/* One shared sky: the globes float in it, no frames around Mars, depth or Earth. */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.layout :is([data-slot="mars"], [data-slot="soil"], [data-slot="earth"]) {
+  border-color: transparent;
+}
+
+/* Pick step: Mars alone in the centre column (Earth's frame); depth, Earth and card arrive after a site pick. */
+.layout[data-stage="pick"] {
+  grid-template-areas:
+    "head head head"
+    ". mars ."
+    ". mars ."
+    "foot foot foot";
+}
+.layout[data-stage="pick"] :is([data-slot="soil"], [data-slot="earth"], [data-slot="card"]) {
+  display: none;
+}
+/* While Mars glides into its corner the pin buttons would sit in the wrong place: hide them. */
+.layout[data-moving] .pin {
+  visibility: hidden;
+}
+.layout[data-moving] [data-slot="mars"] {
+  z-index: 3;
+}
+/* Card: kept in the grid (Earth never jumps), shown only once an Earth spot is clicked. */
+.layout [data-slot="card"] {
+  transition: opacity 300ms ease, transform 300ms ease, visibility 0s;
+}
+.layout:not([data-card="open"]) [data-slot="card"] {
+  opacity: 0;
+  transform: translateX(24px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s 200ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .layout [data-slot="card"],
+  .layout:not([data-card="open"]) [data-slot="card"] {
+    transform: none;
+  }
+}
+@media (max-width: 700px) {
+  .layout[data-stage="pick"] {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "head head"
+      "mars mars"
+      "foot foot";
+  }
+  .layout:not([data-card="open"]) [data-slot="card"] {
+    display: none;
+  }
+}
+
 /* 3D stage: one fixed canvas under the slots; views are scissored onto them. */
 .layout [data-slot="mars"],
 .layout [data-slot="earth"] {

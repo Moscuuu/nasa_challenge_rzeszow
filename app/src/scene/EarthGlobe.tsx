@@ -26,6 +26,8 @@ const IDLE_SPEED = 0.01; // rad/s, slow idle spin
 const DRAG_SPEED = 0.005; // rad per px at the default zoom
 const MAX_TILT = 1.4; // rad
 const FOV = 35;
+const FLOAT_AMP = 0.02; // globe radii: a gentle drift, so the planet floats in space
+const FLOAT_PERIOD = 9; // s
 const MIN_DIST = 1.4;
 const MAX_DIST = 6;
 const HEAT_R = 1.002;
@@ -59,6 +61,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   const clickEarth = useAppStore((s) => s.clickEarth);
 
   const globe = useRef<THREE.Group>(null);
+  const float = useRef<THREE.Group>(null);
   const earth = useRef<THREE.Mesh>(null);
   const camera = useRef<THREE.PerspectiveCamera>(null);
   const pulseGroup = useRef<THREE.Group>(null);
@@ -237,7 +240,11 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     setZoom(m.zoom);
   }, [width, height]);
 
-  useFrame((_, dt) => {
+  useFrame(({ clock }, dt) => {
+    if (float.current && !reducedMotion()) {
+      const t = (clock.elapsedTime / FLOAT_PERIOD) * Math.PI * 2 + 1.7;
+      float.current.position.set(Math.cos(t * 0.5) * FLOAT_AMP * 0.4, Math.sin(t) * FLOAT_AMP, 0);
+    }
     const g = globe.current;
     const cam = camera.current;
     if (!g || !cam) return;
@@ -273,17 +280,19 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
       <PerspectiveCamera ref={camera} makeDefault fov={FOV} near={0.05} far={100} position={[0, 0, 4]} />
       <ambientLight intensity={0.9} />
       <directionalLight position={[-3, 2, 4]} intensity={1.6} />
-      <group ref={globe} rotation-x={START.x} rotation-y={START.y}>
-        <mesh ref={earth}>
-          <sphereGeometry args={[1, 128, 96]} />
-          <meshStandardMaterial map={texture} roughness={1} metalness={0} />
-        </mesh>
-        {/* Same SphereGeometry UVs as the satellite texture: both equirectangular, left edge 180°W. */}
-        <mesh material={heat} renderOrder={1} visible={scoreTex !== null}>
-          <sphereGeometry args={[HEAT_R, 128, 96]} />
-        </mesh>
-        <group ref={pulseGroup}>{focus && <Pulse lat={focus.lat} lon={focus.lon} />}</group>
-        {validationOpen && <ValidationBoxes checks={checks} />}
+      <group ref={float}>
+        <group ref={globe} rotation-x={START.x} rotation-y={START.y}>
+          <mesh ref={earth}>
+            <sphereGeometry args={[1, 128, 96]} />
+            <meshStandardMaterial map={texture} roughness={1} metalness={0} />
+          </mesh>
+          {/* Same SphereGeometry UVs as the satellite texture: both equirectangular, left edge 180°W. */}
+          <mesh material={heat} renderOrder={1} visible={scoreTex !== null}>
+            <sphereGeometry args={[HEAT_R, 128, 96]} />
+          </mesh>
+          <group ref={pulseGroup}>{focus && <Pulse lat={focus.lat} lon={focus.lon} />}</group>
+          {validationOpen && <ValidationBoxes checks={checks} />}
+        </group>
       </group>
     </>
   );

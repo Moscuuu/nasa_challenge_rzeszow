@@ -120,62 +120,97 @@ export function pickSiteTimeline(lat: number, lon: number, cell: Cell): Tl {
   return tl;
 }
 
+/** Mars camera zoom on the pick step: Mars framed as tightly as Earth (fit margin 1.12 vs 1.3). */
+export const PICK_ZOOM = 1.12 / 1.3;
+const restZoom = () => (appStore.getState().stage === "pick" ? PICK_ZOOM : 1);
+
 /**
- * Intro. full (~5 s): black, Mars passes close, the pins flicker in, camera pulls back as Mars
- * settles left and Earth rises, heat spreads from global #1 with the pulse, card builds.
- * short (~1.5 s): from the heat-map step. Any click or key jumps to the end (see useMotion).
+ * Intro. full (~2.6 s): veil lifts on Mars filling the centre frame, the camera eases back as the
+ * analog sites flicker in; then they pulse and wait for a pick (Earth and the card come later).
+ * short (~0.5 s): veil fade only. Any click or key jumps to the end (see useMotion).
  */
 export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => void): Tl {
-  const { mars, earth } = motion;
+  const { mars } = motion;
   const veil = qs(".intro-veil");
-  const marsSlot = qs('[data-slot="mars"]');
-  const earthSlot = qs('[data-slot="earth"]');
-  const card = qs(".card");
   const full = kind === "full";
+  const rest = restZoom();
 
-  const s = { veil: 1, zoom: full ? 0.42 : 1, pins: full ? 0 : 1, earth: full ? 0 : 1, reveal: 0 };
+  // 0.8 is about the closest zoom that still fits the globe inside the slot at the pick framing.
+  const s = { veil: 1, zoom: full ? rest * 0.93 : rest, pins: full ? 0 : 1 };
   const apply = () => {
     if (veil) veil.style.opacity = String(s.veil);
     mars?.setIntro({ zoom: s.zoom, pins: s.pins });
-    earth?.setIntro({ scale: s.earth });
-    earth?.setReveal(s.reveal);
   };
   // Starting state, applied now (before the first tick) so nothing flashes.
   apply();
-  earth?.setPulseVisible(false);
-  if (card) gsap.set(card, { opacity: 0 });
-  if (full) {
-    if (marsSlot) gsap.set(marsSlot, { xPercent: 35 });
-    if (earthSlot) gsap.set(earthSlot, { yPercent: 8 });
-  }
 
   const tl = gsap.timeline({ onUpdate: apply });
-  const revealAt = full ? 3.9 : 0.3;
   if (full) {
-    tl.to(s, { veil: 0, duration: 0.9, ease: "power1.inOut" }, 0.2)
-      .to(s, { zoom: 0.55, duration: 2.8, ease: "none" }, 0) // Mars drifts past, close
-      .to(s, { pins: 1, duration: 1.6, ease: "none" }, 1.0) // pins flicker in turn
-      .to(s, { zoom: 1, duration: 1.4, ease: "power2.inOut" }, 2.8) // camera pulls back
-      .to(s, { earth: 1, duration: 1.2, ease: "power2.out" }, 3.0); // Earth rises
-    if (marsSlot) tl.to(marsSlot, { xPercent: 0, duration: 1.4, ease: "power2.inOut" }, 2.8); // Mars settles left
-    if (earthSlot) tl.to(earthSlot, { yPercent: 0, duration: 1.2, ease: "power2.out" }, 3.0);
+    tl.to(s, { veil: 0, duration: 0.8, ease: "power1.inOut" }, 0.1)
+      .to(s, { zoom: rest, duration: 2.0, ease: "power2.inOut" }, 0.3) // Mars eases back into place
+      .to(s, { pins: 1, duration: 1.2, ease: "none" }, 1.0); // sites flicker in turn
   } else {
     tl.to(s, { veil: 0, duration: 0.35, ease: "power1.out" }, 0);
   }
-  tl.call(() => earth?.setPulseVisible(true), [], revealAt).to(
-    s,
-    { reveal: Math.PI, duration: full ? 1.1 : 0.9, ease: "power2.inOut" },
-    revealAt,
-  );
-  if (card) tl.add(cardBuildTimeline(card), full ? 4.3 : 1.0);
 
   tl.eventCallback("onComplete", () => {
-    Object.assign(s, { veil: 0, zoom: 1, pins: 1, earth: 1, reveal: Math.PI });
+    Object.assign(s, { veil: 0, zoom: restZoom(), pins: 1 });
     apply();
-    earth?.setPulseVisible(true);
-    if (card) gsap.set(card, { opacity: 1, "--draw": 1 });
-    gsap.set([marsSlot, earthSlot].filter(Boolean), { clearProps: "transform" });
     onDone?.();
   });
+  return tl;
+}
+
+/** Without an intro, Mars still needs the pick framing. */
+export function settleMars(): void {
+  motion.mars?.setIntro({ zoom: restZoom(), pins: 1 });
+}
+
+/**
+ * Pick -> explore, on the first site pick: Mars shrinks and glides from the centre into its
+ * column (FLIP on its slot), the depth panel rises in beneath it and Earth grows in the centre.
+ * The site's radar and Earth echo (pickSiteTimeline) run on top of this.
+ */
+export function exploreTimeline(): Tl {
+  const tl = gsap.timeline();
+  const root = qs(".layout");
+  const slot = qs('[data-slot="mars"]');
+  const soil = qs('[data-slot="soil"]');
+  const { mars, earth } = motion;
+  if (!root) return tl;
+  const first = slot?.getBoundingClientRect();
+  root.dataset.stage = "explore"; // React sets the same value on its next render
+  const last = slot?.getBoundingClientRect();
+
+  const done = () => {
+    if (slot) gsap.set(slot, { clearProps: "transform" });
+    delete root.dataset.moving;
+    mars?.setIntro({ zoom: 1 });
+    earth?.setIntro({ scale: 1 });
+    motion.relayout?.();
+  };
+  if (prefersReducedMotion() || !slot || !first || !last || !first.width || !last.width) {
+    done();
+    if (soil) tl.fromTo(soil, { opacity: 0 }, { opacity: 1, duration: FADE, clearProps: "opacity" });
+    return tl;
+  }
+
+  // Uniform scale keeps the slot's final aspect, so the globe never stretches; the globe's size
+  // follows min(width, height) of its frame.
+  const scale = Math.min(first.width, first.height) / Math.min(last.width, last.height);
+  const x = first.left + first.width / 2 - (last.left + last.width / 2);
+  const y = first.top + first.height / 2 - (last.top + last.height / 2);
+  root.dataset.moving = "";
+  gsap.set(slot, { transformOrigin: "50% 50%", x, y, scale });
+  earth?.setIntro({ scale: 0 });
+  // The views read their new sizes once a frame has seen the new layout.
+  requestAnimationFrame(() => requestAnimationFrame(() => motion.relayout?.()));
+
+  const z = { zoom: PICK_ZOOM, earth: 0 };
+  tl.to(slot, { x: 0, y: 0, scale: 1, duration: 1.0, ease: "power3.inOut" }, 0)
+    .to(z, { zoom: 1, duration: 1.0, ease: "power3.inOut", onUpdate: () => mars?.setIntro({ zoom: z.zoom }) }, 0)
+    .to(z, { earth: 1, duration: 1.1, ease: "power3.out", onUpdate: () => earth?.setIntro({ scale: z.earth }) }, 0.5);
+  if (soil) tl.fromTo(soil, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", clearProps: "opacity,transform" }, 0.75);
+  tl.eventCallback("onComplete", done);
   return tl;
 }

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createDataSource } from "./data/source";
 import { useMotion } from "./motion/useMotion";
-import { appStore } from "./state/store";
+import { appStore, useAppStore } from "./state/store";
 import type { EarthGlobeHandle } from "./scene/EarthGlobe";
 import type { MarsGlobeHandle } from "./scene/MarsGlobe";
 import { Effects } from "./scene/Effects";
@@ -13,6 +13,7 @@ import { MapLegend } from "./ui/MapLegend";
 import { ShowAllToggle } from "./ui/ShowAllToggle";
 import { SitePicker } from "./ui/SitePicker";
 import { SoilPicker } from "./ui/SoilPicker";
+import { Starfield } from "./ui/Starfield";
 import { ValidationPanel } from "./ui/ValidationPanel";
 import "./ui/ui.css";
 
@@ -28,8 +29,12 @@ export default function App() {
   const [webgl] = useState(hasWebGL);
   const [error, setError] = useState<string | null>(null);
   const veil = useMotion(marsGlobe, earthGlobe, webgl, error !== null);
+  const stage = useAppStore((s) => s.stage);
+  const cardOpen = useAppStore((s) => s.cardOpen);
 
   useEffect(() => {
+    // No globes, no pins to click: go straight to the full layout with the card showing.
+    if (!webgl) appStore.getState().enterExplore(true);
     // Dev-only hooks for browser checks (Playwright / console).
     if (import.meta.env.DEV) Object.assign(window, { __store: appStore, __mars: marsGlobe, __earth: earthGlobe });
     appStore
@@ -37,12 +42,14 @@ export default function App() {
       .init(createDataSource(import.meta.env.VITE_DATA_BASE ?? "/data/"))
       .catch((e: unknown) => {
         console.error("Failed to load data", e);
+        appStore.getState().enterExplore(true); // the error shows on the card
         setError("Could not load the data. Reload the page to try again.");
       });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="layout" ref={root}>
+    <div className="layout" ref={root} data-stage={stage} data-card={cardOpen ? "open" : undefined}>
+      <Starfield />
       <header>
         <div className="brand">
           <h1>Analog Finder</h1>
