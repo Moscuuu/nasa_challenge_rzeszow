@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "mock": true,
+  "layer": "0-1m",
+  "note": "MOCK DATA. Shape is real, numbers are invented.",
+  "features": [
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [160.85, -77.55]},
+     "properties": {"id": "c_-77.55_160.85", "rank": 1, "percentile": 99.99, "score": 0.912,
+       "best_site_id": "arcadia_planitia",
+       "site_scores": {"arcadia_planitia": 0.912, "deuteronilus_mensae": 0.887, "phlegra_montes": 0.861, "erebus_montes": 0.850, "amazonis_posiolova": 0.802, "utopia_planitia": 0.879, "hellas_rim": 0.744},
+       "features": {
+         "temperature": {"score": 0.98, "earth_value": -31.0, "mars_value": 205.0, "unit": "°C (Earth) / K (Mars), compared by rank", "status": "ok", "source": "esa_cci_permafrost"},
+         "ground_ice": {"score": 0.84, "earth_value": 0.05, "mars_value": 0.62, "unit": "active layer m (Earth) / ice consistency (Mars)", "status": "ok", "source": "esa_cci_permafrost"},
+         "polygons": {"score": null, "earth_value": null, "mars_value": 0.8, "unit": "", "status": "no_data", "source": null}
+       },
+       "strengths": ["temperature"], "breaks_down": ["ground_ice"],
+       "known_analog": "McMurdo Dry Valleys", "place": "Beacon Valley, Antarctica"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-30.05, 82.95]},
+     "properties": {"id": "c_82.95_-30.05", "rank": 14, "percentile": 99.97, "score": 0.861,
+       "best_site_id": "deuteronilus_mensae",
+       "site_scores": {"arcadia_planitia": 0.840, "deuteronilus_mensae": 0.861, "phlegra_montes": 0.820, "erebus_montes": 0.811, "amazonis_posiolova": 0.770, "utopia_planitia": 0.845, "hellas_rim": 0.700},
+       "features": {
+         "temperature": {"score": 0.90, "earth_value": -20.5, "mars_value": 203.0, "unit": "°C (Earth) / K (Mars), compared by rank", "status": "ok", "source": "esa_cci_permafrost"},
+         "ground_ice": {"score": 0.82, "earth_value": 0.07, "mars_value": 0.55, "unit": "active layer m (Earth) / ice consistency (Mars)", "status": "ok", "source": "esa_cci_permafrost"},
+         "polygons": {"score": null, "earth_value": null, "mars_value": null, "unit": "", "status": "no_data", "source": null}
+       },
+       "strengths": ["temperature"], "breaks_down": ["ground_ice"],
+       "known_analog": null, "place": "Peary Land, Greenland"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-89.45, 75.35]},
+     "properties": {"id": "c_75.35_-89.45", "rank": 210, "percentile": 99.6, "score": 0.802,
+       "best_site_id": "utopia_planitia",
+       "site_scores": {"arcadia_planitia": 0.790, "deuteronilus_mensae": 0.781, "phlegra_montes": 0.760, "erebus_montes": 0.755, "amazonis_posiolova": 0.720, "utopia_planitia": 0.802, "hellas_rim": 0.650},
+       "features": {
+         "temperature": {"score": 0.80, "earth_value": -16.0, "mars_value": 207.0, "unit": "°C (Earth) / K (Mars), compared by rank", "status": "ok", "source": "esa_cci_permafrost"},
+         "ground_ice": {"score": 0.80, "earth_value": 0.3, "mars_value": 0.58, "unit": "active layer m (Earth) / ice consistency (Mars)", "status": "ok", "source": "esa_cci_permafrost"},
+         "polygons": {"score": null, "earth_value": null, "mars_value": 0.7, "unit": "", "status": "no_data", "source": null}
+       },
+       "strengths": ["temperature", "ground_ice"], "breaks_down": [],
+       "known_analog": "Haughton Crater (Devon Island)", "place": "Devon Island, Canada"}}
+  ]
+}

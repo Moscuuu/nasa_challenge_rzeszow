@@ -1,0 +1,47 @@
+{
+  "contract_version": "0.1",
+  "generated_at": "2026-11-14T16:00:00Z",
+  "mock": true,
+  "cell_size_deg": 0.1,
+  "layers": [
+    {"id": "0-1m", "label": "0–1 m (dig-able ice)", "available": true},
+    {"id": "1-5m", "label": "1–5 m (shallow drilling)", "available": false},
+    {"id": "gt5m", "label": "> 5 m (deep resources)", "available": false}
+  ],
+  "features": [
+    {"id": "temperature", "label": "Temperature", "comparison": "rank"},
+    {"id": "ground_ice", "label": "Ground ice", "comparison": "value"},
+    {"id": "polygons", "label": "Thermal-contraction polygons", "comparison": "presence"}
+  ],
+  "sites": [
+    "arcadia_planitia",
+    "deuteronilus_mensae",
+    "phlegra_montes",
+    "erebus_montes",
+    "amazonis_posiolova",
+    "utopia_planitia",
+    "hellas_rim"
+  ],
+  "files": {
+    "mars_sites": "mars_sites.geojson",
+    "cells_top": {"0-1m": "cells_top_0-1m.geojson"},
+    "score_maps": {"0-1m": {
+      "best": "score_0-1m_best.png",
+      "arcadia_planitia": "score_0-1m_arcadia_planitia.png",
+      "deuteronilus_mensae": "score_0-1m_deuteronilus_mensae.png",
+      "phlegra_montes": "score_0-1m_phlegra_montes.png",
+      "erebus_montes": "score_0-1m_erebus_montes.png",
+      "amazonis_posiolova": "score_0-1m_amazonis_posiolova.png",
+      "utopia_planitia": "score_0-1m_utopia_planitia.png",
+      "hellas_rim": "score_0-1m_hellas_rim.png"
+    }},
+    "validation": "validation.json"
+  },
+  "sources": [
+    {"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5", "url": "https://climate.esa.int/en/projects/permafrost/"},
+    {"id": "nsidc_ggd318", "label": "NSIDC Circum-Arctic Map of Permafrost and Ground-Ice Conditions v2", "url": "https://doi.org/10.7265/skbg-kf16"},
+    {"id": "smap_l4", "label": "NASA SMAP L4 SPL4SMGP v8", "url": "https://doi.org/10.5067/T5RUATAQREF8"},
+    {"id": "swim", "label": "Subsurface Water Ice Mapping (SWIM)", "url": "https://swim.psi.edu"},
+    {"id": "grs_chlorine", "label": "Mars Odyssey GRS chlorine map", "url": "https://pds.nasa.gov/"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "mock": true,
+  "layer": "0-1m",
+  "checks": [
+    {"name": "McMurdo Dry Valleys", "role": "known_analog", "median_percentile": 99.1, "passed": true},
+    {"name": "Haughton Crater (Devon Island)", "role": "known_analog", "median_percentile": 93.0, "passed": true},
+    {"name": "Alaska North Slope", "role": "contrast", "median_percentile": 41.0, "passed": true}
+  ],
+  "weights": {"temperature": 0.5, "ground_ice": 0.5, "polygons": 0.0},
+  "notes": "MOCK. Polygons not yet included in the score."
+}

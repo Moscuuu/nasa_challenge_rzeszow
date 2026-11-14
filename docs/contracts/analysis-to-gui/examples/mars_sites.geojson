@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "mock": true,
+  "note": "MOCK DATA. Coordinates are approximate placeholders; feature values are invented.",
+  "features": [
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-170.0, 42.0]},
+     "properties": {"id": "arcadia_planitia", "name": "Arcadia Planitia", "window_deg": 1.0,
+       "features": {
+         "temperature": {"value": 205.0, "unit": "K (mean annual surface, model)", "rank": 0.71, "source": "swim"},
+         "ground_ice": {"value": 0.62, "unit": "SWIM ice consistency C (0–1 m)", "rank": 0.88, "source": "swim"},
+         "polygons": {"value": 0.8, "unit": "fraction of survey images with polygons", "rank": 0.75, "source": "swim"}
+       },
+       "chlorine_wt_pct": 0.45,
+       "description": "Mid-latitude plains with a widespread shallow excess-ice layer.",
+       "citation": "placeholder"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [22.5, 44.0]},
+     "properties": {"id": "deuteronilus_mensae", "name": "Deuteronilus Mensae", "window_deg": 1.0,
+       "features": {"temperature": {"value": 203.0, "unit": "K (mean annual surface, model)", "rank": 0.74, "source": "swim"},
+         "ground_ice": {"value": 0.55, "unit": "SWIM ice consistency C (0–1 m)", "rank": 0.82, "source": "swim"},
+         "polygons": {"value": null, "unit": "fraction of survey images with polygons", "rank": null, "source": "swim"}},
+       "chlorine_wt_pct": 0.40, "description": "Mesas and debris-covered glaciers rich in buried ice.", "citation": "placeholder"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [164.0, 40.0]},
+     "properties": {"id": "phlegra_montes", "name": "Phlegra Montes", "window_deg": 1.0, "features": {}, "chlorine_wt_pct": 0.42, "description": "placeholder", "citation": "placeholder"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [175.0, 36.0]},
+     "properties": {"id": "erebus_montes", "name": "Erebus Montes", "window_deg": 1.0, "features": {}, "chlorine_wt_pct": 0.44, "description": "placeholder", "citation": "placeholder"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-170.3, 35.1]},
+     "properties": {"id": "amazonis_posiolova", "name": "Amazonis Planitia (Posiolova crater)", "window_deg": 1.0, "features": {}, "chlorine_wt_pct": 0.55, "description": "placeholder", "citation": "placeholder"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [117.5, 46.7]},
+     "properties": {"id": "utopia_planitia", "name": "Utopia Planitia", "window_deg": 1.0, "features": {}, "chlorine_wt_pct": 0.41, "description": "placeholder", "citation": "placeholder"}},
+    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [85.0, -38.0]},
+     "properties": {"id": "hellas_rim", "name": "Hellas rim", "window_deg": 1.0, "features": {}, "chlorine_wt_pct": 0.38, "description": "placeholder", "citation": "placeholder"}}
+  ]
+}

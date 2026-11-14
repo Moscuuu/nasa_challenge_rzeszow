@@ -1,5 +1,7 @@
 # Mars Analog Finder: Data Pipeline Design
 
+> **SUPERSEDED (2026-11-14).** The project moved to a permafrost focus: 7 Mars Base Candidate Sites (Phoenix is not used) and an open list of Earth Regions. See `GLOSSARY.md`. This document is kept for history only. A new spec follows.
+
 Date: 2026-11-14
 Context: NASA Space Apps hackathon challenge "find new terrestrial analogs" (see `docs/Introduction_to_challenge.md`, `docs/Resources.md`). Time budget: **24 hours total**, Python team with ML experience.
 
