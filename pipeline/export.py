@@ -15,7 +15,7 @@ from PIL import Image
 LAYERS = [("0-1m", "0–1 m (dig-able ice)"), ("1-5m", "1–5 m (shallow drilling)"), ("gt5m", "> 5 m (deep resources)")]
 RES = 0.1
 TOP_N = 2000
-CONTRACT_VERSION = "0.5"
+CONTRACT_VERSION = "0.7"
 FEATURES = [
     {"id": "temperature", "label": "Temperature", "comparison": "rank"},
     {"id": "ground_ice", "label": "Ground ice", "comparison": "position"},
@@ -60,6 +60,7 @@ def site_feature(s, layers):
         "geometry": {"type": "Point", "coordinates": [s["lon"], s["lat"]]},
         "properties": {
             "id": s["id"], "name": s["name"], "window_deg": s["window_deg"], "coords_status": s["coords_status"],
+            "coords_source": s["coords_source"],
             "features": {
                 "temperature": {**{f"{q}_K": t[q] for q in MARS_TEMP_KEYS},
                                 "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
@@ -79,10 +80,11 @@ def site_feature(s, layers):
 
 def strengths_breaks(feats):
     ok = {k: v["score"] for k, v in feats.items() if v["status"] == "ok"}
+    penalized = [k for k, v in feats.items() if v["status"] == "no_data_penalized"]
     if not ok:
-        return [], []
+        return [], penalized
     strengths = [k for k, v in sorted(ok.items(), key=lambda kv: -kv[1]) if v >= 0.8] or [max(ok, key=ok.get)]
-    breaks = [k for k, v in sorted(ok.items(), key=lambda kv: kv[1]) if v < 0.5]
+    breaks = [k for k, v in sorted(ok.items(), key=lambda kv: kv[1]) if v < 0.5] + penalized
     return strengths, breaks
 
 
@@ -100,10 +102,9 @@ def polygon_feature(sc, layer, b, k, site):
     if layer == "gt5m":
         return {"score": None, "earth_value": None, "mars_value": None, "unit": None,
                 "status": "not_relevant", "source": None}
-    if site["polygons"]["status"] != "ok":  # no SWIM polygon survey around this Mars site
-        status = "no_data"
-    else:
-        status = "ok"
+    # no SWIM polygon survey around this Mars site: counted as 0 (team rule: missing data in a feature
+    # that counts is penalised)
+    status = "ok" if site["polygons"]["status"] == "ok" else "no_data_penalized"
     return {
         "score": r3(sc["polygons"][b, k]),
         "earth_value": {"cracking_potential": r3(sc["crack"][k]), "ground_surface_temp_K": r3(sc["gst"][k])},
@@ -118,6 +119,8 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
         sc = {k: z[k] for k in z.files}
     windows_path = interim / f"experiment_window_{layer}.json"
     windows = json.loads(windows_path.read_text(encoding="utf-8")) if windows_path.exists() else {}
+    places_path = interim / "places.json"
+    places = json.loads(places_path.read_text(encoding="utf-8")) if places_path.exists() else {}
     site_ids = [s["id"] for s in sites]
     rows, cols = sc["rows"], sc["cols"]
     lat = 90 - (rows + 0.5) * RES
@@ -139,7 +142,7 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
                 "earth_value": {f"{q}_K": r3(sc["earth_temp"][j, k]) for j, q in enumerate(quantities)},
                 "mars_value": {f"{q}_K": s["temperature"][mk] for q, mk in zip(quantities, mars_keys)},
                 "unit": unit,
-                "status": "ok" if np.isfinite(sc["temperature"][b, k]) else "no_data", "source": temp_source,
+                "status": "ok" if np.isfinite(sc["temperature"][b, k]) else "no_data_penalized", "source": temp_source,
             },
             "ground_ice": {
                 "score": r3(sc["ice"][b, k]),
@@ -164,7 +167,7 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
                                   if np.isfinite(sc["overall"][i, k]) and sc["best"][k] - sc["overall"][i, k] < 1e-3],
                 "site_scores": {sid: r3(sc["overall"][i, k]) for i, sid in enumerate(site_ids)},
                 "features": feats, "strengths": strengths, "breaks_down": breaks,
-                "known_analog": known_analog(lon[k], lat[k]), "place": None,
+                "known_analog": known_analog(lon[k], lat[k]), "place": places.get(cid),
                 "experiment_window": windows.get(cid),
             },
         })

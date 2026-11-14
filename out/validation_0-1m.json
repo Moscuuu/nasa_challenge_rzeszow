@@ -5,15 +5,15 @@
    "name": "McMurdo Dry Valleys",
    "role": "known_analog",
    "cells": 199,
-   "median_percentile": 92.7,
-   "passed": true,
+   "median_percentile": 68.1,
+   "passed": false,
    "applicable": true
   },
   {
    "name": "Haughton Crater (Devon Island)",
    "role": "known_analog",
    "cells": 286,
-   "median_percentile": 96.5,
+   "median_percentile": 91.7,
    "passed": true,
    "applicable": true
   },
@@ -21,8 +21,8 @@
    "name": "Alaska North Slope",
    "role": "contrast",
    "cells": 2514,
-   "median_percentile": 44.2,
-   "passed": true,
+   "median_percentile": 58.9,
+   "passed": false,
    "applicable": true
   }
  ],

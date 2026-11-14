@@ -1,6 +1,6 @@
 {
- "contract_version": "0.5",
- "generated_at": "2026-11-14T18:42:35Z",
+ "contract_version": "0.7",
+ "generated_at": "2026-11-14T19:50:54Z",
  "mock": false,
  "cell_size_deg": 0.1,
  "layers": [
