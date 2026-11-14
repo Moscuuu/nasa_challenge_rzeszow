@@ -202,10 +202,15 @@ Banned: fast spins, particle stars, bouncing/gradient text, colour flashes.
 - **Keyboard**: pins, layer slabs and card arrows work with Tab / Enter / arrow keys, visible focus.
 - **Per-site feature scores**: see open item in section 10.
 
-## 10. Open items
+## 10. Contract changes
 
-- Feature bars for a selected site ≠ `best_site_id` (contract v0.2 only has them vs the best
-  site). Pending decision: change `pipeline/export.py` to emit per-site feature scores.
+- **Contract v0.3** (decided; branch `contract-v0.3` from `main`, PR for the analysis team):
+  1. `site_features: {site_id: {temperature, ground_ice, strengths, breaks_down}}` per cell
+     (scores only), so the card always shows bars for the selected site;
+  2. `cells_top` = union of the top N cells for *each* of the 7 sites (not only the global top);
+  3. `bbox` on every `validation.json` check.
+  `CONTRACT.md` and `examples/` updated to v0.3. Claude re-runs the pipeline locally to rebuild
+  `out/`; `out/` is committed to git (~12–15 MB) so the GUI and deploy have the data.
 
 ## 11. Left to the builder
 
