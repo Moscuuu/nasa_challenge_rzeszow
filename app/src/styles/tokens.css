@@ -1,0 +1,156 @@
+:root {
+  --bg: #05070b;
+  --ink: #eef2f6;
+  --mute: #8b95a4;
+  --dim: #4a5361;
+  --line: rgba(238, 242, 246, 0.16);
+  --line2: rgba(238, 242, 246, 0.34);
+  --frost: #d9ecfa;
+  --panel: rgba(14, 19, 27, 0.62);
+  --f-disp: "Sora", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+}
+
+/* Desktop: Mars + soil in a narrow left column, Earth large in the centre, card on the right. */
+.layout {
+  display: grid;
+  height: 100%;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 3fr) minmax(300px, 1.1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "head head head"
+    "mars earth card"
+    "soil earth card"
+    "foot foot foot";
+}
+.layout > header { grid-area: head; }
+.layout [data-slot="mars"] { grid-area: mars; }
+.layout [data-slot="soil"] { grid-area: soil; }
+.layout [data-slot="earth"] { grid-area: earth; }
+.layout [data-slot="card"] { grid-area: card; }
+.layout > footer { grid-area: foot; }
+
+.layout > header {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.layout h1 {
+  margin: 0;
+  font-family: var(--f-disp);
+  font-weight: 300;
+  font-size: 1.25rem;
+}
+
+.layout [data-slot] {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--line);
+}
+
+/* Phone: Mars + soil side by side on top, Earth in the middle, card as the bottom sheet. */
+@media (max-width: 700px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(120px, 22vh) minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "head head"
+      "mars soil"
+      "earth earth"
+      "card card"
+      "foot foot";
+  }
+  .layout > header { padding: 8px 16px; }
+  .layout [data-slot="card"] {
+    max-height: 40vh;
+    overflow-y: auto;
+    border-radius: 14px 14px 0 0;
+  }
+}
+
+/* 3D stage: one fixed canvas under the slots; views are scissored onto them. */
+.layout [data-slot="mars"],
+.layout [data-slot="earth"] {
+  position: relative;
+  cursor: grab;
+}
+
+.no-webgl {
+  margin: 24px;
+  color: var(--mute);
+}
+
+.pin {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Mouse clicks are routed to the nearest pin by the Mars slot (pins overlap), so buttons never steal them. */
+@media (pointer: fine) {
+  .pin {
+    pointer-events: none;
+  }
+}
+
+/* Far side of the globe: faded out, not clickable, still reachable with Tab. */
+.pin--far {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pin:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: -10px;
+}
+
+.pin-label {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  white-space: nowrap;
+  font: 400 0.75rem/1.2 var(--f-body);
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.pin--hot .pin-label,
+.pin:hover .pin-label,
+.pin:focus-visible .pin-label,
+.pin[aria-pressed="true"] .pin-label {
+  opacity: 1;
+}

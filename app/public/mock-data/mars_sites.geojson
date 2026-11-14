@@ -1,0 +1,399 @@
+{
+ "type": "FeatureCollection",
+ "mock": true,
+ "note": "MOCK DATA. Coordinates are approximate placeholders; feature values are invented.",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -170,
+     42
+    ]
+   },
+   "properties": {
+    "id": "arcadia_planitia",
+    "name": "Arcadia Planitia",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 173.3,
+      "tmax_K": 246.6,
+      "amp_K": 73.3,
+      "summer_tmin_K": 182,
+      "summer_tmax_K": 263.2,
+      "summer_amp_K": 81.2,
+      "t_1_5_K": 201.3,
+      "t_gt5_K": 200.6,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.62,
+       "rank": 0.88
+      },
+      "1-5m": {
+       "value": 0.37,
+       "rank": 0.44
+      },
+      "gt5m": {
+       "value": 0.19,
+       "rank": 0.26
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.56,
+      "rank": 0.81,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.45,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     22.5,
+     44
+    ]
+   },
+   "properties": {
+    "id": "deuteronilus_mensae",
+    "name": "Deuteronilus Mensae",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 171,
+      "tmax_K": 243.9,
+      "amp_K": 72.9,
+      "summer_tmin_K": 179.7,
+      "summer_tmax_K": 260.5,
+      "summer_amp_K": 80.8,
+      "t_1_5_K": 199,
+      "t_gt5_K": 198.3,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.55,
+       "rank": 0.82
+      },
+      "1-5m": {
+       "value": 0.33,
+       "rank": 0.41
+      },
+      "gt5m": {
+       "value": 0.17,
+       "rank": 0.25
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": null,
+      "rank": null,
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.4,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     164,
+     40
+    ]
+   },
+   "properties": {
+    "id": "phlegra_montes",
+    "name": "Phlegra Montes",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 172.1,
+      "tmax_K": 245,
+      "amp_K": 72.9,
+      "summer_tmin_K": 180.8,
+      "summer_tmax_K": 261.6,
+      "summer_amp_K": 80.8,
+      "t_1_5_K": 200.1,
+      "t_gt5_K": 199.4,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.58,
+       "rank": 0.85
+      },
+      "1-5m": {
+       "value": 0.35,
+       "rank": 0.43
+      },
+      "gt5m": {
+       "value": 0.17,
+       "rank": 0.26
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": null,
+      "rank": null,
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.42,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     175,
+     36
+    ]
+   },
+   "properties": {
+    "id": "erebus_montes",
+    "name": "Erebus Montes",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 170.5,
+      "tmax_K": 242.1,
+      "amp_K": 71.6,
+      "summer_tmin_K": 179.2,
+      "summer_tmax_K": 258.7,
+      "summer_amp_K": 79.5,
+      "t_1_5_K": 198.5,
+      "t_gt5_K": 197.8,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.5,
+       "rank": 0.7
+      },
+      "1-5m": {
+       "value": 0.3,
+       "rank": 0.35
+      },
+      "gt5m": {
+       "value": 0.15,
+       "rank": 0.21
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.88,
+      "rank": 0.76,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.44,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -170.3,
+     35.1
+    ]
+   },
+   "properties": {
+    "id": "amazonis_posiolova",
+    "name": "Amazonis Planitia (Posiolova crater)",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 174.2,
+      "tmax_K": 248.3,
+      "amp_K": 74.1,
+      "summer_tmin_K": 182.9,
+      "summer_tmax_K": 264.9,
+      "summer_amp_K": 82,
+      "t_1_5_K": 202.2,
+      "t_gt5_K": 201.5,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.48,
+       "rank": 0.66
+      },
+      "1-5m": {
+       "value": 0.29,
+       "rank": 0.33
+      },
+      "gt5m": {
+       "value": 0.14,
+       "rank": 0.2
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.62,
+      "rank": 0.76,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.55,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     117.5,
+     46.7
+    ]
+   },
+   "properties": {
+    "id": "utopia_planitia",
+    "name": "Utopia Planitia",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 172.8,
+      "tmax_K": 244.7,
+      "amp_K": 71.9,
+      "summer_tmin_K": 181.5,
+      "summer_tmax_K": 261.3,
+      "summer_amp_K": 79.8,
+      "t_1_5_K": 200.8,
+      "t_gt5_K": 200.1,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.6,
+       "rank": 0.86
+      },
+      "1-5m": {
+       "value": 0.36,
+       "rank": 0.43
+      },
+      "gt5m": {
+       "value": 0.18,
+       "rank": 0.26
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": null,
+      "rank": null,
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.41,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     85,
+     -38
+    ]
+   },
+   "properties": {
+    "id": "hellas_rim",
+    "name": "Hellas rim",
+    "window_deg": 1,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 176,
+      "tmax_K": 251.2,
+      "amp_K": 75.2,
+      "summer_tmin_K": 184.7,
+      "summer_tmax_K": 267.8,
+      "summer_amp_K": 83.1,
+      "t_1_5_K": 204,
+      "t_gt5_K": 203.3,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.3,
+       "rank": 0.4
+      },
+      "1-5m": {
+       "value": 0.18,
+       "rank": 0.2
+      },
+      "gt5m": {
+       "value": 0.09,
+       "rank": 0.12
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.87,
+      "rank": 0.82,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": 0.38,
+    "description": "MOCK description of why this site is a candidate.",
+    "citation": "placeholder"
+   }
+  }
+ ]
+}

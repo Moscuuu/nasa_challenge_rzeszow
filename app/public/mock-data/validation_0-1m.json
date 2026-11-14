@@ -1,0 +1,37 @@
+{
+ "mock": true,
+ "layer": "0-1m",
+ "checks": [
+  {
+   "name": "McMurdo Dry Valleys",
+   "role": "known_analog",
+   "cells": 250,
+   "median_percentile": 99.08,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Haughton Crater (Devon Island)",
+   "role": "known_analog",
+   "cells": 330,
+   "median_percentile": 99.45,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Alaska North Slope",
+   "role": "contrast",
+   "cells": 9000,
+   "median_percentile": 41,
+   "passed": true,
+   "applicable": true
+  }
+ ],
+ "weights": {
+  "temperature": 0.25,
+  "ground_ice": 0.25,
+  "polygons": 0.25,
+  "dryness": 0.25
+ },
+ "notes": "MOCK. Equal weights over the features available for a Mars site. Percentile = position of the cell's best score among all permafrost cells."
+}
