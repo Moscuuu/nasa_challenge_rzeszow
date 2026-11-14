@@ -101,7 +101,11 @@ export function HoldToDrill() {
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => () => void (motion.videoPlaying = false), []);
+  // Re-assert on (re)mount: StrictMode's dev remount runs the cleanup below once before the real mount.
+  useEffect(() => {
+    if (phase !== "off" && !done.current) motion.videoPlaying = true;
+    return () => void (motion.videoPlaying = false);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === "off") return null;
   const caption = CAPTIONS[captionIndex(p)];

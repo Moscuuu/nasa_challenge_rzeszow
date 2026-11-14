@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { motion } from "../motion/registry";
@@ -43,6 +44,15 @@ describe("HoldToDrill", () => {
     fireEvent.pointerUp(window);
     frames(1000);
     expect(progress()).toBeLessThan(held);
+  });
+
+  it("keeps the 3D intro waiting under StrictMode remounts", () => {
+    render(
+      <StrictMode>
+        <HoldToDrill />
+      </StrictMode>,
+    );
+    expect(motion.videoPlaying).toBe(true);
   });
 
   it("Skip ends it", () => {

@@ -513,6 +513,16 @@ details[open] > summary .f-name::after {
 .footer a {
   color: var(--mute);
 }
+.footer-replay {
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--mute);
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
 @media (max-width: 700px) {
   .footer {
     padding: 6px 16px;
