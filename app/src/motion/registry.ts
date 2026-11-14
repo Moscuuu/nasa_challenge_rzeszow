@@ -12,4 +12,6 @@ export const motion: {
   holdFly: boolean;
   /** True from mount until the intro ends: the card build is part of the intro. */
   introActive: boolean;
-} = { mars: null, earth: null, holdFly: false, introActive: false };
+  /** True while the opening video plays: the 3D intro waits for it. */
+  videoPlaying: boolean;
+} = { mars: null, earth: null, holdFly: false, introActive: false, videoPlaying: false };

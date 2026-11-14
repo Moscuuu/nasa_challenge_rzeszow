@@ -573,6 +573,33 @@ details[open] > summary .f-name::after {
   }
 }
 
+/* Opening video: above the veil, fades out into the 3D intro. */
+.intro-video {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+  transition: opacity 700ms ease;
+}
+.intro-video--out {
+  opacity: 0;
+  pointer-events: none;
+}
+.intro-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.intro-video-skip {
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: rgba(238, 242, 246, 0.6);
+}
+
 /* Ambient grain + vignette over everything, below the intro veil. */
 .fx { position: fixed; inset: 0; z-index: 40; pointer-events: none; }
 .fx-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%); }

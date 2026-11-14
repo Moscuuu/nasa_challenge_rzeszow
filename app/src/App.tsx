@@ -8,6 +8,7 @@ import { Effects } from "./scene/Effects";
 import { hasWebGL, NO_WEBGL_MESSAGE } from "./scene/webgl";
 import { AnalogCard } from "./ui/AnalogCard";
 import { Footer } from "./ui/Footer";
+import { IntroVideo } from "./ui/IntroVideo";
 import { MapLegend } from "./ui/MapLegend";
 import { ShowAllToggle } from "./ui/ShowAllToggle";
 import { SitePicker } from "./ui/SitePicker";
@@ -70,6 +71,7 @@ export default function App() {
       </aside>
       <Footer />
       <Effects />
+      {webgl && <IntroVideo />}
       {veil && (
         <div className="intro-veil" role="status">
           <p>Loading Earth and Mars…</p>

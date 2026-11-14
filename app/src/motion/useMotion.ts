@@ -35,7 +35,7 @@ export function useMotion(
     if (!enabled) return;
     let raf = 0;
     let intro: ReturnType<typeof introTimeline> | null = null;
-    const started = performance.now();
+    let started = performance.now();
     motion.introActive = kind !== "none"; // from the first frame: the card must not build on its own before the intro does
 
     let skipped = false;
@@ -67,6 +67,11 @@ export function useMotion(
       }
       if (failedRef.current) {
         endIntro();
+        return;
+      }
+      if (motion.videoPlaying && !skipped) {
+        started = performance.now(); // the ready timeout counts from the end of the video
+        raf = requestAnimationFrame(ready);
         return;
       }
       if (!(scenes && appStore.getState().manifest !== null)) {
