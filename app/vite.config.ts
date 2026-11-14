@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import { cpSync, createReadStream, existsSync, statSync } from "node:fs";
-import { extname, join, normalize, resolve } from "node:path";
+import { extname, join, normalize, resolve, sep } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -20,10 +20,14 @@ function repoData(): Plugin {
       distDir = resolve(config.root, config.build.outDir);
     },
     configureServer(server) {
-      server.middlewares.use("/data", (req, res, next) => {
+      server.middlewares.use("/data", (req, res) => {
         const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0])).replace(new RegExp("^[\\/]+"), "");
         const file = join(outDir, rel);
-        if (!file.startsWith(outDir) || !existsSync(file) || !statSync(file).isFile()) return next();
+        if (!file.startsWith(outDir + sep) || !existsSync(file) || !statSync(file).isFile()) {
+          res.statusCode = 404;
+          res.end("Not found");
+          return;
+        }
         res.setHeader("Content-Type", TYPES[extname(file)] ?? "application/octet-stream");
         createReadStream(file).pipe(res);
       });
