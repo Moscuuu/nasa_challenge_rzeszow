@@ -1,0 +1,14 @@
+site,kind,score,pct,pct_cold_only,twin,GST,ALT,PFR,s_dry
+University Valley,analog,0.904,99.278,99.916,phoenix,-32.02,0.0,100.0,0.81
+Beacon Valley,analog,0.905,99.313,99.916,phoenix,-33.035,0.0,100.0,0.811
+Don Juan Pond,analog,0.914,99.711,99.454,phoenix,-31.235,0.0,100.0,0.857
+Taylor Valley,analog,0.911,99.607,98.461,phoenix,-26.732,0.0,100.0,0.85
+Axel Heiberg (Expedition Fd.),analog,0.888,97.678,95.923,erebus_montes,-15.955,0.282,100.0,0.715
+Haughton Crater,analog,0.846,91.305,94.121,arcadia_planitia,-14.939,0.337,100.0,0.735
+Eureka (Ellesmere),analog,0.876,96.384,95.067,utopia_scalloped,-14.188,0.444,100.0,0.832
+Bockfjorden (Svalbard),process,0.754,68.881,67.177,deuteronilus_mensae,-2.853,0.544,99.521,0.555
+Utqiagvik (Alaska),reference,0.824,84.953,78.434,arcadia_planitia,-6.44,0.5,100.0,0.772
+Tuktoyaktuk,reference,0.793,77.721,72.189,utopia_scalloped,-5.599,0.733,100.0,0.783
+Duvanny Yar,reference,0.791,77.142,76.362,arcadia_planitia,-6.924,0.546,100.0,0.615
+Adventdalen (Svalbard),reference,0.752,68.423,62.552,utopia_scalloped,-2.892,0.405,100.0,0.566
+Beiluhe (Tibet),reference,0.696,58.028,56.794,utopia_scalloped,-2.499,0.526,100.0,0.538

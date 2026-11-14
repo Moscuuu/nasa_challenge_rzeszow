@@ -1,0 +1,8 @@
+region,bbox,note,area_km2,mapped_frac,glacier_frac,ext_continuous,ext_discontinuous,ext_sporadic,ext_isolated,ext_none,ice_low,ice_medium,ice_high,pf_frac_mean,ice_ord_mean,phoenix_like_frac,mountain_frac
+dry_valleys,"160.5,-78.0,163.0,-77.2",outside map (northern hemisphere only),,,,,,,,,,,,,,,
+qiangtang,"82.0,33.0,90.0,36.0",,244526.0,1.0,0.0,0.0,0.994,0.003,0.0,0.003,0.058,0.0,0.938,0.697,2.87,0.0,0.997
+ojos_del_salado,"-69.5,-28.0,-67.5,-26.0",outside map (northern hemisphere only),,,,,,,,,,,,,,,
+axel_heiberg,"-95.0,78.5,-88.0,81.0",,38499.0,1.0,0.37,1.0,0.0,0.0,0.0,0.0,0.656,0.0,0.344,0.95,1.69,0.344,1.0
+alaska_north_slope,"-160.0,69.0,-145.0,71.0",,126858.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.111,0.481,0.408,0.95,2.3,0.408,0.067
+devon_island_haughton,"-90.5,75.0,-88.5,75.8",,4987.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.95,3.0,1.0,1.0
+svalbard_bockfjord,"13.0,79.2,14.5,79.6",,1365.0,1.0,0.198,1.0,0.0,0.0,0.0,0.0,0.532,0.468,0.0,0.95,1.47,0.0,0.532

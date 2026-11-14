@@ -1,0 +1,429 @@
+[
+ {
+  "id": "arcadia_planitia",
+  "name": "Arcadia Planitia",
+  "lat": 42.0,
+  "lon": -160.0,
+  "description": "Mid-latitude plains with a widespread shallow excess-ice layer mapped by radar and fresh ice-exposing craters.",
+  "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 173.3,
+   "tmax": 246.65,
+   "amp": 73.35,
+   "tmean": 203.76,
+   "abs_min": 155.63,
+   "abs_max": 264.89
+  },
+  "diurnal_profile_K": [
+   174.92,
+   178.54,
+   186.46,
+   198.67,
+   213.0,
+   226.32,
+   236.82,
+   243.6,
+   246.4,
+   245.22,
+   240.18,
+   231.45,
+   220.29,
+   209.28,
+   199.85,
+   193.2,
+   188.89,
+   185.66,
+   183.08,
+   180.93,
+   179.1,
+   177.51,
+   176.1,
+   174.87
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.5843,
+    "percentile": 0.9084
+   },
+   "1-5m": {
+    "c": 0.3365,
+    "percentile": 0.6889
+   },
+   "gt5m": {
+    "c": 0.1326,
+    "percentile": 0.6993
+   }
+  },
+  "chlorine_wt_pct": null
+ },
+ {
+  "id": "deuteronilus_mensae",
+  "name": "Deuteronilus Mensae",
+  "lat": 44.0,
+  "lon": 22.0,
+  "description": "Mesas fringed by debris-covered glaciers and lobate aprons holding buried ice.",
+  "citation": "Plaut et al. 2009, GRL; First Landing Site/Exploration Zone Workshop 2015",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 172.35,
+   "tmax": 243.93,
+   "amp": 71.58,
+   "tmean": 202.19,
+   "abs_min": 152.94,
+   "abs_max": 263.9
+  },
+  "diurnal_profile_K": [
+   174.16,
+   177.87,
+   185.56,
+   197.15,
+   210.92,
+   223.86,
+   234.14,
+   240.85,
+   243.67,
+   242.59,
+   237.7,
+   229.19,
+   218.51,
+   207.94,
+   198.77,
+   192.09,
+   187.76,
+   184.55,
+   181.99,
+   179.86,
+   178.05,
+   176.47,
+   175.08,
+   173.88
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.3821,
+    "percentile": 0.8375
+   },
+   "1-5m": {
+    "c": 0.5488,
+    "percentile": 0.9572
+   },
+   "gt5m": {
+    "c": 0.5591,
+    "percentile": 0.9916
+   }
+  },
+  "chlorine_wt_pct": null
+ },
+ {
+  "id": "phlegra_montes",
+  "name": "Phlegra Montes",
+  "lat": 40.0,
+  "lon": 164.0,
+  "description": "Mountain range with radar-detected ice in surrounding aprons, proposed for human exploration.",
+  "citation": "Dundas et al. 2021; Morgan et al. 2021, Nature Astronomy",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 174.17,
+   "tmax": 249.17,
+   "amp": 75.01,
+   "tmean": 205.22,
+   "abs_min": 158.1,
+   "abs_max": 265.87
+  },
+  "diurnal_profile_K": [
+   175.63,
+   179.14,
+   187.3,
+   200.11,
+   214.97,
+   228.64,
+   239.33,
+   246.17,
+   248.94,
+   247.66,
+   242.48,
+   233.55,
+   221.95,
+   210.49,
+   200.83,
+   194.23,
+   189.92,
+   186.68,
+   184.08,
+   181.92,
+   180.07,
+   178.46,
+   177.04,
+   175.78
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.2484,
+    "percentile": 0.7416
+   },
+   "1-5m": {
+    "c": 0.548,
+    "percentile": 0.9571
+   },
+   "gt5m": {
+    "c": 0.5,
+    "percentile": 0.7339
+   }
+  },
+  "chlorine_wt_pct": null
+ },
+ {
+  "id": "erebus_montes",
+  "name": "Erebus Montes",
+  "lat": 35.7,
+  "lon": 175.0,
+  "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
+  "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 175.81,
+   "tmax": 254.01,
+   "amp": 78.2,
+   "tmean": 208.01,
+   "abs_min": 162.82,
+   "abs_max": 267.97
+  },
+  "diurnal_profile_K": [
+   176.99,
+   180.21,
+   188.89,
+   202.94,
+   218.81,
+   233.15,
+   244.17,
+   251.11,
+   253.8,
+   252.33,
+   246.87,
+   237.56,
+   225.13,
+   212.73,
+   202.66,
+   196.18,
+   191.87,
+   188.6,
+   185.97,
+   183.77,
+   181.9,
+   180.26,
+   178.82,
+   177.54
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.1866,
+    "percentile": 0.7051
+   },
+   "1-5m": {
+    "c": 0.4661,
+    "percentile": 0.9531
+   },
+   "gt5m": {
+    "c": 0.5,
+    "percentile": 0.7339
+   }
+  },
+  "chlorine_wt_pct": null
+ },
+ {
+  "id": "amazonis_posiolova",
+  "name": "Amazonis Planitia (Posiolova crater)",
+  "lat": 35.1,
+  "lon": -170.3,
+  "description": "A 2021 impact excavated ice boulders here, the lowest-latitude ice exposure seen.",
+  "citation": "Posiolova et al. 2022, Science",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 176.02,
+   "tmax": 254.62,
+   "amp": 78.61,
+   "tmean": 208.36,
+   "abs_min": 163.4,
+   "abs_max": 268.26
+  },
+  "diurnal_profile_K": [
+   177.17,
+   180.34,
+   189.09,
+   203.31,
+   219.3,
+   233.73,
+   244.79,
+   251.74,
+   254.41,
+   252.92,
+   247.42,
+   238.07,
+   225.54,
+   213.01,
+   202.89,
+   196.43,
+   192.12,
+   188.84,
+   186.21,
+   184.01,
+   182.12,
+   180.49,
+   179.05,
+   177.76
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.1701,
+    "percentile": 0.6947
+   },
+   "1-5m": {
+    "c": 0.3794,
+    "percentile": 0.6932
+   },
+   "gt5m": {
+    "c": 0.05,
+    "percentile": 0.6574
+   }
+  },
+  "chlorine_wt_pct": null
+ },
+ {
+  "id": "utopia_planitia",
+  "name": "Utopia Planitia",
+  "lat": 45.0,
+  "lon": 95.0,
+  "description": "Scalloped terrain over a radar-detected ice deposit comparable in volume to Lake Superior.",
+  "citation": "Stuurman et al. 2016, GRL",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 171.85,
+   "tmax": 242.5,
+   "amp": 70.65,
+   "tmean": 201.36,
+   "abs_min": 151.53,
+   "abs_max": 263.4
+  },
+  "diurnal_profile_K": [
+   173.76,
+   177.51,
+   185.08,
+   196.36,
+   209.84,
+   222.57,
+   232.73,
+   239.4,
+   242.23,
+   241.19,
+   236.38,
+   227.99,
+   217.56,
+   207.23,
+   198.19,
+   191.5,
+   187.16,
+   183.96,
+   181.41,
+   179.29,
+   177.48,
+   175.91,
+   174.53,
+   173.36
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.1189,
+    "percentile": 0.6571
+   },
+   "1-5m": {
+    "c": 0.4404,
+    "percentile": 0.9523
+   },
+   "gt5m": {
+    "c": 0.5,
+    "percentile": 0.7339
+   }
+  },
+  "chlorine_wt_pct": null
+ },
+ {
+  "id": "hellas_rim",
+  "name": "Hellas rim",
+  "lat": -40.0,
+  "lon": 104.0,
+  "description": "Lobate debris aprons on the eastern Hellas rim, among the few southern ice-rich candidates.",
+  "citation": "Holt et al. 2008, Science",
+  "window_deg": 1.0,
+  "coords_status": "approximate",
+  "albedo": 0.25,
+  "thermal_inertia": 250.0,
+  "temperature": {
+   "tmin": 171.41,
+   "tmax": 244.27,
+   "amp": 72.85,
+   "tmean": 201.47,
+   "abs_min": 149.29,
+   "abs_max": 291.11
+  },
+  "diurnal_profile_K": [
+   173.0,
+   176.44,
+   184.33,
+   196.65,
+   210.93,
+   224.1,
+   234.46,
+   241.18,
+   243.95,
+   242.75,
+   237.66,
+   228.81,
+   217.34,
+   206.12,
+   196.82,
+   190.57,
+   186.51,
+   183.45,
+   180.99,
+   178.94,
+   177.19,
+   175.67,
+   174.32,
+   173.12
+  ],
+  "ice": {
+   "0-1m": {
+    "c": 0.2636,
+    "percentile": 0.749
+   },
+   "1-5m": {
+    "c": 0.5148,
+    "percentile": 0.9558
+   },
+   "gt5m": {
+    "c": 0.5,
+    "percentile": 0.7339
+   }
+  },
+  "chlorine_wt_pct": null
+ }
+]

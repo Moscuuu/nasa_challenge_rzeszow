@@ -1,0 +1,527 @@
+{
+ "dry_valleys": {
+  "task_id": "4fbd21b6-1b6f-4024-8adc-d7893bae15ba",
+  "payload": {
+   "task_type": "area",
+   "task_name": "smap_l4_dry_valleys_2023-01-01_2023-12-31",
+   "params": {
+    "dates": [
+     {
+      "startDate": "01-01-2023",
+      "endDate": "12-31-2023"
+     }
+    ],
+    "layers": [
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_temp_lowatmmodlay"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_surface_temp"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer1"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer2"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer3"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer4"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_rootzone"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface_wetness"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_precipitation_total_surface_flux"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_land_fraction_snow_covered"
+     }
+    ],
+    "output": {
+     "format": {
+      "type": "netcdf4"
+     },
+     "projection": "geographic"
+    },
+    "geo": {
+     "type": "FeatureCollection",
+     "features": [
+      {
+       "type": "Feature",
+       "properties": {
+        "name": "dry_valleys"
+       },
+       "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+         [
+          [
+           160.5,
+           -78.0
+          ],
+          [
+           163.0,
+           -78.0
+          ],
+          [
+           163.0,
+           -77.2
+          ],
+          [
+           160.5,
+           -77.2
+          ],
+          [
+           160.5,
+           -78.0
+          ]
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "qiangtang": {
+  "task_id": "44dbcd36-34f9-4db3-9a27-6aef528fbd3c",
+  "payload": {
+   "task_type": "area",
+   "task_name": "smap_l4_qiangtang_2023-01-01_2023-12-31",
+   "params": {
+    "dates": [
+     {
+      "startDate": "01-01-2023",
+      "endDate": "12-31-2023"
+     }
+    ],
+    "layers": [
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_temp_lowatmmodlay"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_surface_temp"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer1"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer2"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer3"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer4"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_rootzone"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface_wetness"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_precipitation_total_surface_flux"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_land_fraction_snow_covered"
+     }
+    ],
+    "output": {
+     "format": {
+      "type": "netcdf4"
+     },
+     "projection": "geographic"
+    },
+    "geo": {
+     "type": "FeatureCollection",
+     "features": [
+      {
+       "type": "Feature",
+       "properties": {
+        "name": "qiangtang"
+       },
+       "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+         [
+          [
+           82.0,
+           33.0
+          ],
+          [
+           90.0,
+           33.0
+          ],
+          [
+           90.0,
+           36.0
+          ],
+          [
+           82.0,
+           36.0
+          ],
+          [
+           82.0,
+           33.0
+          ]
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "ojos_del_salado": {
+  "task_id": "d0d37487-9c88-4aba-b541-beb5d444f543",
+  "payload": {
+   "task_type": "area",
+   "task_name": "smap_l4_ojos_del_salado_2023-01-01_2023-12-31",
+   "params": {
+    "dates": [
+     {
+      "startDate": "01-01-2023",
+      "endDate": "12-31-2023"
+     }
+    ],
+    "layers": [
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_temp_lowatmmodlay"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_surface_temp"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer1"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer2"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer3"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer4"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_rootzone"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface_wetness"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_precipitation_total_surface_flux"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_land_fraction_snow_covered"
+     }
+    ],
+    "output": {
+     "format": {
+      "type": "netcdf4"
+     },
+     "projection": "geographic"
+    },
+    "geo": {
+     "type": "FeatureCollection",
+     "features": [
+      {
+       "type": "Feature",
+       "properties": {
+        "name": "ojos_del_salado"
+       },
+       "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+         [
+          [
+           -69.5,
+           -28.0
+          ],
+          [
+           -67.5,
+           -28.0
+          ],
+          [
+           -67.5,
+           -26.0
+          ],
+          [
+           -69.5,
+           -26.0
+          ],
+          [
+           -69.5,
+           -28.0
+          ]
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "axel_heiberg": {
+  "task_id": "9d957ef1-7150-4ab4-833f-333bb00cc461",
+  "payload": {
+   "task_type": "area",
+   "task_name": "smap_l4_axel_heiberg_2023-01-01_2023-12-31",
+   "params": {
+    "dates": [
+     {
+      "startDate": "01-01-2023",
+      "endDate": "12-31-2023"
+     }
+    ],
+    "layers": [
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_temp_lowatmmodlay"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_surface_temp"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer1"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer2"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer3"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer4"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_rootzone"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface_wetness"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_precipitation_total_surface_flux"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_land_fraction_snow_covered"
+     }
+    ],
+    "output": {
+     "format": {
+      "type": "netcdf4"
+     },
+     "projection": "geographic"
+    },
+    "geo": {
+     "type": "FeatureCollection",
+     "features": [
+      {
+       "type": "Feature",
+       "properties": {
+        "name": "axel_heiberg"
+       },
+       "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+         [
+          [
+           -95.0,
+           78.5
+          ],
+          [
+           -88.0,
+           78.5
+          ],
+          [
+           -88.0,
+           81.0
+          ],
+          [
+           -95.0,
+           81.0
+          ],
+          [
+           -95.0,
+           78.5
+          ]
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "alaska_north_slope": {
+  "task_id": "1d7eb24d-b944-43f8-aec0-c0133ccba0f6",
+  "payload": {
+   "task_type": "area",
+   "task_name": "smap_l4_alaska_north_slope_2023-01-01_2023-12-31",
+   "params": {
+    "dates": [
+     {
+      "startDate": "01-01-2023",
+      "endDate": "12-31-2023"
+     }
+    ],
+    "layers": [
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_temp_lowatmmodlay"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_surface_temp"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer1"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer2"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer3"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_soil_temp_layer4"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_rootzone"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_sm_surface_wetness"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_precipitation_total_surface_flux"
+     },
+     {
+      "product": "SPL4SMGP.008",
+      "layer": "Geophysical_Data_land_fraction_snow_covered"
+     }
+    ],
+    "output": {
+     "format": {
+      "type": "netcdf4"
+     },
+     "projection": "geographic"
+    },
+    "geo": {
+     "type": "FeatureCollection",
+     "features": [
+      {
+       "type": "Feature",
+       "properties": {
+        "name": "alaska_north_slope"
+       },
+       "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+         [
+          [
+           -160.0,
+           69.0
+          ],
+          [
+           -145.0,
+           69.0
+          ],
+          [
+           -145.0,
+           71.0
+          ],
+          [
+           -160.0,
+           71.0
+          ],
+          [
+           -160.0,
+           69.0
+          ]
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ }
+}
