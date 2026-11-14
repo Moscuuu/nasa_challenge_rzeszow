@@ -244,3 +244,37 @@ button {
     padding: 14px 16px;
   }
 }
+
+/* Motion */
+.intro-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  pointer-events: none;
+}
+.card {
+  position: relative;
+}
+/* Border lines that draw in (card build); fully drawn at rest. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--line2);
+  pointer-events: none;
+  clip-path: inset(0 calc((1 - var(--draw, 1)) * 100%) 0 0);
+}
+.soil {
+  perspective: 600px;
+}
+.slab {
+  position: relative;
+  box-shadow: 4px 4px 0 -1px var(--line);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card::after {
+    clip-path: none;
+  }
+}

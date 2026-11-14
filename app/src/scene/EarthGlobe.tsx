@@ -7,12 +7,19 @@ import { isClick, ll2v, rotationFor, v2ll } from "./geo";
 import { PULSE_RADIUS } from "./heat";
 import { createHeatMaterial, scoreTexture } from "./heatMaterial";
 import { Pulse } from "./Pulse";
+import { motion as motionRegistry } from "../motion/registry";
 import { useTextureSize } from "./useTextureSize";
 import { ValidationBoxes } from "./ValidationBoxes";
 
 export interface EarthGlobeHandle {
   /** Turn the globe so (lat, lon) faces the camera. */
   flyTo(lat: number, lon: number): void;
+  /** Heat reveal radius from the focus cell, in radians (0 = hidden, PI = all shown). */
+  setReveal(radians: number): void;
+  /** Show or hide the pulse rings on the focus cell. */
+  setPulseVisible(visible: boolean): void;
+  /** Intro: globe scale 0..1 (rises into view). */
+  setIntro(v: { scale?: number }): void;
 }
 
 const IDLE_SPEED = 0.01; // rad/s, slow idle spin
@@ -54,6 +61,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   const globe = useRef<THREE.Group>(null);
   const earth = useRef<THREE.Mesh>(null);
   const camera = useRef<THREE.PerspectiveCamera>(null);
+  const pulseGroup = useRef<THREE.Group>(null);
   const { width, height } = useThree((s) => s.size);
 
   // Heat overlay: one material, its uniforms follow the store.
@@ -96,7 +104,24 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     Object.assign(motion.current, { target: t, vx: 0, vy: 0 });
   };
 
-  useImperativeHandle(ref, () => ({ flyTo }));
+  useImperativeHandle(ref, () => ({
+    flyTo,
+    setReveal(radians) {
+      heat.uniforms.uReveal.value = radians;
+    },
+    setPulseVisible(visible) {
+      if (pulseGroup.current) pulseGroup.current.visible = visible;
+    },
+    setIntro({ scale }) {
+      if (scale !== undefined) globe.current?.scale.setScalar(Math.max(scale, 0.0001));
+    },
+  }));
+
+  // The globe follows the focus cell (step, layer change, check highlight). A site pick holds this
+  // until the Mars rings finish; its timeline then flies the globe itself.
+  useEffect(() => {
+    if (focus && !motionRegistry.holdFly) flyTo(focus.lat, focus.lon);
+  }, [focus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setZoom = (zoom: number) => {
     const m = motion.current;
@@ -257,7 +282,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
         <mesh material={heat} renderOrder={1} visible={scoreTex !== null}>
           <sphereGeometry args={[HEAT_R, 128, 96]} />
         </mesh>
-        {focus && <Pulse lat={focus.lat} lon={focus.lon} />}
+        <group ref={pulseGroup}>{focus && <Pulse lat={focus.lat} lon={focus.lon} />}</group>
         {validationOpen && <ValidationBoxes checks={checks} />}
       </group>
     </>

@@ -10,7 +10,7 @@ const MAX_RADIUS = PULSE_RADIUS; // globe radii; the heat shader thins heat insi
 const R = 1.003; // just above the heat overlay (1.002)
 const UP = new THREE.Vector3(0, 0, 1);
 // Unit circle as a 1 px line loop (stays 1 px at any zoom), scaled per frame.
-const ringGeometry = new THREE.BufferGeometry().setFromPoints(
+export const unitRing = new THREE.BufferGeometry().setFromPoints(
   Array.from({ length: 96 }, (_, i) => {
     const a = (i / 96) * Math.PI * 2;
     return new THREE.Vector3(Math.cos(a), Math.sin(a), 0);
@@ -62,7 +62,7 @@ export function Pulse({ lat, lon }: Props) {
         <lineLoop
           key={i}
           ref={(el: THREE.LineLoop | null) => (rings.current[i] = el)}
-          geometry={ringGeometry}
+          geometry={unitRing}
           material={m}
           renderOrder={2}
         />

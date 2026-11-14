@@ -1,4 +1,6 @@
-import type { KeyboardEvent } from "react";
+import { useEffect, useRef, type KeyboardEvent } from "react";
+import { motion } from "../motion/registry";
+import { cardBuildTimeline } from "../motion/timelines";
 import { featuresFor, formatCoords, placeLabel } from "../data/cells";
 import type { FeatureRow } from "../data/cells";
 import type { FeatureId, FeatureStatus } from "../data/types";
@@ -28,6 +30,18 @@ export function AnalogCard({ error }: { error?: string | null }) {
   const s = useAppStore((st) => st);
   const manifest = s.manifest;
   const cell = currentCell(s);
+  const cardEl = useRef<HTMLDivElement>(null);
+  const buildKey = `${s.siteId}|${s.layer}|${cell ? `${cell.lat},${cell.lon}` : ""}|${s.earthHit?.kind ?? ""}`;
+  // Card build each time the shown cell changes (the intro runs its own build).
+  useEffect(() => {
+    const el = cardEl.current;
+    if (!el || !cell || motion.introActive) return;
+    const tl = cardBuildTimeline(el);
+    return () => {
+      tl.progress(1);
+      tl.kill();
+    };
+  }, [buildKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const siteName = (id: string) => s.sites.find((x) => x.id === id)?.name ?? id;
   const featLabel = (id: FeatureId) => manifest?.features.find((f) => f.id === id)?.label ?? id;
 
@@ -75,7 +89,7 @@ export function AnalogCard({ error }: { error?: string | null }) {
         )}
         <ul className="features">
           {f.rows.map((r: FeatureRow) => (
-            <li key={r.id}>
+            <li key={r.id} data-break={f.breaks.includes(r.id) ? "true" : undefined}>
               <span className="f-mark" aria-hidden="true">
                 {f.strengths.includes(r.id) ? "✓" : f.breaks.includes(r.id) ? "✗" : ""}
               </span>
@@ -110,7 +124,7 @@ export function AnalogCard({ error }: { error?: string | null }) {
     else if (e.key === "ArrowRight") s.step(1);
   };
   return (
-    <div className={`card${s.layerPending ? " card--dim" : ""}`} tabIndex={0} onKeyDown={onKey} aria-label="Analog card">
+    <div ref={cardEl} className={`card${s.layerPending ? " card--dim" : ""}`} tabIndex={0} onKeyDown={onKey} aria-label="Analog card">
       {s.layerPending && <p className="card-pending">Layer not delivered yet</p>}
       <div className="card-body">{body}</div>
       {s.list.length > 0 && (

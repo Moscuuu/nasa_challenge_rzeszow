@@ -5,11 +5,16 @@ import * as THREE from "three";
 import { useAppStore } from "../state/store";
 import type { MarsSite } from "../data/types";
 import { facesCamera, isClick, ll2v, rotationFor } from "./geo";
+import { unitRing } from "./Pulse";
 import { useTextureSize } from "./useTextureSize";
 
 export interface MarsGlobeHandle {
   /** Turn the globe so (lat, lon) faces the camera. */
   rotateTo(lat: number, lon: number): void;
+  /** Radar rings on the surface at (lat, lon); progress 0..1, null hides them. */
+  radar(lat: number, lon: number, progress: number | null): void;
+  /** Intro drivers: camera distance factor (1 = framed) and how far the pin flicker-in has got (0..1). */
+  setIntro(v: { zoom?: number; pins?: number }): void;
 }
 
 const IDLE_SPEED = 0.015; // rad/s, slow idle spin
@@ -17,6 +22,9 @@ const DRAG_SPEED = 0.005; // rad per px
 const MAX_TILT = 1.4; // rad
 const FOV = 35;
 const PIN_R = 1.01;
+const RADAR_RINGS = 3;
+const RADAR_R = 1.004;
+const RADAR_MAX = 0.5; // globe radii
 
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
@@ -25,6 +33,7 @@ const reducedMotion = () =>
 const angleDelta = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
 // Start facing the northern mid-latitude site cluster (Arcadia to Utopia), so pins show on load.
+const UP = new THREE.Vector3(0, 0, 1);
 const START = rotationFor(25, 165);
 
 interface Props {
@@ -53,6 +62,19 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     hovered: false, // pointer is over the Mars slot
   });
   const { width, height } = useThree((s) => s.size);
+  const intro = useRef({ zoom: 1, pins: 1 });
+  const radarRef = useRef<{ lat: number; lon: number; p: number | null }>({ lat: 0, lon: 0, p: null });
+  const radarGroup = useRef<THREE.Group>(null);
+  const radarRings = useRef<Array<THREE.LineLoop | null>>([]);
+  const radarMats = useMemo(
+    () =>
+      Array.from(
+        { length: RADAR_RINGS },
+        () => new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, depthWrite: false, toneMapped: false }),
+      ),
+    [],
+  );
+  useEffect(() => () => radarMats.forEach((m) => m.dispose()), [radarMats]);
 
   const rotateTo = (lat: number, lon: number) => {
     const t = rotationFor(lat, lon);
@@ -64,7 +86,25 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     Object.assign(motion.current, { target: t, vx: 0, vy: 0 });
   };
 
-  useImperativeHandle(ref, () => ({ rotateTo }));
+  useImperativeHandle(ref, () => ({
+    rotateTo,
+    radar(lat, lon, progress) {
+      const r = radarRef.current;
+      r.lat = lat;
+      r.lon = lon;
+      r.p = progress;
+      const g = radarGroup.current;
+      if (g && progress !== null) {
+        const pos = ll2v(lat, lon, RADAR_R);
+        g.position.copy(pos);
+        g.quaternion.setFromUnitVectors(UP, pos.clone().normalize());
+      }
+    },
+    setIntro(v) {
+      Object.assign(intro.current, v);
+      fit();
+    },
+  }));
 
   // Drag to rotate, on the whole slot. Pin buttons keep their own clicks.
   useEffect(() => {
@@ -117,18 +157,33 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
   }, [slot]);
 
   // Fit the globe (radius 1, with margin) in the slot whatever its aspect.
-  useEffect(() => {
+  const fit = () => {
     const cam = camera.current;
     if (!cam || !width || !height) return;
     const aspect = width / height;
-    cam.position.set(0, 0, 1.3 / (Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * Math.min(1, aspect)));
-  }, [width, height]);
+    const d = 1.3 / (Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * Math.min(1, aspect));
+    cam.position.set(0, 0, d * intro.current.zoom);
+  };
+  useEffect(fit, [width, height]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useFrame((_, dt) => {
     const g = globe.current;
     if (!g) return;
     const m = motion.current;
     const step = Math.min(dt, 0.1);
+    // Radar rings: staggered expanding 1 px circles, hidden when progress is null.
+    const rg = radarGroup.current;
+    const rp = radarRef.current.p;
+    if (rg) {
+      rg.visible = rp !== null;
+      radarRings.current.forEach((ring, i) => {
+        if (!ring || rp === null) return;
+        const ph = THREE.MathUtils.clamp((rp * (1 + (RADAR_RINGS - 1) * 0.3) - i * 0.3), 0, 1);
+        const sc = RADAR_MAX * (0.05 + 0.95 * ph);
+        ring.scale.set(sc, sc, 1);
+        radarMats[i].opacity = 0.9 * (1 - ph) * Math.min(1, ph * 6);
+      });
+    }
     if (m.dragging) return;
     if (m.target) {
       const k = 1 - Math.exp(-4 * step); // eased approach
@@ -158,10 +213,24 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
           <sphereGeometry args={[1, 96, 64]} />
           <meshStandardMaterial map={texture} roughness={1} metalness={0} />
         </mesh>
-        {sites.map((site) => (
+        <group ref={radarGroup} visible={false}>
+          {radarMats.map((mat, i) => (
+            <lineLoop
+              key={i}
+              ref={(el: THREE.LineLoop | null) => (radarRings.current[i] = el)}
+              geometry={unitRing}
+              material={mat}
+              renderOrder={2}
+            />
+          ))}
+        </group>
+        {sites.map((site, idx) => (
           <Pin
             key={site.id}
             site={site}
+            index={idx}
+            count={sites.length}
+            intro={intro}
             selected={site.id === siteId}
             slot={slot}
             onSelect={() => void selectSite(site.id)}
@@ -176,20 +245,22 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
   );
 });
 
-const UP = new THREE.Vector3(0, 0, 1);
 const ringGeometry = new THREE.RingGeometry(0.022, 0.03, 40);
 const dotGeometry = new THREE.CircleGeometry(0.03, 40);
 const pinMaterial = new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.DoubleSide });
 
 interface PinProps {
   site: MarsSite;
+  index: number;
+  count: number;
+  intro: MutableRefObject<{ zoom: number; pins: number }>;
   selected: boolean;
   slot: MutableRefObject<HTMLElement>;
   onSelect(): void;
   onFocusChange(focused: boolean): void;
 }
 
-function Pin({ site, selected, slot, onSelect, onFocusChange }: PinProps) {
+function Pin({ site, index, count, intro, selected, slot, onSelect, onFocusChange }: PinProps) {
   const position = useMemo(() => ll2v(site.lat, site.lon, PIN_R), [site.lat, site.lon]);
   const quaternion = useMemo(
     () => new THREE.Quaternion().setFromUnitVectors(UP, position.clone().normalize()),
@@ -205,7 +276,10 @@ function Pin({ site, selected, slot, onSelect, onFocusChange }: PinProps) {
     const g = group.current;
     if (!g) return;
     g.getWorldPosition(world);
-    const visible = facesCamera(world, camera);
+    // Intro: pins flicker in one after another (pins 0..1 spreads the sites over the timeline).
+    const local = intro.current.pins * count - index;
+    const shown = local >= 1 || (local > 0 && Math.sin(local * 50) > 0);
+    const visible = shown && facesCamera(world, camera);
     g.visible = visible;
     // Synced every frame (not only on change): Html may swap the button node on re-render.
     const b = button.current;

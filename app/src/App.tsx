@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createDataSource } from "./data/source";
+import { useMotion } from "./motion/useMotion";
 import { appStore } from "./state/store";
 import type { EarthGlobeHandle } from "./scene/EarthGlobe";
 import type { MarsGlobeHandle } from "./scene/MarsGlobe";
@@ -22,6 +23,7 @@ export default function App() {
   const earthGlobe = useRef<EarthGlobeHandle>(null);
   const [webgl] = useState(hasWebGL);
   const [error, setError] = useState<string | null>(null);
+  const veil = useMotion(marsGlobe, earthGlobe, webgl);
 
   useEffect(() => {
     // Dev-only hooks for browser checks (Playwright / console).
@@ -54,6 +56,7 @@ export default function App() {
         <AnalogCard error={error} />
       </aside>
       <Footer />
+      {veil && <div className="intro-veil" aria-hidden="true" />}
       {webgl && (
         <Suspense fallback={null}>
           <Stage eventSource={root} slots={{ mars, earth }} marsGlobe={marsGlobe} earthGlobe={earthGlobe} />
