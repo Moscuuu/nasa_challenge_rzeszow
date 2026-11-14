@@ -29,7 +29,8 @@
  "weights": {
   "temperature": 0.333,
   "ground_ice": 0.333,
-  "polygons": 0.333
+  "polygons": 0.333,
+  "dryness": 0.0
  },
- "notes": "Percentile = position of the cell's best score among all permafrost cells. Equal weights over the features available for a Mars site: Deuteronilus Mensae, Phlegra Montes and Utopia Planitia have no SWIM polygon survey, so polygons are skipped for them. Polygons are not relevant below 5 m."
+ "notes": "Percentile = position of the cell's best score among all permafrost cells. Equal weights over the features that count in the layer; missing data in such a feature scores 0 (Arcadia, Deuteronilus, Phlegra and Utopia have no SWIM polygon survey). Dryness counts only in 0-1 m; polygons not below 5 m."
 }

@@ -7,15 +7,9 @@ cd "$(dirname "$0")/.."
 python -I pipeline/fetch_cci.py data/raw/cci
 python -I pipeline/fetch_swim.py data/raw/swim 0_1 1_5 5 landforms
 python pipeline/fetch_era5.py data/interim/era5_skin_2023.npz          # Earth Engine, ~15 min
+python pipeline/fetch_smap.py data/interim/dryness_2023.npz           # Earth Engine: SMAP L4 wetness + ERA5-Land precip
 python -I pipeline/earth_grid.py data/raw/cci data/interim/earth_grid.npz
 (cd pipeline && python mars_sites.py ../data/raw/swim ../data/interim/mars_sites.json)   # imports mars_thermal
-
-# Optional: NSIDC GGD318 ground-ice content for the deeper layers (needs NASA Earthdata login in ~/_netrc
-# or EARTHDATA_USERNAME / EARTHDATA_PASSWORD). Skipped when the login is missing.
-if python analysis/nsidc_ggd318/ggd318_fetch.py --out data/nsidc_ggd318; then
-  python analysis/nsidc_ggd318/ggd318_analyze.py --data data/nsidc_ggd318 --out data/nsidc_ggd318/out --no-plot
-  python -I pipeline/ice_content.py data/nsidc_ggd318/out/grid_0p1deg.csv.gz data/interim/ice_content.npz
-fi
 
 for layer in 0-1m 1-5m gt5m; do
   python -I pipeline/score.py data/interim "$layer"

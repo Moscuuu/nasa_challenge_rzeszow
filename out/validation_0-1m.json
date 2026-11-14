@@ -5,31 +5,32 @@
    "name": "McMurdo Dry Valleys",
    "role": "known_analog",
    "cells": 199,
-   "median_percentile": 68.1,
-   "passed": false,
+   "median_percentile": 97.2,
+   "passed": true,
    "applicable": true
   },
   {
    "name": "Haughton Crater (Devon Island)",
    "role": "known_analog",
    "cells": 286,
-   "median_percentile": 91.7,
-   "passed": true,
+   "median_percentile": 84.5,
+   "passed": false,
    "applicable": true
   },
   {
    "name": "Alaska North Slope",
    "role": "contrast",
    "cells": 2514,
-   "median_percentile": 58.9,
+   "median_percentile": 59.0,
    "passed": false,
    "applicable": true
   }
  ],
  "weights": {
-  "temperature": 0.333,
-  "ground_ice": 0.333,
-  "polygons": 0.333
+  "temperature": 0.25,
+  "ground_ice": 0.25,
+  "polygons": 0.25,
+  "dryness": 0.25
  },
- "notes": "Percentile = position of the cell's best score among all permafrost cells. Equal weights over the features available for a Mars site: Deuteronilus Mensae, Phlegra Montes and Utopia Planitia have no SWIM polygon survey, so polygons are skipped for them. Polygons are not relevant below 5 m."
+ "notes": "Percentile = position of the cell's best score among all permafrost cells. Equal weights over the features that count in the layer; missing data in such a feature scores 0 (Arcadia, Deuteronilus, Phlegra and Utopia have no SWIM polygon survey). Dryness counts only in 0-1 m; polygons not below 5 m."
 }

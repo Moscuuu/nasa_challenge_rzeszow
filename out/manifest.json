@@ -1,6 +1,6 @@
 {
- "contract_version": "0.7",
- "generated_at": "2026-11-14T19:50:54Z",
+ "contract_version": "0.8",
+ "generated_at": "2026-11-14T20:31:08Z",
  "mock": false,
  "cell_size_deg": 0.1,
  "layers": [
@@ -34,7 +34,12 @@
   {
    "id": "polygons",
    "label": "Thermal-contraction polygons",
-   "comparison": "presence"
+   "comparison": "position"
+  },
+  {
+   "id": "dryness",
+   "label": "Dryness (dry permafrost vs wet tundra)",
+   "comparison": "rank"
   }
  ],
  "sites": [
@@ -111,6 +116,11 @@
    "id": "mars_thermal_model",
    "label": "Team 1-D Mars surface thermal model (A=0.25, I=250)",
    "url": null
+  },
+  {
+   "id": "smap_l4",
+   "label": "NASA SMAP L4 SPL4SMGP v8 (via Google Earth Engine), 2023",
+   "url": "https://doi.org/10.5067/T5RUATAQREF8"
   }
  ]
 }

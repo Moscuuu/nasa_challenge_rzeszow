@@ -9,6 +9,10 @@ Ground ice (position match, mid-rank percentiles on each planet):
     ice = 1 - |percentile_Earth - percentile_Mars(SWIM C of the layer, among C > 0)|
 Thermal-contraction polygons (position match, 0-1 m and 1-5 m only; not relevant below 5 m):
     polygons = 1 - |percentile_Earth(cracking potential from GST) - percentile_Mars(SWIM polygon share)|
+Dryness (0-1 m only; separates dry permafrost from wet tundra), Rank Comparison toward Mars (~0 water):
+    s_q = 1 - rank(E_q), q = local-summer surface soil wetness (NASA SMAP L4) and annual precipitation
+    (ERA5-Land); dryness = mean over the q that have data. SMAP L4 has no data on permanent ice
+    (Antarctica incl. the Dry Valleys), where dryness rests on precipitation alone.
 Overall = mean of the features that count in the layer (equal weights). Missing data in a feature that
 counts scores 0 (penalised); a feature that does not count in the layer has no effect.
 
@@ -26,10 +30,13 @@ LAYERS = {
     # temperature quantities: (name, earth source, earth key, mars key)
     "0-1m": {"temp": [(q, "era5", q, q) for q in
                       ("tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp")],
-             "ice_earth": "shallow_ice", "polygons": True},
-    "1-5m": {"temp": [("t_1_5", "grid", "t_1_5", "t_1_5")], "ice_earth": "ice_1_5", "polygons": True},
-    "gt5m": {"temp": [("t_gt5", "grid", "t_gt5", "t_gt5")], "ice_earth": "ice_gt5", "polygons": False},
+             "ice_earth": "shallow_ice", "polygons": True, "dryness": True},
+    "1-5m": {"temp": [("t_1_5", "grid", "t_1_5", "t_1_5")], "ice_earth": "ice_1_5", "polygons": True,
+             "dryness": False},
+    "gt5m": {"temp": [("t_gt5", "grid", "t_gt5", "t_gt5")], "ice_earth": "ice_gt5", "polygons": False,
+             "dryness": False},
 }
+DRYNESS_QUANTITIES = ("wet_summer", "precip_mm_yr")
 
 
 def rank01(values: np.ndarray) -> np.ndarray:
@@ -64,12 +71,6 @@ def main(interim: Path, layer: str) -> None:
     quantities = [q for q, *_ in cfg["temp"]]
     earth_t = np.stack([src[s][k][rows, cols].astype(np.float64) for _, s, k, _ in cfg["temp"]])
     ice_e = grid[cfg["ice_earth"]][rows, cols].astype(np.float64)
-    content_path = interim / "ice_content.npz"
-    if layer != "0-1m" and content_path.exists():
-        # NSIDC GGD318 ice amount (upper 10-20 m): certainty that the layer is frozen x how much ice it holds.
-        # No value (e.g. Antarctica) -> missing ground-ice data -> penalised to 0 below.
-        ice_e = ice_e * np.load(content_path)["content"][rows, cols].astype(np.float64)
-        print(layer, "ground ice uses NSIDC GGD318 content")
     ice_e_pct = midrank01(ice_e)
 
     n_sites = len(sites)
@@ -89,10 +90,23 @@ def main(interim: Path, layer: str) -> None:
             if s["polygons"]["status"] == "ok":
                 polygons[i] = 1.0 - np.abs(crack_pct - s["polygons"]["percentile"])
 
+    # Dryness: Mars has ~no liquid water and no precipitation, so the driest Earth cell ranks first.
+    # Same value for every Mars site.
+    dry = np.load(interim / "dryness_2023.npz")
+    earth_dry = np.stack([dry[q][rows, cols].astype(np.float64) for q in DRYNESS_QUANTITIES])
+    dry_parts = np.stack([1.0 - rank01(v) for v in earth_dry])
+    # Mean of the parts that have data: on permanent ice (e.g. the Dry Valleys) SMAP wetness is missing
+    # but ERA5-Land precipitation exists, so dryness rests on precipitation alone there.
+    # Only a cell with neither part is "no data" (and then penalised below).
+    n_parts = np.isfinite(dry_parts).sum(axis=0)
+    dryness_cell = np.where(n_parts > 0, np.nansum(dry_parts, axis=0) / np.maximum(n_parts, 1), np.nan)
+    dryness = np.tile(dryness_cell, (n_sites, 1)) if cfg["dryness"] else np.full((n_sites, n), np.nan)
+
     # Missing-data rule (team decision 2026-11-14): a feature that counts in this Depth Layer and has no
     # data (on either planet) scores 0 - it is penalised. A feature that does not count in this layer
-    # (polygons below 5 m) is left out of the mean and has no effect.
-    feats = [temperature, ice] + ([polygons] if cfg["polygons"] else [])
+    # (polygons below 5 m, dryness below 1 m) is left out of the mean and has no effect.
+    feats = ([temperature, ice] + ([polygons] if cfg["polygons"] else [])
+             + ([dryness] if cfg["dryness"] else []))
     overall = np.mean(np.stack([np.nan_to_num(f, nan=0.0) for f in feats]), axis=0)
 
     best_site = np.argmax(overall, axis=0)
@@ -109,6 +123,8 @@ def main(interim: Path, layer: str) -> None:
         temp_parts=temp_parts.astype(np.float32), temperature=temperature.astype(np.float32),
         ice=ice.astype(np.float32), polygons=polygons.astype(np.float32), crack=grid["crack"][rows, cols],
         gst=grid["gst"][rows, cols], overall=overall.astype(np.float32),
+        dryness=dryness.astype(np.float32), dry_parts=dry_parts.astype(np.float32), earth_dry=earth_dry,
+        dry_quantities=np.array(DRYNESS_QUANTITIES),
         best_site=best_site, best=best.astype(np.float32), percentile=pct.astype(np.float32), rank=rank,
         earth_temp=earth_t, ice_earth_name=cfg["ice_earth"], ice_earth=ice_e,
         shallow_ice=grid["shallow_ice"][rows, cols], alt=grid["alt"][rows, cols], pfr=grid["pfr"][rows, cols],

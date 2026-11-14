@@ -36,14 +36,17 @@ def main(interim: Path) -> None:
                        "median_percentile": None if med is None else round(med, 1), "passed": passed,
                        "applicable": applicable})
         print(f"{name:32s} {role:13s} cells {int(sel.sum()):5d}  median pct {med if med is None else round(med, 1)}  passed {passed}")
-    weights = ({"temperature": 1 / 3, "ground_ice": 1 / 3, "polygons": 1 / 3} if LAYER != "gt5m"
-               else {"temperature": 0.5, "ground_ice": 0.5, "polygons": 0.0})
+    weights = {
+        "0-1m": {"temperature": 0.25, "ground_ice": 0.25, "polygons": 0.25, "dryness": 0.25},
+        "1-5m": {"temperature": 1 / 3, "ground_ice": 1 / 3, "polygons": 1 / 3, "dryness": 0.0},
+        "gt5m": {"temperature": 0.5, "ground_ice": 0.5, "polygons": 0.0, "dryness": 0.0},
+    }[LAYER]
     out = {"layer": LAYER, "checks": checks,
            "weights": {k: round(v, 3) for k, v in weights.items()},
            "notes": ("Percentile = position of the cell's best score among all permafrost cells. "
-                     "Equal weights over the features available for a Mars site: Deuteronilus Mensae, Phlegra Montes "
-                     "and Utopia Planitia have no SWIM polygon survey, so polygons are skipped for them. "
-                     "Polygons are not relevant below 5 m.")}
+                     "Equal weights over the features that count in the layer; missing data in such a feature "
+                     "scores 0 (Arcadia, Deuteronilus, Phlegra and Utopia have no SWIM polygon survey). "
+                     "Dryness counts only in 0-1 m; polygons not below 5 m.")}
     (interim / f"validation_{LAYER}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
 
 

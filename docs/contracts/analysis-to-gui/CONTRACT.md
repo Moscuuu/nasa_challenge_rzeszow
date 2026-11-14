@@ -1,6 +1,14 @@
 # Kontrakt danych: analiza → GUI
 
-Wersja kontraktu: **0.7** (2026-11-14).
+Wersja kontraktu: **0.8** (2026-11-14).
+
+Zmiany w 0.8 (suchość):
+- **Nowa cecha `dryness`** („Dryness (dry permafrost vs wet tundra)”, `comparison: "rank"`): liczy się **tylko w `0-1m`**, gdzie warstwa 0–1 m ma teraz 4 cechy po 0,25. W `1-5m` i `gt5m` ma `status: "not_relevant"`.
+- Kształt: `{score, parts: {wet_summer, precip_mm_yr}, earth_value: {wet_summer, precip_mm_yr}, mars_value: {wet_summer: 0, precip_mm_yr: 0}, unit, status, source: "smap_l4"}`. `wet_summer` to letnia wilgotność gruntu 0–5 cm z NASA SMAP L4 (ułamek nasycenia), `precip_mm_yr` to roczny opad z ERA5-Land. Najsuchsza komórka = 1.
+- W Antarktydzie SMAP nie ma danych (maska lodu stałego), więc suchość opiera się tam tylko na opadzie: `parts.wet_summer` = `null`, `score` liczony z opadu.
+- `features[]` w manifeście ma 4 pozycje. Spękania mają teraz `comparison: "position"`.
+
+Wcześniej (0.7):
 
 Zmiany w 0.7 (zasada braków danych, decyzja zespołu):
 - **Brak danych w cesze, która liczy się w danej warstwie, = ocena 0 (kara).** Cecha, która w warstwie się nie liczy (spękania w `gt5m`), nie wpływa na wynik.
