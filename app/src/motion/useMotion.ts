@@ -4,7 +4,7 @@ import type { EarthGlobeHandle } from "../scene/EarthGlobe";
 import type { MarsGlobeHandle } from "../scene/MarsGlobe";
 import { chooseIntro, markSeen, prefersReducedMotion, readSeen, type IntroKind } from "./intro";
 import { motion } from "./registry";
-import { introTimeline, pickSiteTimeline } from "./timelines";
+import { exploreTimeline, introTimeline, pickSiteTimeline, settleMars } from "./timelines";
 
 const READY_TIMEOUT_MS = 12000;
 
@@ -65,6 +65,7 @@ export function useMotion(
       const scenes = motion.mars !== null && motion.earth !== null;
       if (kind === "none") {
         if (!scenes) raf = requestAnimationFrame(ready);
+        else settleMars();
         return;
       }
       if (failedRef.current) {
@@ -87,8 +88,12 @@ export function useMotion(
     };
     raf = requestAnimationFrame(ready);
 
-    // Pick site: Mars turn + rings, then the Earth echo.
+    // First pick: Mars moves aside, depth and Earth come in. Every pick: Mars turn + rings, then the Earth echo.
     const unsubscribe = appStore.subscribe((s, prev) => {
+      if (s.stage === "explore" && prev.stage === "pick") {
+        if (motion.introActive) skip();
+        exploreTimeline();
+      }
       if (!s.siteId || s.siteId === prev.siteId) return;
       const site = s.sites.find((x) => x.id === s.siteId);
       const cell = s.list[0];

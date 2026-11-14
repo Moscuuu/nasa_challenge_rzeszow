@@ -19,10 +19,12 @@ describe("stepProgress", () => {
 });
 
 describe("captionIndex", () => {
-  it("splits progress into thirds", () => {
+  it("follows the clip: Mars dive, Earth tundra from 48 %, drill from 80 %", () => {
     expect(captionIndex(0)).toBe(0);
-    expect(captionIndex(0.34)).toBe(1);
-    expect(captionIndex(0.67)).toBe(2);
+    expect(captionIndex(0.47)).toBe(0);
+    expect(captionIndex(0.48)).toBe(1);
+    expect(captionIndex(0.79)).toBe(1);
+    expect(captionIndex(0.8)).toBe(2);
     expect(captionIndex(1)).toBe(2);
   });
 });

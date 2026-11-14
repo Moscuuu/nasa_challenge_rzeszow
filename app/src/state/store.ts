@@ -11,7 +11,13 @@ export type EarthHit =
   | { kind: "score"; score: number; lat: number; lon: number }
   | { kind: "none"; lat: number; lon: number };
 
+/** pick: Mars alone, centred, waiting for a site. explore: Mars + depth + Earth (+ card once an Earth spot is clicked). */
+export type Stage = "pick" | "explore";
+
 export interface AppState {
+  stage: Stage;
+  /** The details card shows only after the user clicks a spot on Earth. */
+  cardOpen: boolean;
   manifest: Manifest | null;
   sites: MarsSite[];
   cells: Cell[];
@@ -34,6 +40,8 @@ export interface AppState {
   toggleShowAll(): void;
   openValidation(open: boolean): void;
   focusCheck(check: ValidationCheck): void;
+  /** Skip the pick step (no WebGL: there are no pins to click). */
+  enterExplore(openCard?: boolean): void;
 }
 
 const DEFAULT_LAYER: LayerId = "0-1m";
@@ -81,6 +89,8 @@ export function createAppStore() {
     }
 
     return {
+      stage: "pick",
+      cardOpen: false,
       manifest: null,
       sites: [],
       cells: [],
@@ -116,6 +126,8 @@ export function createAppStore() {
 
       selectSite(id) {
         wantSite = id;
+        // A new site means new matches: close the card until the user clicks Earth again.
+        set(id && get().stage === "pick" ? { stage: "explore", cardOpen: false } : { cardOpen: false });
         return load();
       },
 
@@ -141,11 +153,12 @@ export function createAppStore() {
       clickEarth(lat, lon) {
         const { cells, scoreMap } = get();
         const cell = nearestTopCell(cells, lat, lon);
-        if (cell) return set({ earthHit: { kind: "cell", cell } });
+        if (cell) return set({ earthHit: { kind: "cell", cell }, cardOpen: true });
         const score = scoreMap?.sample(lat, lon) ?? null;
-        set({ earthHit: score === null ? { kind: "none", lat, lon } : { kind: "score", score, lat, lon } });
+        set({ earthHit: score === null ? { kind: "none", lat, lon } : { kind: "score", score, lat, lon }, cardOpen: true });
       },
 
+      enterExplore: (openCard = false) => set({ stage: "explore", cardOpen: openCard }),
       toggleShowAll: () => set((s) => ({ showAll: !s.showAll })),
       openValidation: (open) => set({ validationOpen: open }),
 

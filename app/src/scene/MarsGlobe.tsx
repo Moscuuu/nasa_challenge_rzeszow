@@ -21,6 +21,8 @@ const IDLE_SPEED = 0.015; // rad/s, slow idle spin
 const DRAG_SPEED = 0.005; // rad per px
 const MAX_TILT = 1.4; // rad
 const FOV = 35;
+const FLOAT_AMP = 0.025; // globe radii: a gentle drift, so the planet floats in space
+const FLOAT_PERIOD = 7; // s
 const PIN_R = 1.01;
 const RADAR_RINGS = 3;
 const RADAR_R = 1.004;
@@ -50,9 +52,11 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
 
   const sites = useAppStore((s) => s.sites);
   const siteId = useAppStore((s) => s.siteId);
+  const picking = useAppStore((s) => s.stage === "pick");
   const selectSite = useAppStore((s) => s.selectSite);
 
   const globe = useRef<THREE.Group>(null);
+  const float = useRef<THREE.Group>(null);
   const camera = useRef<THREE.PerspectiveCamera>(null);
   const motion = useRef({
     vx: 0,
@@ -63,6 +67,9 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     hovered: false, // pointer is over the Mars slot
   });
   const { width, height } = useThree((s) => s.size);
+  // Latest size for fit(): the timelines hold on to the first handle object, so its closures go stale.
+  const sizeRef = useRef({ width, height });
+  sizeRef.current = { width, height };
   const getThree = useThree((s) => s.get);
   const intro = useRef({ zoom: 1, pins: 1 });
   const radarRef = useRef<{ lat: number; lon: number; p: number | null }>({ lat: 0, lon: 0, p: null });
@@ -195,14 +202,19 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
   // Fit the globe (radius 1, with margin) in the slot whatever its aspect.
   const fit = () => {
     const cam = camera.current;
-    if (!cam || !width || !height) return;
-    const aspect = width / height;
+    const { width: w, height: h } = sizeRef.current;
+    if (!cam || !w || !h) return;
+    const aspect = w / h;
     const d = 1.3 / (Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * Math.min(1, aspect));
     cam.position.set(0, 0, d * intro.current.zoom);
   };
   useEffect(fit, [width, height]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useFrame((_, dt) => {
+  useFrame(({ clock }, dt) => {
+    if (float.current && !reducedMotion()) {
+      const t = (clock.elapsedTime / FLOAT_PERIOD) * Math.PI * 2 + 0;
+      float.current.position.set(Math.cos(t * 0.5) * FLOAT_AMP * 0.4, Math.sin(t) * FLOAT_AMP, 0);
+    }
     const g = globe.current;
     if (!g) return;
     const m = motion.current;
@@ -244,38 +256,41 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       <PerspectiveCamera ref={camera} makeDefault fov={FOV} near={0.1} far={100} position={[0, 0, 5]} />
       <ambientLight intensity={0.9} />
       <directionalLight position={[-3, 2, 4]} intensity={1.6} />
-      <group ref={globe} rotation-x={START.x} rotation-y={START.y}>
-        <mesh>
-          <sphereGeometry args={[1, 96, 64]} />
-          <meshStandardMaterial map={texture} roughness={1} metalness={0} />
-        </mesh>
-        <group ref={radarGroup} visible={false}>
-          {radarMats.map((mat, i) => (
-            <lineLoop
-              key={i}
-              ref={(el: THREE.LineLoop | null) => (radarRings.current[i] = el)}
-              geometry={unitRing}
-              material={mat}
-              renderOrder={2}
+      <group ref={float}>
+        <group ref={globe} rotation-x={START.x} rotation-y={START.y}>
+          <mesh>
+            <sphereGeometry args={[1, 96, 64]} />
+            <meshStandardMaterial map={texture} roughness={1} metalness={0} />
+          </mesh>
+          <group ref={radarGroup} visible={false}>
+            {radarMats.map((mat, i) => (
+              <lineLoop
+                key={i}
+                ref={(el: THREE.LineLoop | null) => (radarRings.current[i] = el)}
+                geometry={unitRing}
+                material={mat}
+                renderOrder={2}
+              />
+            ))}
+          </group>
+          {sites.map((site, idx) => (
+            <Pin
+              key={site.id}
+              site={site}
+              index={idx}
+              count={sites.length}
+              intro={intro}
+              selected={site.id === siteId}
+              pulse={picking}
+              slot={slot}
+              onSelect={() => void selectSite(site.id)}
+              onFocusChange={(focused) => {
+                motion.current.pinFocused = focused;
+                if (focused) rotateTo(site.lat, site.lon);
+              }}
             />
           ))}
         </group>
-        {sites.map((site, idx) => (
-          <Pin
-            key={site.id}
-            site={site}
-            index={idx}
-            count={sites.length}
-            intro={intro}
-            selected={site.id === siteId}
-            slot={slot}
-            onSelect={() => void selectSite(site.id)}
-            onFocusChange={(focused) => {
-              motion.current.pinFocused = focused;
-              if (focused) rotateTo(site.lat, site.lon);
-            }}
-          />
-        ))}
       </group>
     </>
   );
@@ -284,6 +299,8 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
 const ringGeometry = new THREE.RingGeometry(0.022, 0.03, 40);
 const dotGeometry = new THREE.CircleGeometry(0.03, 40);
 const pinMaterial = new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.DoubleSide });
+const PULSE_PERIOD = 1.8; // s
+const PULSE_GROW = 3.2; // ring scale at the end of a beat
 
 interface PinProps {
   site: MarsSite;
@@ -291,12 +308,14 @@ interface PinProps {
   count: number;
   intro: MutableRefObject<{ zoom: number; pins: number }>;
   selected: boolean;
+  /** Pick step: a ring beats outward from the pin, so the sites read as clickable. */
+  pulse: boolean;
   slot: MutableRefObject<HTMLElement>;
   onSelect(): void;
   onFocusChange(focused: boolean): void;
 }
 
-function Pin({ site, index, count, intro, selected, slot, onSelect, onFocusChange }: PinProps) {
+function Pin({ site, index, count, intro, selected, pulse, slot, onSelect, onFocusChange }: PinProps) {
   const position = useMemo(() => ll2v(site.lat, site.lon, PIN_R), [site.lat, site.lon]);
   const quaternion = useMemo(
     () => new THREE.Quaternion().setFromUnitVectors(UP, position.clone().normalize()),
@@ -305,12 +324,29 @@ function Pin({ site, index, count, intro, selected, slot, onSelect, onFocusChang
   const button = useRef<HTMLButtonElement>(null);
   const group = useRef<THREE.Group>(null);
   const world = useMemo(() => new THREE.Vector3(), []);
+  const beat = useRef<THREE.Mesh>(null);
+  const beatMaterial = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.DoubleSide, transparent: true, depthWrite: false, toneMapped: false }),
+    [],
+  );
+  useEffect(() => () => beatMaterial.dispose(), [beatMaterial]);
 
   // Hide far-side pins. Their buttons stay in the Tab order (faded, not clickable);
   // focusing one turns the globe to bring it to the front.
-  useFrame(({ camera }) => {
+  useFrame(({ camera, clock }) => {
     const g = group.current;
     if (!g) return;
+    const r = beat.current;
+    if (r) {
+      // Beats start only once every pin is in (after the intro flicker); staggered per site.
+      r.visible = pulse && intro.current.pins >= 1 && !reducedMotion();
+      if (r.visible) {
+        const ph = (clock.elapsedTime / PULSE_PERIOD + index * 0.37) % 1;
+        const sc = 1 + (PULSE_GROW - 1) * (1 - (1 - ph) ** 2);
+        r.scale.set(sc, sc, 1);
+        beatMaterial.opacity = 0.85 * (1 - ph);
+      }
+    }
     g.getWorldPosition(world);
     // Intro: pins flicker in one after another (pins 0..1 spreads the sites over the timeline).
     const local = intro.current.pins * count - index;
@@ -325,6 +361,7 @@ function Pin({ site, index, count, intro, selected, slot, onSelect, onFocusChang
   return (
     <group ref={group} position={position} quaternion={quaternion}>
       <mesh geometry={selected ? dotGeometry : ringGeometry} material={pinMaterial} />
+      <mesh ref={beat} geometry={ringGeometry} material={beatMaterial} visible={false} renderOrder={2} />
       <Html center portal={slot} zIndexRange={[20, 10]}>
         <button
           ref={button}

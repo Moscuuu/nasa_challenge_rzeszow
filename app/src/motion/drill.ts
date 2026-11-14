@@ -16,9 +16,9 @@ export function stepProgress(p: number, holding: boolean, dt: number, duration: 
   return Math.min(1, Math.max(0, next));
 }
 
-/** Which caption shows at progress p: thirds of the clip. */
+/** Which caption shows at progress p: matches the clip's cuts (Earth fades in ~48 %, drill ~80 %). */
 export function captionIndex(p: number): 0 | 1 | 2 {
-  if (p < 1 / 3) return 0;
-  if (p < 2 / 3) return 1;
+  if (p < 0.48) return 0;
+  if (p < 0.8) return 1;
   return 2;
 }

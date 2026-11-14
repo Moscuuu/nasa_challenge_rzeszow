@@ -1,4 +1,4 @@
-import { Suspense, useSyncExternalStore, type MutableRefObject, type Ref } from "react";
+import { Suspense, useEffect, useReducer, useSyncExternalStore, type MutableRefObject, type Ref } from "react";
 import { Canvas } from "@react-three/fiber";
 import { View } from "@react-three/drei";
 import { EarthGlobe, type EarthGlobeHandle } from "./EarthGlobe";
@@ -18,6 +18,11 @@ interface Props {
 export function Stage({ eventSource, slots, marsGlobe, earthGlobe }: Props) {
   // Hidden under the drill intro: render only on demand (scenes still mount and load textures).
   const covered = useSyncExternalStore(onVideoPlaying, () => motion.videoPlaying);
+  const [, relayout] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => {
+    motion.relayout = relayout;
+    return () => void (motion.relayout = null);
+  }, []);
   return (
     <Canvas
       frameloop={covered ? "demand" : "always"}
