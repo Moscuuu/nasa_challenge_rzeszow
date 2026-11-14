@@ -1,6 +1,8 @@
 # Kontrakt danych: analiza → GUI
 
-Wersja kontraktu: **0.2** (2026-11-14). Status: **pierwsza dostawa danych** w `out/` (warstwa `0-1m`, temperatura + lód gruntowy).
+Wersja kontraktu: **0.3** (2026-11-14). Status: **pierwsza dostawa danych** w `out/` (warstwa `0-1m`, temperatura + lód gruntowy).
+
+Zmiany w 0.3: temperatura w warstwie `0-1m` ma 6 wielkości: `tmin`, `tmax`, `amp` (cały rok) i `summer_tmin`, `summer_tmax`, `summer_amp` (lokalne lato). Klucze w `parts`, `earth_value` i `mars_value` to odpowiednio `<wielkość>` i `<wielkość>_K`. W warstwach `1-5m` i `gt5m` temperatura będzie jedną średnią roczną.
 
 Zmiany w 0.2: kształt cechy `temperature` (min/max/amplituda), `ground_ice` porównywany przez pozycję (`"comparison": "position"`), nowy `status: "pending"` (cecha jeszcze nie policzona), nowe pole `experiment_window` w komórce (§6.1), `coords_status` w miejscach na Marsie.
 
@@ -20,7 +22,7 @@ Wszystkie pliki leżą w jednym folderze `out/`. Bez bazy danych, bez backendu: 
 |---|---|---|
 | `manifest.json` | **czytaj najpierw**: lista warstw, cech, miejsc na Marsie i plików; etykiety po angielsku | mały |
 | `mars_sites.geojson` | 7 miejsc na bazę na Marsie (punkty) | mały |
-| `cells_top_<layer>.geojson` | najlepsze komórki dla danej warstwy, z pełnym opisem (do klikania) | do ~2 MB |
+| `cells_top_<layer>.geojson` | najlepsze komórki dla danej warstwy, z pełnym opisem (do klikania) | ~5 MB |
 | `score_<layer>_<site_id>.png` | mapa cieplna wyniku dla całej Ziemi (do nałożenia na globus) | ~1 MB każda |
 | `validation.json` | wynik testu metody na znanych analogach i kontraście | mały |
 
@@ -70,7 +72,7 @@ Jeden punkt (`Point`) na miejsce. Właściwości:
 | `name` | string | po angielsku, np. `Arcadia Planitia` |
 | `window_deg` | number | rozmiar okna wokół punktu (1,0) |
 | `coords_status` | string | `approximate` (przybliżony środek obszaru) lub `published` |
-| `features` | object | `temperature`: `{tmin_K, tmax_K, amp_K, unit, source}` (średnie dobowe minimum, maksimum, amplituda temperatury powierzchni w roku marsjańskim); `ground_ice`: `{value, rank, unit, source}`, gdzie `value` = wskaźnik SWIM C, `rank` = pozycja na tle Marsa 0–1; `polygons`: `{..., status: "pending"}` |
+| `features` | object | `temperature`: `{tmin_K, tmax_K, amp_K, summer_tmin_K, summer_tmax_K, summer_amp_K, unit, source}` (średnie dobowe minimum, maksimum, amplituda temperatury powierzchni: cały rok marsjański i lokalne lato); `ground_ice`: `{value, rank, unit, source}`, gdzie `value` = wskaźnik SWIM C, `rank` = pozycja na tle Marsa 0–1; `polygons`: `{..., status: "pending"}` |
 | `chlorine_wt_pct` | number \| null | chlor z orbity (GRS); **tylko informacja**, nie wchodzi do oceny |
 | `description` | string | 1–2 zdania po angielsku: dlaczego to miejsce jest kandydatem |
 | `citation` | string | źródło propozycji miejsca |
@@ -87,7 +89,7 @@ Punkt (`Point`) w środku komórki. Komórka ma bok 0,1°, więc GUI może narys
 | `score` | number | wynik względem **najbliższego** miejsca na bazę (najwyższy z 7) |
 | `best_site_id` | string | id najbliższego miejsca na Marsie |
 | `site_scores` | object | `{site_id: score}` dla wszystkich 7 miejsc |
-| `features` | object | dla każdej cechy względem `best_site_id`: `{score, earth_value, mars_value, unit, status, source}`; `status` ∈ `ok`, `no_data`, `not_relevant`, `pending`. `temperature` ma dodatkowo `parts: {tmin, tmax, amp}` (ocena każdej z 3 wielkości), a `earth_value`/`mars_value` to obiekty `{tmin_K, tmax_K, amp_K}`. `ground_ice.earth_value` = `{shallow_ice_certainty, active_layer_m, permafrost_fraction}`, `mars_value` = `{swim_c}` |
+| `features` | object | dla każdej cechy względem `best_site_id`: `{score, earth_value, mars_value, unit, status, source}`; `status` ∈ `ok`, `no_data`, `not_relevant`, `pending`. `temperature` ma dodatkowo `parts: {tmin, tmax, amp, summer_tmin, summer_tmax, summer_amp}` (ocena każdej z 6 wielkości), a `earth_value`/`mars_value` to obiekty `{tmin_K, …, summer_amp_K}`. `ground_ice.earth_value` = `{shallow_ice_certainty, active_layer_m, permafrost_fraction}`, `mars_value` = `{swim_c}` |
 | `strengths` | string[] | id cech z najwyższą oceną („co jest podobne”) |
 | `breaks_down` | string[] | id cech z najniższą oceną („gdzie analogia się łamie”) |
 | `known_analog` | string \| null | nazwa znanego analogu, jeśli komórka w nim leży, np. `McMurdo Dry Valleys` |

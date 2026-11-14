@@ -27,7 +27,8 @@ Ocenić każdą **komórkę** (0,1°) wiecznej zmarzliny na Ziemi: jak bardzo pr
 
 - **Ziemia:** ERA5-Land `skin_temperature` (Earth Engine, `ECMWF/ERA5_LAND/DAILY_AGGR`, rok 2023, natywnie 0,1°): średnie dobowe **minimum**, **maksimum** i **amplituda**.
 - **Mars:** dobowy przebieg temperatury powierzchni dla każdego miejsca z jednowymiarowego modelu cieplnego (nasłonecznienie z orbity, przewodzenie w gruncie, szron CO₂), uśredniony po roku marsjańskim: minimum, maksimum, amplituda.
-- **Ocena:** dla każdej z 3 wielkości komórki są ustawione w rankingu według odległości od wartości danego miejsca na Marsie (1. miejsce = najbliżej). Ocena wielkości = percentyl (1 = najbliżej). Ocena temperatury = średnia z 3 wielkości.
+- **Lato (decyzja zespołu):** w warstwie czynnej 0–1 m te same 3 wielkości liczymy też dla **lokalnego lata** (Ziemia: VI–VIII na N, XII–II na S; Mars: Ls 90–180° na N, Ls 270–360° na S). Razem 6 wielkości, równe wagi. To odsiewa miejsca zimne zimą, ale ciepłe latem (pułapka mokrej tundry). **Warstwy 1–5 m i > 5 m: tylko średnia roczna temperatura.**
+- **Ocena:** dla każdej wielkości komórki są ustawione w rankingu według odległości od wartości danego miejsca na Marsie (1. miejsce = najbliżej). Ocena wielkości = percentyl (1 = najbliżej). Ocena temperatury = średnia z wielkości.
 
 ### Lód gruntowy (porównanie pozycji)
 
@@ -59,6 +60,27 @@ Kod w `pipeline/`, surowe dane w `data/raw/` (poza gitem), dane pośrednie w `da
 3. **Dostawa dla GUI**: `export.py` → `manifest.json`, `mars_sites.geojson`, `cells_top_0-1m.geojson`, 8 map PNG; okno eksperymentu (`experiment_window.py`).
 4. **Dodatki**: warstwy 1–5 m i >5 m, ręczny pomiar poligonów dla kilku najlepszych komórek, globus Marsa (GUI).
 5. **Spękania**.
+
+## 5a. Decyzje podjęte przy liczeniu (2026-11-14 wieczór)
+
+- **Komórka zmarzliny** = średni PFR w komórce ≥ 10 % (bez zmarzliny wyspowej). Wynik: 371 225 komórek.
+- **Lód na Marsie: percentyl liczony wśród pikseli z sygnałem lodu (C > 0)**, a nie wśród wszystkich. Po stronie Ziemi ranking obejmuje tylko zmarzlinę, czyli grunt z lodem, więc obie populacje znaczą „miejsca z lodem gruntowym”. Pierwsza wersja porównywała różne populacje, przez co mokra tundra Alaski dostawała lód 0,97.
+- **Komórka bez temperatury (luki ERA5-Land, 20 850 komórek) nie dostaje wyniku ogólnego.** Lód jest z definicji w każdej komórce zmarzliny, więc wynik z samego lodu dawał 1,0. Pierwsza wersja miała przez to same takie komórki w top 2000.
+- `cells_top_0-1m.geojson` ma ~4,7 MB (z oknami eksperymentu), a nie ~2 MB.
+
+## 5b. Wynik pierwszego przebiegu (warstwa 0–1 m)
+
+| test | percentyl (mediana) | wynik |
+|---|---|---|
+| Suche Doliny McMurdo (znany analog) | 70,8 | ✗ (wymagane ≥ 90) |
+| Devon / Haughton (znany analog) | 89,5 | ✗ (o włos) |
+| Alaska North Slope (kontrast) | 40,8 | ✓ |
+
+Dlaczego Suche Doliny wypadają słabo: **amplituda dobowa**. W Suchych Dolinach średnia amplituda w roku to ~5 K (noc i dzień polarny), a na miejscach na Marsie ~73 K. Ziemia osiąga najwyżej ~39 K (wysokie pustynie). Temperatura dla Suchych Dolin: minimum 0,99, maksimum 0,92, amplituda **0,08**. To prawdziwe „tu analogia się łamie”, a nie błąd. Drugi czynnik: CCI zaniża ALT w Antarktydzie (ALT = 0), więc „pewność płytkiego lodu” = 1,0, a to na Ziemi pozycja wyższa niż każdego z miejsc na Marsie.
+
+Najlepsze komórki: **Ladakh / Aksai Chin (35°N 77°E, wysoka zimna pustynia)** oraz **Jakucja / Kołyma (60–70°N, 125–150°E)**.
+
+**Po dodaniu lata (drugi przebieg):** Suche Doliny 73,4 ✗, Devon 86,2 ✗, Alaska 43,0 ✓. Najlepsze 2000 komórek przesunęło się w stronę **wysokich zimnych pustyń: Karakorum / Ladakh / Pamir (30–40°N, 70–80°E)** i **Tybetu (30–35°N, 90–95°E)**. Syberia spadła, ale nadal jest w top 2000. Najlepsza komórka: 35,25°N 77,25°E (Aksai Chin), wynik 0,947, najbliższa Arcadii.
 
 ## 6. Ograniczenia
 

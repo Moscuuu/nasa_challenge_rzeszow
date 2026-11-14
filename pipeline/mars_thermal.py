@@ -53,6 +53,7 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
     total = int(YEARS * SOLS_PER_YEAR * STEPS_PER_SOL)
     last_year_start = total - int(SOLS_PER_YEAR * STEPS_PER_SOL)
     surf = np.empty((n_sites, total - last_year_start), dtype=np.float32)
+    ls_log = np.empty(total - last_year_start, dtype=np.float32)
 
     for i in range(total):
         t_sol = i / STEPS_PER_SOL
@@ -78,15 +79,25 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
         T[:, 0] = np.maximum(T[:, 0], T_FROST)
         if i >= last_year_start:
             surf[:, i - last_year_start] = T[:, 0]
+            ls_log[i - last_year_start] = np.degrees(ls)
 
     n_sols = surf.shape[1] // STEPS_PER_SOL
     daily = surf[:, : n_sols * STEPS_PER_SOL].reshape(n_sites, n_sols, STEPS_PER_SOL)
     dmin, dmax = daily.min(axis=2), daily.max(axis=2)
     hourly = daily.reshape(n_sites, n_sols, 24, STEPS_PER_SOL // 24).mean(axis=3)
+    # local summer: Ls 90-180 (northern hemisphere), Ls 270-360 (southern)
+    sol_ls = ls_log[: n_sols * STEPS_PER_SOL].reshape(n_sols, STEPS_PER_SOL)[:, STEPS_PER_SOL // 2]
+    north_summer = (sol_ls >= 90) & (sol_ls < 180)
+    south_summer = sol_ls >= 270
+    summer = np.where(np.asarray(lat_deg)[:, None] >= 0, north_summer[None, :], south_summer[None, :])
+    amp_daily = dmax - dmin
     return {
         "tmin": dmin.mean(axis=1),
         "tmax": dmax.mean(axis=1),
-        "amp": (dmax - dmin).mean(axis=1),
+        "amp": amp_daily.mean(axis=1),
+        "summer_tmin": np.array([dmin[s][summer[s]].mean() for s in range(n_sites)]),
+        "summer_tmax": np.array([dmax[s][summer[s]].mean() for s in range(n_sites)]),
+        "summer_amp": np.array([amp_daily[s][summer[s]].mean() for s in range(n_sites)]),
         "tmean": daily.mean(axis=(1, 2)),
         "diurnal_profile": hourly.mean(axis=1),  # (sites, 24 local hours), mean over the year
         "abs_min": dmin.min(axis=1),

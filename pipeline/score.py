@@ -1,6 +1,7 @@
 """Score every Earth Cell of permafrost against the 7 Mars Base Candidate Sites (Depth Layer 0-1 m).
 
-Temperature (Rank Comparison, closest to the Mars value = best), for daily min, max and amplitude:
+Temperature (Rank Comparison, closest to the Mars value = best), for daily min, max and amplitude,
+each over the whole year and over local summer (6 quantities):
     s_q = 1 - rank(|E_q - M_q|) / (n - 1);  temperature = mean over q
 Ground ice (position match):
     ice = 1 - |percentile_Earth(shallow_ice) - percentile_Mars(SWIM C 0-1 m)|
@@ -17,7 +18,8 @@ from pathlib import Path
 import numpy as np
 
 LAYER = "0-1m"
-TEMP_QUANTITIES = ("tmin", "tmax", "amp")
+# Active layer (0-1 m): whole-year AND local-summer daily min / max / amplitude, equal weights.
+TEMP_QUANTITIES = ("tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp")
 
 
 def rank01(values: np.ndarray) -> np.ndarray:
@@ -50,17 +52,20 @@ def main(interim: Path) -> None:
             d = np.abs(earth_t[q] - s["temperature"][q])
             temp_parts[i, j] = 1.0 - rank01(d)
         ice[i] = 1.0 - np.abs(ice_e_pct - s["ice"][LAYER]["percentile"])
-    with np.errstate(invalid="ignore"):
-        temperature = np.nanmean(temp_parts, axis=1) if np.isfinite(temp_parts).any() else temp_parts[:, 0]
+    temperature = temp_parts.mean(axis=1)  # NaN where ERA5-Land has no data (all 3 parts missing together)
     feats = np.stack([temperature, ice])  # (feature, site, cell)
     with np.errstate(invalid="ignore"):
         overall = np.nanmean(feats, axis=0)
+    # A cell without temperature cannot be judged (ice data exists for every permafrost cell by
+    # construction, so an ice-only score would rank it on half the evidence): no overall score.
+    overall[:, ~np.isfinite(earth_t["tmin"])] = np.nan
     best_site = np.nanargmax(np.nan_to_num(overall, nan=-1), axis=0)
     best = overall[best_site, np.arange(n)]
     pct = rank01(best)
-    order = np.argsort(-best, kind="stable")
+    order = np.argsort(-np.nan_to_num(best, nan=-1), kind="stable")
     rank = np.empty(n, dtype=np.int64)
     rank[order] = np.arange(1, n + 1)
+    rank[~np.isfinite(best)] = 0  # unranked
 
     out = interim / f"scores_{LAYER}.npz"
     np.savez_compressed(
@@ -68,7 +73,8 @@ def main(interim: Path) -> None:
         temp_parts=temp_parts.astype(np.float32), temperature=temperature.astype(np.float32),
         ice=ice.astype(np.float32), overall=overall.astype(np.float32),
         best_site=best_site, best=best.astype(np.float32), percentile=pct.astype(np.float32), rank=rank,
-        earth_tmin=earth_t["tmin"], earth_tmax=earth_t["tmax"], earth_amp=earth_t["amp"],
+        temp_quantities=np.array(TEMP_QUANTITIES), earth_temp=np.stack([earth_t[q] for q in TEMP_QUANTITIES]),
+        earth_tmin=earth_t["tmin"],
         shallow_ice=ice_e, alt=grid["alt"][rows, cols], pfr=grid["pfr"][rows, cols],
     )
     print("cells", n, "with temperature", int(np.isfinite(earth_t["tmin"]).sum()))

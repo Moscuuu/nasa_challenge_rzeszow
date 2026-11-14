@@ -37,7 +37,8 @@ def climatology_image() -> ee.Image:
 def main(interim: Path) -> None:
     ee.Initialize()
     sites = json.loads((interim / "mars_sites.json").read_text(encoding="utf-8"))
-    sc = np.load(interim / f"scores_{LAYER}.npz")
+    with np.load(interim / f"scores_{LAYER}.npz") as z:
+        sc = {k: z[k] for k in z.files}
     top = np.argsort(-np.nan_to_num(sc["best"], nan=-1), kind="stable")[:TOP_N]
     lat = 90 - (sc["rows"][top] + 0.5) * RES
     lon = -180 + (sc["cols"][top] + 0.5) * RES

@@ -64,13 +64,17 @@ def main(swim_dir: Path, out: Path) -> None:
         for layer, fname in (("0-1m", "SWIM4MIM_Ci_0_1.tif"), ("1-5m", "SWIM4MIM_Ci_1_5.tif"),
                              ("gt5m", "SWIM4MIM_Ci_5.tif")):
             c, allpix = swim_window_mean(swim_dir / fname, s["lat"], s["lon"])
-            ice[layer] = {"c": round(c, 4), "percentile": round(float((allpix < c).mean()), 4)}
+            # Rank among ice-consistent pixels (C > 0): the Earth side is ranked among permafrost cells,
+            # i.e. ground that already holds ice, so both populations mean "places with ground ice".
+            icy = allpix[allpix > 0]
+            ice[layer] = {"c": round(c, 4), "percentile": round(float((icy < c).mean()), 4)}
         result.append({
             **s,
             "window_deg": WINDOW_DEG,
             "coords_status": "approximate",
             "albedo": ALBEDO, "thermal_inertia": INERTIA,
-            "temperature": {k: round(float(temps[k][i]), 2) for k in ("tmin", "tmax", "amp", "tmean", "abs_min", "abs_max")},
+            "temperature": {k: round(float(temps[k][i]), 2) for k in (
+                "tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp", "tmean", "abs_min", "abs_max")},
             "diurnal_profile_K": [round(float(v), 2) for v in temps["diurnal_profile"][i]],
             "ice": ice,
             "chlorine_wt_pct": None,

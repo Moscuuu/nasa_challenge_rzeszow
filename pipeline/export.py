@@ -13,7 +13,7 @@ from PIL import Image
 LAYER = "0-1m"
 RES = 0.1
 TOP_N = 2000
-CONTRACT_VERSION = "0.2"
+CONTRACT_VERSION = "0.3"
 FEATURES = [
     {"id": "temperature", "label": "Temperature", "comparison": "rank"},
     {"id": "ground_ice", "label": "Ground ice", "comparison": "position"},
@@ -48,8 +48,8 @@ def site_feature(s):
         "properties": {
             "id": s["id"], "name": s["name"], "window_deg": s["window_deg"], "coords_status": s["coords_status"],
             "features": {
-                "temperature": {"tmin_K": t["tmin"], "tmax_K": t["tmax"], "amp_K": t["amp"],
-                                "unit": "K (surface, mean daily, whole Mars year)", "source": "mars_thermal_model"},
+                "temperature": {**{f"{q}_K": t[q] for q in ("tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp")},
+                                "unit": "K (surface, mean daily; whole Mars year and local summer)", "source": "mars_thermal_model"},
                 "ground_ice": {"value": s["ice"][LAYER]["c"], "rank": s["ice"][LAYER]["percentile"],
                                "unit": "SWIM ice consistency C, 0-1 m (-1..1)", "source": "swim"},
                 "polygons": {"value": None, "rank": None, "unit": None, "source": None, "status": "pending"},
@@ -82,7 +82,8 @@ def score_png(path: Path, rows, cols, values):
 def main(interim: Path, out: Path) -> None:
     out.mkdir(parents=True, exist_ok=True)
     sites = json.loads((interim / "mars_sites.json").read_text(encoding="utf-8"))
-    sc = np.load(interim / f"scores_{LAYER}.npz")
+    with np.load(interim / f"scores_{LAYER}.npz") as z:  # materialise once: NpzFile re-reads on every access
+        sc = {k: z[k] for k in z.files}
     windows_path = interim / f"experiment_window_{LAYER}.json"
     windows = json.loads(windows_path.read_text(encoding="utf-8")) if windows_path.exists() else {}
     site_ids = [s["id"] for s in sites]
@@ -105,10 +106,10 @@ def main(interim: Path, out: Path) -> None:
         feats = {
             "temperature": {
                 "score": r3(sc["temperature"][b, k]),
-                "parts": {q: r3(sc["temp_parts"][b, j, k]) for j, q in enumerate(("tmin", "tmax", "amp"))},
-                "earth_value": {"tmin_K": r3(sc["earth_tmin"][k]), "tmax_K": r3(sc["earth_tmax"][k]), "amp_K": r3(sc["earth_amp"][k])},
-                "mars_value": {"tmin_K": s["temperature"]["tmin"], "tmax_K": s["temperature"]["tmax"], "amp_K": s["temperature"]["amp"]},
-                "unit": "K (surface skin temperature, mean daily)",
+                "parts": {str(q): r3(sc["temp_parts"][b, j, k]) for j, q in enumerate(sc["temp_quantities"])},
+                "earth_value": {f"{q}_K": r3(sc["earth_temp"][j, k]) for j, q in enumerate(sc["temp_quantities"])},
+                "mars_value": {f"{q}_K": s["temperature"][str(q)] for q in sc["temp_quantities"]},
+                "unit": "K (surface skin temperature, mean daily; whole year and local summer)",
                 "status": "ok" if temp_ok else "no_data", "source": "era5_land",
             },
             "ground_ice": {
