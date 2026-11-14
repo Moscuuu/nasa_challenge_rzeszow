@@ -1,15 +1,12 @@
 # data/ — shared data snapshot (2026-11-14)
 
-This branch (`data-snapshot`) holds only the `data/` folder. It has no code history.
-On `main`, `data/` is in `.gitignore`, so it never mixes with code commits.
+These files are tracked in git on `main` (snapshot from 2026-11-14).
+`data/` is still in `.gitignore`, so only these files are tracked; new files you
+create in `data/` stay local.
 
-## How to get it (from your normal checkout on main)
+## How to get it
 
-```bash
-git fetch origin data-snapshot
-git checkout origin/data-snapshot -- data/   # copies files into data/
-git reset -q data/                  # unstage them again (data/ stays ignored)
-```
+Just `git pull` on `main`.
 
 ## What is inside
 
