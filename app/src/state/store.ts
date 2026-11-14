@@ -49,6 +49,9 @@ export function createAppStore() {
     if (!source) throw new Error("Store not initialised: call init(ds) first");
     return source;
   };
+  // Request token: selectSite / selectLayer apply their async result only if no newer
+  // selection started meanwhile (fast pin or layer clicks).
+  let latest = 0;
 
   return createStore<AppState>()((set, get) => ({
     manifest: null,
@@ -81,13 +84,16 @@ export function createAppStore() {
     },
 
     async selectSite(id) {
+      const token = ++latest;
       const { layer, cells } = get();
       const scoreMap = await ds().getScoreMap(layer, id ?? "best");
+      if (token !== latest) return;
       const list = topForSite(cells, id);
       set({ siteId: id, scoreMap, list, index: 0, earthHit: null, focus: pointOf(list[0]) });
     },
 
     async selectLayer(layer) {
+      const token = ++latest;
       const { manifest, siteId } = get();
       if (!manifest?.layers.find((l) => l.id === layer)?.available) {
         set({ layerPending: true });
@@ -99,9 +105,11 @@ export function createAppStore() {
           ds().getScoreMap(layer, siteId ?? "best"),
           ds().getValidation(layer),
         ]);
+        if (token !== latest) return;
         const list = topForSite(cells, siteId);
         set({ layer, cells, scoreMap, checks, list, index: 0, earthHit: null, layerPending: false, focus: pointOf(list[0]) });
       } catch (e) {
+        if (token !== latest) return;
         if (e instanceof LayerUnavailableError) set({ layerPending: true });
         else throw e;
       }

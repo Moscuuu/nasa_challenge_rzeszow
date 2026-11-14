@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "preview": "vite preview",
-    "mock-data": "node scripts/make-mock-data.mjs"
+    "mock-data": "node scripts/make-mock-data.mjs",
+    "shot": "node scripts/shot.mjs"
   },
   "dependencies": {
     "@react-three/drei": "9.114.0",
@@ -21,6 +22,7 @@
     "zustand": "4.5.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.48.2",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.0.1",
     "@types/node": "20.17.6",

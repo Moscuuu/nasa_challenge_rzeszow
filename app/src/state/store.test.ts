@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { PNG } from "pngjs";
 import { describe, expect, it } from "vitest";
 import { createDataSource } from "../data/source";
+import { topForSite } from "../data/cells";
 import { currentCell, createAppStore } from "./store";
 import type { ValidationCheck } from "../data/types";
 
@@ -112,5 +113,48 @@ describe("app store", () => {
     expect(store.getState().focus?.lon).toBeCloseTo(161.75);
     store.getState().openValidation(true);
     expect(store.getState().validationOpen).toBe(true);
+  });
+  it("rapid selectSite: only the latest selection is applied when the first resolves last", async () => {
+    const { ds } = makeDs();
+    const gates = new Map<string, () => void>();
+    const gated: typeof ds = {
+      ...ds,
+      async getScoreMap(layer, site) {
+        if (site !== "best") await new Promise<void>((r) => gates.set(site, r));
+        return ds.getScoreMap(layer, site);
+      },
+    };
+    const store = createAppStore();
+    await store.getState().init(gated);
+    const first = store.getState().selectSite("hellas_rim");
+    const second = store.getState().selectSite(null);
+    await second;
+    gates.get("hellas_rim")!();
+    await first;
+    expect(store.getState().siteId).toBeNull();
+    expect(store.getState().list).toEqual(topForSite(store.getState().cells, null));
+  });
+
+  it("rapid selectLayer then selectSite: stale layer result does not overwrite the newer site", async () => {
+    const { ds } = makeDs();
+    let release: (() => void) | null = null;
+    let hold = false;
+    const gated: typeof ds = {
+      ...ds,
+      async getCells(layer) {
+        if (hold) await new Promise<void>((r) => (release = r));
+        return ds.getCells(layer);
+      },
+    };
+    const store = createAppStore();
+    await store.getState().init(gated);
+    hold = true;
+    const layerCall = store.getState().selectLayer("0-1m");
+    hold = false;
+    await store.getState().selectSite("hellas_rim");
+    (release as unknown as () => void)();
+    await layerCall;
+    expect(store.getState().siteId).toBe("hellas_rim");
+    expect(store.getState().list).toHaveLength(6);
   });
 });
