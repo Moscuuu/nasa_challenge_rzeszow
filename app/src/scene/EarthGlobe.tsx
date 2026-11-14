@@ -66,8 +66,8 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
 
   // Heat overlay: one material, its uniforms follow the store.
   const heat = useMemo(createHeatMaterial, []);
-  const scoreTex = useMemo(() => (scoreMap ? scoreTexture(scoreMap) : null), [scoreMap]);
   const threshold = useMemo(() => scoreMap?.topThreshold(TOP_FRACTION) ?? 1, [scoreMap]);
+  const scoreTex = useMemo(() => (scoreMap ? scoreTexture(scoreMap, threshold) : null), [scoreMap, threshold]);
   useEffect(() => () => scoreTex?.dispose(), [scoreTex]);
   useEffect(() => () => heat.dispose(), [heat]);
   useEffect(() => {

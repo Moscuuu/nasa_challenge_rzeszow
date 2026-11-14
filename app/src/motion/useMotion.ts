@@ -70,6 +70,7 @@ export function useMotion(
       cancelAnimationFrame(raf);
       unsubscribe();
       intro?.kill();
+      motion.earth?.setReveal(Math.PI); // a killed intro must never leave the heat hidden
       window.removeEventListener("pointerdown", skip, true);
       window.removeEventListener("keydown", skip, true);
       motion.mars = motion.earth = null;

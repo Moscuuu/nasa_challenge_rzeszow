@@ -6,8 +6,12 @@ export const HEAT_MAX = 0.85;
 export const HEAT_MIN_TOP = 0.3;
 /** Opacity at score 0 in "Show all" mode. */
 export const HEAT_MIN_ALL = 0.04;
+/** Opacity of a fully hot, fully permafrost pixel in "top 10 %" mode. */
+export const HEAT_CORE = 0.8;
+/** Peak opacity of the soft halo around hot regions. */
+export const HEAT_HALO = 0.32;
 /** Share of the heat left at the pulse centre, so the rings stay visible on dense heat. */
-export const PULSE_CLEAR_MIN = 0.25;
+export const PULSE_CLEAR_MIN = 0.45;
 /** Largest pulse ring radius, in globe radii (≈ radians on the unit sphere). */
 export const PULSE_RADIUS = 0.15;
 /** Smallest mask used as a divisor when unpacking a texel. */
@@ -34,6 +38,16 @@ export function heatAlpha(score: number, mask: number, threshold: number, showAl
   if (score < threshold) return 0;
   const t = threshold >= 1 ? 1 : (score - threshold) / (1 - threshold);
   return HEAT_MIN_TOP + (HEAT_MAX - HEAT_MIN_TOP) * clamp01(t);
+}
+
+/**
+ * "Top 10 %" mode opacity. `hot` = filtered share of top-10 % texels (texture B, fine mip bias),
+ * `halo` = the same channel at a much coarser mip, a soft glow so small clusters stay findable
+ * at far zoom. `mask` = filtered permafrost mask (core only; the glow may spill a little).
+ */
+export function topHeatAlpha(hot: number, halo: number, mask: number): number {
+  const core = mask < 0.5 ? 0 : HEAT_CORE * smoothstep(0.2, 0.6, hot);
+  return Math.max(core, HEAT_HALO * smoothstep(0.02, 0.5, halo));
 }
 
 /** Heat multiplier around the pulse: PULSE_CLEAR_MIN at its centre, 1 from `radius` outwards. */

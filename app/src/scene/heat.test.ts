@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { heatAlpha, PULSE_CLEAR_MIN, pulseClear, unpackTexel } from "./heat";
+import { HEAT_CORE, HEAT_HALO, heatAlpha, topHeatAlpha, PULSE_CLEAR_MIN, pulseClear, unpackTexel } from "./heat";
 
 describe("heatAlpha", () => {
   it("is 0 where the filtered mask is below 0.5 (edge of permafrost)", () => {
@@ -59,5 +59,18 @@ describe("pulseClear", () => {
 
   it("is 1 everywhere without a pulse", () => {
     expect(pulseClear(0, 0)).toBe(1);
+  });
+});
+
+describe("topHeatAlpha", () => {
+  it("shows a solid core where the top-10 % texels fill the pixel", () => {
+    expect(topHeatAlpha(1, 1, 1)).toBeCloseTo(HEAT_CORE);
+  });
+  it("gives only the soft halo near a small cluster, and nothing far away", () => {
+    expect(topHeatAlpha(0, 0.5, 1)).toBeCloseTo(HEAT_HALO);
+    expect(topHeatAlpha(0, 0, 1)).toBe(0);
+  });
+  it("has no core outside permafrost", () => {
+    expect(topHeatAlpha(1, 0, 0.2)).toBe(0);
   });
 });
