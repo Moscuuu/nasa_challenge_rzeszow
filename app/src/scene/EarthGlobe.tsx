@@ -4,7 +4,8 @@ import { PerspectiveCamera, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { useAppStore } from "../state/store";
 import { isClick, ll2v, rotationFor, v2ll } from "./geo";
-import { createHeatMaterial, maskTexture, scoreTexture } from "./heatMaterial";
+import { PULSE_RADIUS } from "./heat";
+import { createHeatMaterial, scoreTexture } from "./heatMaterial";
 import { Pulse } from "./Pulse";
 import { useTextureSize } from "./useTextureSize";
 import { ValidationBoxes } from "./ValidationBoxes";
@@ -58,22 +59,21 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   // Heat overlay: one material, its uniforms follow the store.
   const heat = useMemo(createHeatMaterial, []);
   const scoreTex = useMemo(() => (scoreMap ? scoreTexture(scoreMap) : null), [scoreMap]);
-  const maskTex = useMemo(() => (scoreMap ? maskTexture(scoreMap) : null), [scoreMap]);
   const threshold = useMemo(() => scoreMap?.topThreshold(TOP_FRACTION) ?? 1, [scoreMap]);
   useEffect(() => () => scoreTex?.dispose(), [scoreTex]);
-  useEffect(() => () => maskTex?.dispose(), [maskTex]);
   useEffect(() => () => heat.dispose(), [heat]);
   useEffect(() => {
     heat.uniforms.uScore.value = scoreTex;
-    heat.uniforms.uMask.value = maskTex;
     heat.uniforms.uThreshold.value = threshold;
-  }, [heat, scoreTex, maskTex, threshold]);
+  }, [heat, scoreTex, threshold]);
   useEffect(() => {
     heat.uniforms.uShowAll.value = showAll ? 1 : 0;
   }, [heat, showAll]);
   useEffect(() => {
     // Reveal origin = focus cell. uReveal stays at PI (fully shown) until the timelines drive it.
+    // Heat under the pulse rings is thinned so they stay visible.
     if (focus) heat.uniforms.uOrigin.value.copy(ll2v(focus.lat, focus.lon));
+    heat.uniforms.uPulseRadius.value = focus ? PULSE_RADIUS : 0;
   }, [heat, focus]);
 
   const motion = useRef({

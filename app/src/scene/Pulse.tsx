@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ll2v } from "./geo";
+import { PULSE_RADIUS } from "./heat";
 
 const RINGS = 3;
 const PERIOD = 2.4; // s per ring sweep; rings start PERIOD / RINGS apart
-const MAX_RADIUS = 0.08; // globe radii
+const MAX_RADIUS = PULSE_RADIUS; // globe radii; the heat shader thins heat inside it
 const R = 1.003; // just above the heat overlay (1.002)
 const UP = new THREE.Vector3(0, 0, 1);
 // Unit circle as a 1 px line loop (stays 1 px at any zoom), scaled per frame.
