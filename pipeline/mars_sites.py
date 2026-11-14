@@ -55,24 +55,72 @@ def swim_window_mean(path: Path, lat: float, lon: float) -> tuple[float, np.ndar
     return float(np.nanmean(a[r0:r1, c0:c1])), a[np.isfinite(a)]
 
 
+POLYGONS_TIF = Path("landforms/SWIM4MIM_G_0_1_Ancillary/SWIM4MIM_Polygons_GIS.tif")
+
+
+def polygon_stats(swim_dir: Path, sites: list) -> list:
+    """Share of SWIM survey images showing HiRISE-scale polygons, per site window.
+
+    -30 = not surveyed (no data). Rows poleward of the survey band (~47.9 S - 49.0 N) are filled with 0
+    that means "not surveyed", so they are masked too. Mars-wide ranking uses surveyed pixels only (mid-rank).
+    """
+    with rasterio.open(swim_dir / POLYGONS_TIF) as src:
+        a = src.read(1).astype(np.float64)
+    a[(a < -1) | (a > 1e6)] = np.nan
+    a = np.clip(a, 0, 1)
+    res = 0.05
+    surveyed_rows = np.where(np.nanmax(np.nan_to_num(a, nan=0), axis=1) > 0)[0]
+    a[: surveyed_rows.min()] = np.nan
+    a[surveyed_rows.max() + 1:] = np.nan
+    allpix = a[np.isfinite(a)]
+    out = []
+    for s in sites:
+        half = WINDOW_DEG / 2
+        r0, r1 = int((60 - (s["lat"] + half)) / res), int((60 - (s["lat"] - half)) / res)
+        c0, c1 = int((s["lon"] - half + 180) / res), int((s["lon"] + half + 180) / res)
+        win = a[r0:r1, c0:c1]
+        if not np.isfinite(win).any():
+            out.append({"value": None, "percentile": None, "status": "no_data"})
+            continue
+        v = float(np.nanmean(win))
+        pct = ((allpix < v).mean() + (allpix <= v).mean()) / 2
+        out.append({"value": round(v, 4), "percentile": round(float(pct), 4), "status": "ok"})
+    return out
+
+
 def main(swim_dir: Path, out: Path) -> None:
     lats = np.array([s["lat"] for s in SITES])
     temps = run_sites(lats, np.full(lats.size, ALBEDO), np.full(lats.size, INERTIA))
+    polygons = polygon_stats(swim_dir, SITES)
     result = []
     for i, s in enumerate(SITES):
         ice = {}
         for layer, fname in (("0-1m", "SWIM4MIM_Ci_0_1.tif"), ("1-5m", "SWIM4MIM_Ci_1_5.tif"),
                              ("gt5m", "SWIM4MIM_Ci_5.tif")):
             c, allpix = swim_window_mean(swim_dir / fname, s["lat"], s["lon"])
-            ice[layer] = {"c": round(c, 4), "percentile": round(float((allpix < c).mean()), 4)}
+            # Rank among ice-consistent pixels (C > 0): the Earth side is ranked among permafrost cells,
+            # i.e. ground that already holds ice, so both populations mean "places with ground ice".
+            # Mid-rank: SWIM values are strongly discretised (many pixels exactly 0.5), so ties share
+            # the average of "strictly below" and "below or equal".
+            icy = allpix[allpix > 0]
+            pct = ((icy < c).mean() + (icy <= c).mean()) / 2
+            ice[layer] = {"c": round(c, 4), "percentile": round(float(pct), 4)}
         result.append({
             **s,
             "window_deg": WINDOW_DEG,
             "coords_status": "approximate",
             "albedo": ALBEDO, "thermal_inertia": INERTIA,
-            "temperature": {k: round(float(temps[k][i]), 2) for k in ("tmin", "tmax", "amp", "tmean", "abs_min", "abs_max")},
+            "temperature": {
+                **{k: round(float(temps[k][i]), 2) for k in (
+                    "tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp", "tmean", "abs_min", "abs_max",
+                    "t2m", "t5m", "t_deep")},
+                # Depth Layer temperatures (annual mean), same definition as the Earth side
+                "t_1_5": round(float((temps["t2m"][i] + temps["t5m"][i]) / 2), 2),
+                "t_gt5": round(float(temps["t_deep"][i]), 2),
+            },
             "diurnal_profile_K": [round(float(v), 2) for v in temps["diurnal_profile"][i]],
             "ice": ice,
+            "polygons": polygons[i],
             "chlorine_wt_pct": None,
         })
         t = result[-1]["temperature"]

@@ -1,0 +1,397 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -160.0,
+     42.0
+    ]
+   },
+   "properties": {
+    "id": "arcadia_planitia",
+    "name": "Arcadia Planitia",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 173.3,
+      "tmax_K": 246.65,
+      "amp_K": 73.35,
+      "summer_tmin_K": 182.05,
+      "summer_tmax_K": 263.26,
+      "summer_amp_K": 81.21,
+      "t_1_5_K": 201.33,
+      "t_gt5_K": 200.56,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.5843,
+       "rank": 0.826
+      },
+      "1-5m": {
+       "value": 0.3365,
+       "rank": 0.2651
+      },
+      "gt5m": {
+       "value": 0.1326,
+       "rank": 0.1226
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 1.0,
+      "rank": 0.9782,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Mid-latitude plains with a widespread shallow excess-ice layer mapped by radar and fresh ice-exposing craters.",
+    "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     22.0,
+     44.0
+    ]
+   },
+   "properties": {
+    "id": "deuteronilus_mensae",
+    "name": "Deuteronilus Mensae",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 172.35,
+      "tmax_K": 243.93,
+      "amp_K": 71.58,
+      "summer_tmin_K": 181.9,
+      "summer_tmax_K": 262.08,
+      "summer_amp_K": 80.18,
+      "t_1_5_K": 200.68,
+      "t_gt5_K": 200.2,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.3821,
+       "rank": 0.6912
+      },
+      "1-5m": {
+       "value": 0.5488,
+       "rank": 0.8988
+      },
+      "gt5m": {
+       "value": 0.5591,
+       "rank": 0.9754
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": null,
+      "rank": null,
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Mesas fringed by debris-covered glaciers and lobate aprons holding buried ice.",
+    "citation": "Plaut et al. 2009, GRL; First Landing Site/Exploration Zone Workshop 2015"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     164.0,
+     40.0
+    ]
+   },
+   "properties": {
+    "id": "phlegra_montes",
+    "name": "Phlegra Montes",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 174.17,
+      "tmax_K": 249.17,
+      "amp_K": 75.01,
+      "summer_tmin_K": 182.19,
+      "summer_tmax_K": 264.34,
+      "summer_amp_K": 82.15,
+      "t_1_5_K": 201.94,
+      "t_gt5_K": 200.89,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.2484,
+       "rank": 0.509
+      },
+      "1-5m": {
+       "value": 0.548,
+       "rank": 0.8987
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": null,
+      "rank": null,
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Mountain range with radar-detected ice in surrounding aprons, proposed for human exploration.",
+    "citation": "Dundas et al. 2021; Morgan et al. 2021, Nature Astronomy"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     175.0,
+     35.7
+    ]
+   },
+   "properties": {
+    "id": "erebus_montes",
+    "name": "Erebus Montes",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 175.81,
+      "tmax_K": 254.01,
+      "amp_K": 78.2,
+      "summer_tmin_K": 182.39,
+      "summer_tmax_K": 266.31,
+      "summer_amp_K": 83.92,
+      "t_1_5_K": 203.1,
+      "t_gt5_K": 201.52,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.1866,
+       "rank": 0.4396
+      },
+      "1-5m": {
+       "value": 0.4661,
+       "rank": 0.8893
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.6127,
+      "rank": 0.8423,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
+    "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -170.3,
+     35.1
+    ]
+   },
+   "properties": {
+    "id": "amazonis_posiolova",
+    "name": "Amazonis Planitia (Posiolova crater)",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 176.02,
+      "tmax_K": 254.62,
+      "amp_K": 78.61,
+      "summer_tmin_K": 182.41,
+      "summer_tmax_K": 266.55,
+      "summer_amp_K": 84.14,
+      "t_1_5_K": 203.25,
+      "t_gt5_K": 201.6,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.1701,
+       "rank": 0.4198
+      },
+      "1-5m": {
+       "value": 0.3794,
+       "rank": 0.2754
+      },
+      "gt5m": {
+       "value": 0.05,
+       "rank": 0.0564
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.5854,
+      "rank": 0.8285,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "A 2021 impact excavated ice boulders here, the lowest-latitude ice exposure seen.",
+    "citation": "Posiolova et al. 2022, Science"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     95.0,
+     45.0
+    ]
+   },
+   "properties": {
+    "id": "utopia_planitia",
+    "name": "Utopia Planitia",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 171.85,
+      "tmax_K": 242.5,
+      "amp_K": 70.65,
+      "summer_tmin_K": 181.82,
+      "summer_tmax_K": 261.45,
+      "summer_amp_K": 79.63,
+      "t_1_5_K": 200.33,
+      "t_gt5_K": 200.01,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.1189,
+       "rank": 0.3484
+      },
+      "1-5m": {
+       "value": 0.4404,
+       "rank": 0.8874
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": null,
+      "rank": null,
+      "status": "no_data",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Scalloped terrain over a radar-detected ice deposit comparable in volume to Lake Superior.",
+    "citation": "Stuurman et al. 2016, GRL"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     104.0,
+     -40.0
+    ]
+   },
+   "properties": {
+    "id": "hellas_rim",
+    "name": "Hellas rim",
+    "window_deg": 1.0,
+    "coords_status": "approximate",
+    "features": {
+     "temperature": {
+      "tmin_K": 171.41,
+      "tmax_K": 244.27,
+      "amp_K": 72.85,
+      "summer_tmin_K": 186.18,
+      "summer_tmax_K": 275.48,
+      "summer_amp_K": 89.3,
+      "t_1_5_K": 200.76,
+      "t_gt5_K": 200.52,
+      "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+      "source": "mars_thermal_model"
+     },
+     "ground_ice": {
+      "0-1m": {
+       "value": 0.2636,
+       "rank": 0.523
+      },
+      "1-5m": {
+       "value": 0.5148,
+       "rank": 0.8956
+      },
+      "gt5m": {
+       "value": 0.5,
+       "rank": 0.5992
+      },
+      "unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels",
+      "source": "swim"
+     },
+     "polygons": {
+      "value": 0.6318,
+      "rank": 0.8513,
+      "status": "ok",
+      "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+      "source": "swim"
+     }
+    },
+    "chlorine_wt_pct": null,
+    "description": "Lobate debris aprons on the eastern Hellas rim, among the few southern ice-rich candidates.",
+    "citation": "Holt et al. 2008, Science"
+   }
+  }
+ ]
+}

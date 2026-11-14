@@ -1,6 +1,22 @@
 # Kontrakt danych: analiza → GUI
 
-Wersja kontraktu: **0.2** (2026-11-14). Status: **pierwsza dostawa danych** w `out/` (warstwa `0-1m`, temperatura + lód gruntowy).
+Wersja kontraktu: **0.5** (2026-11-14). Status: **trzecia dostawa danych** w `out/`: wszystkie 3 warstwy i wszystkie 3 cechy (temperatura, lód gruntowy, spękania).
+
+Zmiany w 0.5 (spękania):
+- **`features.polygons`** w komórce: `{score, earth_value: {cracking_potential, ground_surface_temp_K}, mars_value: {swim_polygon_share}, unit, status, source}`. `status` = `ok`; `no_data`, gdy miejsce na Marsie nie ma pokrycia SWIM (Deuteronilus Mensae, Phlegra Montes, Utopia Planitia); `not_relevant` w `gt5m`.
+- **Uwaga do wyświetlania:** po stronie Ziemi spękania są **szacowane z temperatury gruntu**, a nie zaobserwowane na zdjęciach. W GUI warto to napisać przy tej cesze („estimated from ground temperature”).
+- **`mars_sites.geojson`**: `features.polygons` = `{value, rank, status, unit, source}`.
+- **Uczciwość porównania między miejscami:** dla miejsc ze `status: "no_data"` wynik jest średnią z 2 cech, a nie z 3, bo brak danych pomijamy, a nie zerujemy. GUI powinno pokazać to przy wyniku, np. „2 of 3 features”.
+
+Zmiany w 0.4:
+- **Test metody osobno dla każdej warstwy:** `validation_<layer>.json` zamiast `validation.json`. W manifeście `files.validation` jest teraz obiektem `{layer: plik}`.
+- **Temperatura w warstwach głębszych** to jedna wielkość: `t_1_5` (średnia roczna temperatura gruntu na 2 i 5 m) albo `t_gt5` (na 10 m). Klucze w `parts`, `earth_value` i `mars_value` wynikają z warstwy (np. `parts.t_1_5`, `earth_value.t_1_5_K`). GUI powinno iterować po kluczach, a nie zakładać ich listy.
+- **`ground_ice.earth_value`**: pierwszy klucz zależy od warstwy: `shallow_ice_certainty` (0-1m), `frozen_1_5m_certainty` (1-5m), `permafrost_fraction` (gt5m).
+- **`mars_sites.geojson`**: `ground_ice` ma wartości dla każdej warstwy (`{"0-1m": {value, rank}, "1-5m": …, "gt5m": …, unit, source}`), a `temperature` ma dodatkowo `t_1_5_K` i `t_gt5_K`.
+- **Nowe pole `tied_site_ids`** w komórce: wszystkie miejsca na Marsie z wynikiem równym najlepszemu (±0,001). W warstwach głębszych remisy są częste, bo każde miejsce na Marsie jest zimniejsze niż jakikolwiek grunt na Ziemi, a kilka ma tę samą wartość SWIM. Jeśli lista ma więcej niż 1 element, GUI powinno pokazać wszystkie, a nie tylko `best_site_id`.
+- `polygons.status` = `not_relevant` w `gt5m`.
+
+Zmiany w 0.3: temperatura w warstwie `0-1m` ma 6 wielkości: `tmin`, `tmax`, `amp` (cały rok) i `summer_tmin`, `summer_tmax`, `summer_amp` (lokalne lato). Klucze w `parts`, `earth_value` i `mars_value` to odpowiednio `<wielkość>` i `<wielkość>_K`. W warstwach `1-5m` i `gt5m` temperatura będzie jedną średnią roczną.
 
 Zmiany w 0.2: kształt cechy `temperature` (min/max/amplituda), `ground_ice` porównywany przez pozycję (`"comparison": "position"`), nowy `status: "pending"` (cecha jeszcze nie policzona), nowe pole `experiment_window` w komórce (§6.1), `coords_status` w miejscach na Marsie.
 
@@ -20,11 +36,11 @@ Wszystkie pliki leżą w jednym folderze `out/`. Bez bazy danych, bez backendu: 
 |---|---|---|
 | `manifest.json` | **czytaj najpierw**: lista warstw, cech, miejsc na Marsie i plików; etykiety po angielsku | mały |
 | `mars_sites.geojson` | 7 miejsc na bazę na Marsie (punkty) | mały |
-| `cells_top_<layer>.geojson` | najlepsze komórki dla danej warstwy, z pełnym opisem (do klikania) | do ~2 MB |
+| `cells_top_<layer>.geojson` | najlepsze komórki dla danej warstwy, z pełnym opisem (do klikania) | ~5 MB |
 | `score_<layer>_<site_id>.png` | mapa cieplna wyniku dla całej Ziemi (do nałożenia na globus) | ~1 MB każda |
-| `validation.json` | wynik testu metody na znanych analogach i kontraście | mały |
+| `validation_<layer>.json` | wynik testu metody na znanych analogach i kontraście, osobno dla warstwy | mały |
 
-`<layer>` ∈ `0-1m`, `1-5m`, `gt5m`. W pierwszej dostawie jest **tylko `0-1m`**. Które warstwy są gotowe, mówi `manifest.json` (`layers[].available`).
+`<layer>` ∈ `0-1m`, `1-5m`, `gt5m`. Od wersji 0.4 są wszystkie trzy. Które warstwy są gotowe, mówi `manifest.json` (`layers[].available`).
 
 ## 3. Konwencje
 
@@ -38,14 +54,14 @@ Wszystkie pliki leżą w jednym folderze `out/`. Bez bazy danych, bez backendu: 
 
 ```json
 {
-  "contract_version": "0.2",
+  "contract_version": "0.4",
   "generated_at": "2026-11-14T20:00:00Z",
   "mock": false,
   "cell_size_deg": 0.1,
   "layers": [
     {"id": "0-1m", "label": "0–1 m (dig-able ice)", "available": true},
-    {"id": "1-5m", "label": "1–5 m (shallow drilling)", "available": false},
-    {"id": "gt5m", "label": "> 5 m (deep resources)", "available": false}
+    {"id": "1-5m", "label": "1–5 m (shallow drilling)", "available": true},
+    {"id": "gt5m", "label": "> 5 m (deep resources)", "available": true}
   ],
   "features": [
     {"id": "temperature", "label": "Temperature", "comparison": "rank"},
@@ -53,7 +69,7 @@ Wszystkie pliki leżą w jednym folderze `out/`. Bez bazy danych, bez backendu: 
     {"id": "polygons", "label": "Thermal-contraction polygons", "comparison": "presence"}
   ],
   "sites": ["arcadia_planitia", "deuteronilus_mensae", "..."],
-  "files": {"mars_sites": "mars_sites.geojson", "cells_top": {"0-1m": "cells_top_0-1m.geojson"}, "score_maps": {"0-1m": {"arcadia_planitia": "score_0-1m_arcadia_planitia.png"}}, "validation": "validation.json"},
+  "files": {"mars_sites": "mars_sites.geojson", "cells_top": {"0-1m": "cells_top_0-1m.geojson"}, "score_maps": {"0-1m": {"arcadia_planitia": "score_0-1m_arcadia_planitia.png"}}, "validation": {"0-1m": "validation_0-1m.json", "1-5m": "validation_1-5m.json", "gt5m": "validation_gt5m.json"}},
   "sources": [{"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5", "url": "https://climate.esa.int/en/projects/permafrost/"}]
 }
 ```
@@ -70,7 +86,7 @@ Jeden punkt (`Point`) na miejsce. Właściwości:
 | `name` | string | po angielsku, np. `Arcadia Planitia` |
 | `window_deg` | number | rozmiar okna wokół punktu (1,0) |
 | `coords_status` | string | `approximate` (przybliżony środek obszaru) lub `published` |
-| `features` | object | `temperature`: `{tmin_K, tmax_K, amp_K, unit, source}` (średnie dobowe minimum, maksimum, amplituda temperatury powierzchni w roku marsjańskim); `ground_ice`: `{value, rank, unit, source}`, gdzie `value` = wskaźnik SWIM C, `rank` = pozycja na tle Marsa 0–1; `polygons`: `{..., status: "pending"}` |
+| `features` | object | `temperature`: `{tmin_K, tmax_K, amp_K, summer_tmin_K, summer_tmax_K, summer_amp_K, unit, source}` (średnie dobowe minimum, maksimum, amplituda temperatury powierzchni: cały rok marsjański i lokalne lato); `ground_ice`: `{value, rank, unit, source}`, gdzie `value` = wskaźnik SWIM C, `rank` = pozycja na tle Marsa 0–1; `polygons`: `{..., status: "pending"}` |
 | `chlorine_wt_pct` | number \| null | chlor z orbity (GRS); **tylko informacja**, nie wchodzi do oceny |
 | `description` | string | 1–2 zdania po angielsku: dlaczego to miejsce jest kandydatem |
 | `citation` | string | źródło propozycji miejsca |
@@ -86,8 +102,9 @@ Punkt (`Point`) w środku komórki. Komórka ma bok 0,1°, więc GUI może narys
 | `percentile` | number | 0–100, pozycja wśród wszystkich komórek zmarzliny |
 | `score` | number | wynik względem **najbliższego** miejsca na bazę (najwyższy z 7) |
 | `best_site_id` | string | id najbliższego miejsca na Marsie |
+| `tied_site_ids` | string[] | wszystkie miejsca z wynikiem równym najlepszemu (±0,001); zawiera też `best_site_id` |
 | `site_scores` | object | `{site_id: score}` dla wszystkich 7 miejsc |
-| `features` | object | dla każdej cechy względem `best_site_id`: `{score, earth_value, mars_value, unit, status, source}`; `status` ∈ `ok`, `no_data`, `not_relevant`, `pending`. `temperature` ma dodatkowo `parts: {tmin, tmax, amp}` (ocena każdej z 3 wielkości), a `earth_value`/`mars_value` to obiekty `{tmin_K, tmax_K, amp_K}`. `ground_ice.earth_value` = `{shallow_ice_certainty, active_layer_m, permafrost_fraction}`, `mars_value` = `{swim_c}` |
+| `features` | object | dla każdej cechy względem `best_site_id`: `{score, earth_value, mars_value, unit, status, source}`; `status` ∈ `ok`, `no_data`, `not_relevant`, `pending`. `temperature` ma dodatkowo `parts: {tmin, tmax, amp, summer_tmin, summer_tmax, summer_amp}` (ocena każdej z 6 wielkości), a `earth_value`/`mars_value` to obiekty `{tmin_K, …, summer_amp_K}`. `ground_ice.earth_value` = `{shallow_ice_certainty, active_layer_m, permafrost_fraction}`, `mars_value` = `{swim_c}` |
 | `strengths` | string[] | id cech z najwyższą oceną („co jest podobne”) |
 | `breaks_down` | string[] | id cech z najniższą oceną („gdzie analogia się łamie”) |
 | `known_analog` | string \| null | nazwa znanego analogu, jeśli komórka w nim leży, np. `McMurdo Dry Valleys` |
@@ -117,9 +134,9 @@ Ocena ogólna = **zwykła średnia** cech ze statusem `ok` (równe wagi, braki p
 - Odwzorowanie walcowe równoodległościowe, **3600 × 1800 px** (0,1°/px), lewy górny róg = 180°W, 90°N. Pasuje wprost jako tekstura na `SphereGeometry` (`context/ui-setup-reference.md` §4.3).
 - PNG RGBA w skali szarości: kanał R = `score × 255`, **alfa = 0 tam, gdzie nie ma zmarzliny lub danych**. Kolory nakłada GUI.
 
-## 8. `validation.json`
+## 8. `validation_<layer>.json`
 
-Pokazuje, czy metoda działa: znane analogi powinny wypaść wysoko, kontrast (mokra tundra) nisko.
+Pokazuje, czy metoda działa: znane analogi powinny wypaść wysoko, kontrast (mokra tundra) nisko. Kontrast ma sens tylko w `0-1m`: poniżej warstwy czynnej mokra tundra to zwykły zimny, zamarznięty grunt. Każdy test ma pole `applicable` (bool). W warstwach głębszych kontrast ma `applicable: false`: wynik jest podany, ale GUI nie powinno go pokazywać jako porażki metody.
 
 Zasada `passed`: znany analog zalicza, gdy mediana jego komórek leży w **najlepszych 10 %** komórek zmarzliny (`median_percentile ≥ 90`). Kontrast zalicza, gdy leży **poniżej mediany** (`median_percentile < 50`).
 

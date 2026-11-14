@@ -14,6 +14,8 @@ FILES = {
     ("permafrost_extent", "Antarctica", "PFR", "AREA27"),
     ("active_layer_thickness", "northern_hemisphere", "ALT", "AREA4"),
     ("active_layer_thickness", "Antarctica", "ALT", "AREA27"),
+    ("ground_temperature", "northern_hemisphere", "GTD", "AREA4"),  # ~360 MB, deeper Depth Layers
+    ("ground_temperature", "Antarctica", "GTD", "AREA27"),
 }
 
 

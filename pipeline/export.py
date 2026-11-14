@@ -1,5 +1,7 @@
 """Write the GUI hand-off files (docs/contracts/analysis-to-gui/CONTRACT.md) into out/.
 
+Exports every Depth Layer that has data/interim/scores_<layer>.npz, plus one shared manifest.
+
 Usage: python -I pipeline/export.py data/interim out
 """
 import json
@@ -10,10 +12,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-LAYER = "0-1m"
+LAYERS = [("0-1m", "0–1 m (dig-able ice)"), ("1-5m", "1–5 m (shallow drilling)"), ("gt5m", "> 5 m (deep resources)")]
 RES = 0.1
 TOP_N = 2000
-CONTRACT_VERSION = "0.2"
+CONTRACT_VERSION = "0.5"
 FEATURES = [
     {"id": "temperature", "label": "Temperature", "comparison": "rank"},
     {"id": "ground_ice", "label": "Ground ice", "comparison": "position"},
@@ -21,12 +23,23 @@ FEATURES = [
 ]
 SOURCES = [
     {"id": "era5_land", "label": "ERA5-Land hourly / daily aggregates (ECMWF, via Google Earth Engine), 2023", "url": "https://doi.org/10.24381/cds.e2161bac"},
-    {"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5.0 (PFR, ALT), 2023", "url": "https://climate.esa.int/en/projects/permafrost/"},
+    {"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5.0 (PFR, ALT, ground temperature), 2023", "url": "https://climate.esa.int/en/projects/permafrost/"},
     {"id": "swim", "label": "SWIM4MIM ice consistency composites (PSI / NASA)", "url": "https://swim.psi.edu"},
     {"id": "mars_thermal_model", "label": "Team 1-D Mars surface thermal model (A=0.25, I=250)", "url": None},
 ]
 KNOWN = [("McMurdo Dry Valleys", (160.5, -78.0, 163.0, -77.2)),
          ("Haughton Crater (Devon Island)", (-91.0, 74.9, -88.0, 76.0))]
+TEMP_UNIT = {
+    "0-1m": ("K (surface skin temperature, mean daily; whole year and local summer)", "era5_land"),
+    "1-5m": ("K (mean annual ground temperature, average of 2 m and 5 m)", "esa_cci_permafrost"),
+    "gt5m": ("K (mean annual ground temperature at 10 m)", "esa_cci_permafrost"),
+}
+ICE_EARTH = {  # what the Earth ground-ice indicator means per layer
+    "0-1m": "shallow_ice_certainty",
+    "1-5m": "frozen_1_5m_certainty",
+    "gt5m": "permafrost_fraction",
+}
+MARS_TEMP_KEYS = ("tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp", "t_1_5", "t_gt5")
 
 
 def r3(x):
@@ -40,7 +53,7 @@ def known_analog(lon, lat):
     return None
 
 
-def site_feature(s):
+def site_feature(s, layers):
     t = s["temperature"]
     return {
         "type": "Feature",
@@ -48,11 +61,15 @@ def site_feature(s):
         "properties": {
             "id": s["id"], "name": s["name"], "window_deg": s["window_deg"], "coords_status": s["coords_status"],
             "features": {
-                "temperature": {"tmin_K": t["tmin"], "tmax_K": t["tmax"], "amp_K": t["amp"],
-                                "unit": "K (surface, mean daily, whole Mars year)", "source": "mars_thermal_model"},
-                "ground_ice": {"value": s["ice"][LAYER]["c"], "rank": s["ice"][LAYER]["percentile"],
-                               "unit": "SWIM ice consistency C, 0-1 m (-1..1)", "source": "swim"},
-                "polygons": {"value": None, "rank": None, "unit": None, "source": None, "status": "pending"},
+                "temperature": {**{f"{q}_K": t[q] for q in MARS_TEMP_KEYS},
+                                "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
+                                "source": "mars_thermal_model"},
+                "ground_ice": {lay: {"value": s["ice"][lay]["c"], "rank": s["ice"][lay]["percentile"]} for lay in layers}
+                | {"unit": "SWIM ice consistency C (-1..1); rank among ice-consistent pixels", "source": "swim"},
+                "polygons": {"value": s["polygons"]["value"], "rank": s["polygons"]["percentile"],
+                             "status": s["polygons"]["status"],
+                             "unit": "share of SWIM survey images showing HiRISE-scale polygons (0..1); rank among surveyed pixels",
+                             "source": "swim"},
             },
             "chlorine_wt_pct": s["chlorine_wt_pct"],
             "description": s["description"], "citation": s["citation"],
@@ -79,48 +96,60 @@ def score_png(path: Path, rows, cols, values):
     Image.fromarray(img, "RGBA").save(path, optimize=True)
 
 
-def main(interim: Path, out: Path) -> None:
-    out.mkdir(parents=True, exist_ok=True)
-    sites = json.loads((interim / "mars_sites.json").read_text(encoding="utf-8"))
-    sc = np.load(interim / f"scores_{LAYER}.npz")
-    windows_path = interim / f"experiment_window_{LAYER}.json"
+def polygon_feature(sc, layer, b, k, site):
+    if layer == "gt5m":
+        return {"score": None, "earth_value": None, "mars_value": None, "unit": None,
+                "status": "not_relevant", "source": None}
+    if site["polygons"]["status"] != "ok":  # no SWIM polygon survey around this Mars site
+        status = "no_data"
+    else:
+        status = "ok"
+    return {
+        "score": r3(sc["polygons"][b, k]),
+        "earth_value": {"cracking_potential": r3(sc["crack"][k]), "ground_surface_temp_K": r3(sc["gst"][k])},
+        "mars_value": {"swim_polygon_share": site["polygons"]["value"]},
+        "unit": "compared by percentile on each planet; Earth value estimated from ground temperature, not observed",
+        "status": status, "source": "esa_cci_permafrost+swim",
+    }
+
+
+def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
+    with np.load(interim / f"scores_{layer}.npz") as z:  # materialise once: NpzFile re-reads on every access
+        sc = {k: z[k] for k in z.files}
+    windows_path = interim / f"experiment_window_{layer}.json"
     windows = json.loads(windows_path.read_text(encoding="utf-8")) if windows_path.exists() else {}
     site_ids = [s["id"] for s in sites]
     rows, cols = sc["rows"], sc["cols"]
     lat = 90 - (rows + 0.5) * RES
     lon = -180 + (cols + 0.5) * RES
+    quantities = [str(q) for q in sc["temp_quantities"]]
+    mars_keys = [str(q) for q in sc["temp_mars_keys"]]
+    unit, temp_source = TEMP_UNIT[layer]
 
-    # Mars sites
-    (out / "mars_sites.geojson").write_text(json.dumps(
-        {"type": "FeatureCollection", "features": [site_feature(s) for s in sites]}, indent=1), encoding="utf-8")
-
-    # top cells
     top = np.argsort(-np.nan_to_num(sc["best"], nan=-1), kind="stable")[:TOP_N]
     feats_out = []
     for k in top:
         b = int(sc["best_site"][k])
         s = sites[b]
         cid = f"c_{lat[k]:.2f}_{lon[k]:.2f}"
-        temp_ok = np.isfinite(sc["temperature"][b, k])
         feats = {
             "temperature": {
                 "score": r3(sc["temperature"][b, k]),
-                "parts": {q: r3(sc["temp_parts"][b, j, k]) for j, q in enumerate(("tmin", "tmax", "amp"))},
-                "earth_value": {"tmin_K": r3(sc["earth_tmin"][k]), "tmax_K": r3(sc["earth_tmax"][k]), "amp_K": r3(sc["earth_amp"][k])},
-                "mars_value": {"tmin_K": s["temperature"]["tmin"], "tmax_K": s["temperature"]["tmax"], "amp_K": s["temperature"]["amp"]},
-                "unit": "K (surface skin temperature, mean daily)",
-                "status": "ok" if temp_ok else "no_data", "source": "era5_land",
+                "parts": {q: r3(sc["temp_parts"][b, j, k]) for j, q in enumerate(quantities)},
+                "earth_value": {f"{q}_K": r3(sc["earth_temp"][j, k]) for j, q in enumerate(quantities)},
+                "mars_value": {f"{q}_K": s["temperature"][mk] for q, mk in zip(quantities, mars_keys)},
+                "unit": unit,
+                "status": "ok" if np.isfinite(sc["temperature"][b, k]) else "no_data", "source": temp_source,
             },
             "ground_ice": {
                 "score": r3(sc["ice"][b, k]),
-                "earth_value": {"shallow_ice_certainty": r3(sc["shallow_ice"][k]), "active_layer_m": r3(sc["alt"][k]),
+                "earth_value": {ICE_EARTH[layer]: r3(sc["ice_earth"][k]), "active_layer_m": r3(sc["alt"][k]),
                                 "permafrost_fraction": r3(sc["pfr"][k])},
-                "mars_value": {"swim_c": s["ice"][LAYER]["c"]},
+                "mars_value": {"swim_c": s["ice"][layer]["c"]},
                 "unit": "compared by percentile on each planet",
                 "status": "ok", "source": "esa_cci_permafrost",
             },
-            "polygons": {"score": None, "earth_value": None, "mars_value": None, "unit": None,
-                         "status": "pending", "source": None},
+            "polygons": polygon_feature(sc, layer, b, k, s),
         }
         strengths, breaks = strengths_breaks(feats)
         feats_out.append({
@@ -129,41 +158,60 @@ def main(interim: Path, out: Path) -> None:
             "properties": {
                 "id": cid, "rank": int(sc["rank"][k]), "percentile": round(float(sc["percentile"][k]) * 100, 3),
                 "score": r3(sc["best"][k]), "best_site_id": site_ids[b],
+                # every site within 0.001 of the best score (deep layers often tie: all Mars sites are
+                # colder than any Earth ground and several share the same SWIM value)
+                "tied_site_ids": [sid for i, sid in enumerate(site_ids)
+                                  if np.isfinite(sc["overall"][i, k]) and sc["best"][k] - sc["overall"][i, k] < 1e-3],
                 "site_scores": {sid: r3(sc["overall"][i, k]) for i, sid in enumerate(site_ids)},
                 "features": feats, "strengths": strengths, "breaks_down": breaks,
                 "known_analog": known_analog(lon[k], lat[k]), "place": None,
                 "experiment_window": windows.get(cid),
             },
         })
-    (out / f"cells_top_{LAYER}.geojson").write_text(json.dumps(
-        {"type": "FeatureCollection", "layer": LAYER, "features": feats_out}, separators=(",", ":")), encoding="utf-8")
+    (out / f"cells_top_{layer}.geojson").write_text(json.dumps(
+        {"type": "FeatureCollection", "layer": layer, "features": feats_out}, separators=(",", ":")), encoding="utf-8")
 
-    # heat maps
-    maps = {"best": f"score_{LAYER}_best.png"}
+    maps = {"best": f"score_{layer}_best.png"}
     score_png(out / maps["best"], rows, cols, sc["best"])
     for i, sid in enumerate(site_ids):
-        maps[sid] = f"score_{LAYER}_{sid}.png"
+        maps[sid] = f"score_{layer}_{sid}.png"
         score_png(out / maps[sid], rows, cols, sc["overall"][i])
 
-    # validation + manifest
-    val = json.loads((interim / f"validation_{LAYER}.json").read_text(encoding="utf-8"))
-    (out / "validation.json").write_text(json.dumps(val, indent=1), encoding="utf-8")
+    val = json.loads((interim / f"validation_{layer}.json").read_text(encoding="utf-8"))
+    (out / f"validation_{layer}.json").write_text(json.dumps(val, indent=1), encoding="utf-8")
+    print(layer, "top cells", len(feats_out), "windows", sum(1 for f in feats_out if f["properties"]["experiment_window"]))
+    return {"cells_top": f"cells_top_{layer}.geojson", "score_maps": maps, "validation": f"validation_{layer}.json"}
+
+
+def main(interim: Path, out: Path) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    sites = json.loads((interim / "mars_sites.json").read_text(encoding="utf-8"))
+    done = [lay for lay, _ in LAYERS if (interim / f"scores_{lay}.npz").exists()]
+    files = {lay: export_layer(interim, out, lay, sites) for lay in done}
+    (out / "mars_sites.geojson").write_text(json.dumps(
+        {"type": "FeatureCollection", "features": [site_feature(s, [lay for lay, _ in LAYERS]) for s in sites]},
+        indent=1), encoding="utf-8")
+    stale = out / "validation.json"  # replaced by validation_<layer>.json in contract 0.4
+    if stale.exists():
+        stale.unlink()
     manifest = {
         "contract_version": CONTRACT_VERSION,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "mock": False,
         "cell_size_deg": RES,
-        "layers": [{"id": "0-1m", "label": "0–1 m (dig-able ice)", "available": True},
-                   {"id": "1-5m", "label": "1–5 m (shallow drilling)", "available": False},
-                   {"id": "gt5m", "label": "> 5 m (deep resources)", "available": False}],
+        "layers": [{"id": lay, "label": label, "available": lay in done} for lay, label in LAYERS],
         "features": FEATURES,
-        "sites": site_ids,
-        "files": {"mars_sites": "mars_sites.geojson", "cells_top": {LAYER: f"cells_top_{LAYER}.geojson"},
-                  "score_maps": {LAYER: maps}, "validation": "validation.json"},
+        "sites": [s["id"] for s in sites],
+        "files": {
+            "mars_sites": "mars_sites.geojson",
+            "cells_top": {lay: f["cells_top"] for lay, f in files.items()},
+            "score_maps": {lay: f["score_maps"] for lay, f in files.items()},
+            "validation": {lay: f["validation"] for lay, f in files.items()},
+        },
         "sources": SOURCES,
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False), encoding="utf-8")
-    print("wrote", out, "top cells", len(feats_out), "windows", sum(1 for f in feats_out if f["properties"]["experiment_window"]))
+    print("wrote", out, "layers", done)
 
 
 if __name__ == "__main__":

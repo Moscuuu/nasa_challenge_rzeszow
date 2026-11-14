@@ -1,0 +1,35 @@
+{
+ "layer": "0-1m",
+ "checks": [
+  {
+   "name": "McMurdo Dry Valleys",
+   "role": "known_analog",
+   "cells": 199,
+   "median_percentile": 92.7,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Haughton Crater (Devon Island)",
+   "role": "known_analog",
+   "cells": 286,
+   "median_percentile": 96.5,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Alaska North Slope",
+   "role": "contrast",
+   "cells": 2514,
+   "median_percentile": 44.2,
+   "passed": true,
+   "applicable": true
+  }
+ ],
+ "weights": {
+  "temperature": 0.333,
+  "ground_ice": 0.333,
+  "polygons": 0.333
+ },
+ "notes": "Percentile = position of the cell's best score among all permafrost cells. Equal weights over the features available for a Mars site: Deuteronilus Mensae, Phlegra Montes and Utopia Planitia have no SWIM polygon survey, so polygons are skipped for them. Polygons are not relevant below 5 m."
+}
