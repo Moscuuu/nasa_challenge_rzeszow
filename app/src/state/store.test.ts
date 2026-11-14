@@ -135,7 +135,7 @@ describe("app store", () => {
     expect(store.getState().list).toEqual(topForSite(store.getState().cells, null));
   });
 
-  it("rapid selectLayer then selectSite: stale layer result does not overwrite the newer site", async () => {
+  it("rapid selectLayer then selectSite: both choices are applied", async () => {
     const { ds } = makeDs();
     let release: (() => void) | null = null;
     let hold = false;
@@ -148,13 +148,66 @@ describe("app store", () => {
     };
     const store = createAppStore();
     await store.getState().init(gated);
+    await store.getState().selectLayer("1-5m"); // pending, unavailable
     hold = true;
     const layerCall = store.getState().selectLayer("0-1m");
     hold = false;
-    await store.getState().selectSite("hellas_rim");
+    const siteCall = store.getState().selectSite("hellas_rim");
     (release as unknown as () => void)();
+    await Promise.all([layerCall, siteCall]);
+    const s = store.getState();
+    expect(s.layer).toBe("0-1m");
+    expect(s.layerPending).toBe(false);
+    expect(s.siteId).toBe("hellas_rim");
+    expect(s.list).toHaveLength(6);
+  });
+
+  it("rapid selectSite then selectLayer: the site pick survives the layer change", async () => {
+    const { ds } = makeDs();
+    let release: (() => void) | null = null;
+    let first = true;
+    const gated: typeof ds = {
+      ...ds,
+      async getScoreMap(layer, site) {
+        if (site === "hellas_rim" && first) {
+          first = false;
+          await new Promise<void>((r) => (release = r));
+        }
+        return ds.getScoreMap(layer, site);
+      },
+    };
+    const store = createAppStore();
+    await store.getState().init(gated);
+    const siteCall = store.getState().selectSite("hellas_rim");
+    const layerCall = store.getState().selectLayer("0-1m");
     await layerCall;
+    (release as unknown as () => void)();
+    await siteCall;
+    const s = store.getState();
+    expect(s.siteId).toBe("hellas_rim");
+    expect(s.layer).toBe("0-1m");
+    expect(s.list).toHaveLength(6);
+  });
+
+  it("clicking an unavailable layer does not cancel a pending site pick", async () => {
+    const { ds } = makeDs();
+    let release: (() => void) | null = null;
+    const gated: typeof ds = {
+      ...ds,
+      async getScoreMap(layer, site) {
+        if (site === "hellas_rim") await new Promise<void>((r) => (release = r));
+        return ds.getScoreMap(layer, site);
+      },
+    };
+    const store = createAppStore();
+    await store.getState().init(gated);
+    const siteCall = store.getState().selectSite("hellas_rim");
+    await store.getState().selectLayer("gt5m");
+    expect(store.getState().layerPending).toBe(true);
+    (release as unknown as () => void)();
+    await siteCall;
     expect(store.getState().siteId).toBe("hellas_rim");
-    expect(store.getState().list).toHaveLength(6);
+    expect(store.getState().layerPending).toBe(true);
+    expect(store.getState().layer).toBe("0-1m");
   });
 });

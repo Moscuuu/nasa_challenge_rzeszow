@@ -49,95 +49,112 @@ export function createAppStore() {
     if (!source) throw new Error("Store not initialised: call init(ds) first");
     return source;
   };
-  // Request token: selectSite / selectLayer apply their async result only if no newer
-  // selection started meanwhile (fast pin or layer clicks).
+  // Selection intent: the site and layer the user asked for last. Every load fetches
+  // with both current wishes; only the latest load (request token) applies its result,
+  // so fast pin / layer clicks never apply a stale result or drop the other choice.
+  let wantSite: string | null = null;
+  let wantLayer: LayerId = DEFAULT_LAYER;
+  let wantPending = false; // last layer click was an undelivered layer
   let latest = 0;
 
-  return createStore<AppState>()((set, get) => ({
-    manifest: null,
-    sites: [],
-    cells: [],
-    scoreMap: null,
-    checks: [],
-    siteId: null,
-    layer: DEFAULT_LAYER,
-    layerPending: false,
-    list: [],
-    index: 0,
-    earthHit: null,
-    showAll: false,
-    validationOpen: false,
-    focus: null,
-
-    async init(dataSource) {
-      source = dataSource;
-      const layer = DEFAULT_LAYER;
-      const [manifest, sites, cells, scoreMap, checks] = await Promise.all([
-        dataSource.getManifest(),
-        dataSource.getMarsSites(),
-        dataSource.getCells(layer),
-        dataSource.getScoreMap(layer, "best"),
-        dataSource.getValidation(layer),
-      ]);
-      const list = topForSite(cells, null);
-      set({ manifest, sites, cells, scoreMap, checks, siteId: null, layer, layerPending: false, list, index: 0, earthHit: null, focus: pointOf(list[0]) });
-    },
-
-    async selectSite(id) {
+  return createStore<AppState>()((set, get) => {
+    async function load(): Promise<void> {
       const token = ++latest;
-      const { layer, cells } = get();
-      const scoreMap = await ds().getScoreMap(layer, id ?? "best");
-      if (token !== latest) return;
-      const list = topForSite(cells, id);
-      set({ siteId: id, scoreMap, list, index: 0, earthHit: null, focus: pointOf(list[0]) });
-    },
-
-    async selectLayer(layer) {
-      const token = ++latest;
-      const { manifest, siteId } = get();
-      if (!manifest?.layers.find((l) => l.id === layer)?.available) {
-        set({ layerPending: true });
-        return;
-      }
+      const site = wantSite;
+      const layer = wantLayer;
       try {
         const [cells, scoreMap, checks] = await Promise.all([
           ds().getCells(layer),
-          ds().getScoreMap(layer, siteId ?? "best"),
+          ds().getScoreMap(layer, site ?? "best"),
           ds().getValidation(layer),
         ]);
         if (token !== latest) return;
-        const list = topForSite(cells, siteId);
-        set({ layer, cells, scoreMap, checks, list, index: 0, earthHit: null, layerPending: false, focus: pointOf(list[0]) });
+        const list = topForSite(cells, site);
+        set({ siteId: site, layer, cells, scoreMap, checks, list, index: 0, earthHit: null, layerPending: wantPending, focus: pointOf(list[0]) });
       } catch (e) {
         if (token !== latest) return;
-        if (e instanceof LayerUnavailableError) set({ layerPending: true });
-        else throw e;
+        if (!(e instanceof LayerUnavailableError)) throw e;
+        wantLayer = get().layer; // stay on the delivered layer
+        wantPending = true;
+        set({ layerPending: true });
       }
-    },
+    }
 
-    step(delta) {
-      const { list, index } = get();
-      if (list.length === 0) return;
-      const next = (((index + delta) % list.length) + list.length) % list.length;
-      set({ index: next, earthHit: null, focus: pointOf(list[next]) });
-    },
+    return {
+      manifest: null,
+      sites: [],
+      cells: [],
+      scoreMap: null,
+      checks: [],
+      siteId: null,
+      layer: DEFAULT_LAYER,
+      layerPending: false,
+      list: [],
+      index: 0,
+      earthHit: null,
+      showAll: false,
+      validationOpen: false,
+      focus: null,
 
-    clickEarth(lat, lon) {
-      const { cells, scoreMap } = get();
-      const cell = nearestTopCell(cells, lat, lon);
-      if (cell) return set({ earthHit: { kind: "cell", cell } });
-      const score = scoreMap?.sample(lat, lon) ?? null;
-      set({ earthHit: score === null ? { kind: "none", lat, lon } : { kind: "score", score, lat, lon } });
-    },
+      async init(dataSource) {
+        source = dataSource;
+        const layer = DEFAULT_LAYER;
+        wantSite = null;
+        wantLayer = layer;
+        wantPending = false;
+        latest++;
+        const [manifest, sites, cells, scoreMap, checks] = await Promise.all([
+          dataSource.getManifest(),
+          dataSource.getMarsSites(),
+          dataSource.getCells(layer),
+          dataSource.getScoreMap(layer, "best"),
+          dataSource.getValidation(layer),
+        ]);
+        const list = topForSite(cells, null);
+        set({ manifest, sites, cells, scoreMap, checks, siteId: null, layer, layerPending: false, list, index: 0, earthHit: null, focus: pointOf(list[0]) });
+      },
 
-    toggleShowAll: () => set((s) => ({ showAll: !s.showAll })),
-    openValidation: (open) => set({ validationOpen: open }),
+      selectSite(id) {
+        wantSite = id;
+        return load();
+      },
 
-    focusCheck(check) {
-      const box = check.bbox ?? CHECK_BOXES[check.name];
-      if (box) set({ focus: { lat: (box[1] + box[3]) / 2, lon: (box[0] + box[2]) / 2 } });
-    },
-  }));
+      selectLayer(layer) {
+        if (!get().manifest?.layers.find((l) => l.id === layer)?.available) {
+          // No fetch and no new load: a pending site pick still lands.
+          wantPending = true;
+          set({ layerPending: true });
+          return Promise.resolve();
+        }
+        wantLayer = layer;
+        wantPending = false;
+        return load();
+      },
+
+      step(delta) {
+        const { list, index } = get();
+        if (list.length === 0) return;
+        const next = (((index + delta) % list.length) + list.length) % list.length;
+        set({ index: next, earthHit: null, focus: pointOf(list[next]) });
+      },
+
+      clickEarth(lat, lon) {
+        const { cells, scoreMap } = get();
+        const cell = nearestTopCell(cells, lat, lon);
+        if (cell) return set({ earthHit: { kind: "cell", cell } });
+        const score = scoreMap?.sample(lat, lon) ?? null;
+        set({ earthHit: score === null ? { kind: "none", lat, lon } : { kind: "score", score, lat, lon } });
+      },
+
+      toggleShowAll: () => set((s) => ({ showAll: !s.showAll })),
+      openValidation: (open) => set({ validationOpen: open }),
+
+      focusCheck(check) {
+        const box = check.bbox ?? CHECK_BOXES[check.name];
+        if (box) set({ focus: { lat: (box[1] + box[3]) / 2, lon: (box[0] + box[2]) / 2 } });
+      },
+    };
+  });
 }
 
 export const appStore = createAppStore();

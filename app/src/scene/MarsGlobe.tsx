@@ -55,20 +55,22 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     vy: 0,
     dragging: false,
     target: null as { x: number; y: number } | null,
+    pinFocused: false, // a pin button has keyboard/pointer focus
+    hovered: false, // pointer is over the Mars slot
   });
   const { width, height } = useThree((s) => s.size);
 
-  useImperativeHandle(ref, () => ({
-    rotateTo(lat, lon) {
-      const t = rotationFor(lat, lon);
-      const g = globe.current;
-      if (g && reducedMotion()) {
-        g.rotation.set(t.x, t.y, 0);
-        return;
-      }
-      Object.assign(motion.current, { target: t, vx: 0, vy: 0 });
-    },
-  }));
+  const rotateTo = (lat: number, lon: number) => {
+    const t = rotationFor(lat, lon);
+    const g = globe.current;
+    if (g && reducedMotion()) {
+      g.rotation.set(t.x, t.y, 0);
+      return;
+    }
+    Object.assign(motion.current, { target: t, vx: 0, vy: 0 });
+  };
+
+  useImperativeHandle(ref, () => ({ rotateTo }));
 
   // Drag to rotate, on the whole slot. Pin buttons keep their own clicks.
   useEffect(() => {
@@ -101,12 +103,18 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       if (down && isClick(down, { x: e.clientX, y: e.clientY })) m.vx = m.vy = 0;
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
     };
+    const onEnter = () => (m.hovered = true);
+    const onLeave = () => (m.hovered = false);
+    el.addEventListener("pointerenter", onEnter);
+    el.addEventListener("pointerleave", onLeave);
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
     el.addEventListener("pointercancel", onUp);
     el.style.touchAction = "none";
     return () => {
+      el.removeEventListener("pointerenter", onEnter);
+      el.removeEventListener("pointerleave", onLeave);
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
@@ -137,12 +145,13 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       if (Math.abs(dx) < 1e-3 && Math.abs(dy) < 1e-3) m.target = null;
       return;
     }
-    // Inertia after a drag, then the slow idle spin.
+    // Inertia after a drag, then the slow idle spin (paused while the user is on the globe).
     const decay = Math.exp(-3 * step);
     m.vx *= decay;
     m.vy *= decay;
     g.rotation.x = THREE.MathUtils.clamp(g.rotation.x + m.vx * step, -MAX_TILT, MAX_TILT);
-    g.rotation.y += (m.vy + (reducedMotion() ? 0 : IDLE_SPEED)) * step;
+    const idle = reducedMotion() || m.pinFocused || m.hovered ? 0 : IDLE_SPEED;
+    g.rotation.y += (m.vy + idle) * step;
   });
 
   return (
@@ -162,6 +171,10 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
             selected={site.id === siteId}
             slot={slot}
             onSelect={() => void selectSite(site.id)}
+            onFocusChange={(focused) => {
+              motion.current.pinFocused = focused;
+              if (focused) rotateTo(site.lat, site.lon);
+            }}
           />
         ))}
       </group>
@@ -179,9 +192,10 @@ interface PinProps {
   selected: boolean;
   slot: MutableRefObject<HTMLElement>;
   onSelect(): void;
+  onFocusChange(focused: boolean): void;
 }
 
-function Pin({ site, selected, slot, onSelect }: PinProps) {
+function Pin({ site, selected, slot, onSelect, onFocusChange }: PinProps) {
   const position = useMemo(() => ll2v(site.lat, site.lon, PIN_R), [site.lat, site.lon]);
   const quaternion = useMemo(
     () => new THREE.Quaternion().setFromUnitVectors(UP, position.clone().normalize()),
@@ -190,23 +204,18 @@ function Pin({ site, selected, slot, onSelect }: PinProps) {
   const button = useRef<HTMLButtonElement>(null);
   const group = useRef<THREE.Group>(null);
   const world = useMemo(() => new THREE.Vector3(), []);
-  const shown = useRef(true);
 
-  // Hide the pin and its button on the far side of the globe.
+  // Hide far-side pins. Their buttons stay in the Tab order (faded, not clickable);
+  // focusing one turns the globe to bring it to the front.
   useFrame(({ camera }) => {
     const g = group.current;
     if (!g) return;
     g.getWorldPosition(world);
     const visible = facesCamera(world, camera);
-    if (visible === shown.current) return;
-    shown.current = visible;
     g.visible = visible;
+    // Synced every frame (not only on change): Html may swap the button node on re-render.
     const b = button.current;
-    if (b) {
-      b.style.visibility = visible ? "visible" : "hidden";
-      b.tabIndex = visible ? 0 : -1;
-      if (!visible && document.activeElement === b) b.blur();
-    }
+    if (b && b.classList.contains("pin--far") === visible) b.classList.toggle("pin--far", !visible);
   });
 
   return (
@@ -220,6 +229,8 @@ function Pin({ site, selected, slot, onSelect }: PinProps) {
           aria-label={site.name}
           aria-pressed={selected}
           onClick={onSelect}
+          onFocus={() => onFocusChange(true)}
+          onBlur={() => onFocusChange(false)}
         >
           <span className="pin-label" aria-hidden="true">
             {site.name}

@@ -93,6 +93,12 @@ body {
   cursor: pointer;
 }
 
+/* Far side of the globe: faded out, not clickable, still reachable with Tab. */
+.pin--far {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .pin:focus-visible {
   outline: 1px solid var(--ink);
   outline-offset: -10px;
