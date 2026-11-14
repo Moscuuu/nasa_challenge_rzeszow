@@ -35,12 +35,14 @@ export function useMotion(
     if (!enabled) return;
     let raf = 0;
     let intro: ReturnType<typeof introTimeline> | null = null;
-    const started = performance.now();
+    let started = performance.now();
     motion.introActive = kind !== "none"; // from the first frame: the card must not build on its own before the intro does
 
     let skipped = false;
     // A skip before the intro has started just ends the veil; the intro then jumps straight to its end.
-    const skip = () => {
+    const skip = (e?: Event) => {
+      if (motion.videoPlaying) return; // the drill intro owns clicks and keys until it hands over
+      if (e instanceof KeyboardEvent && e.repeat) return; // a key still held from the drill is not a skip
       skipped = true;
       if (intro) intro.progress(1);
       else endIntro();
@@ -67,6 +69,11 @@ export function useMotion(
       }
       if (failedRef.current) {
         endIntro();
+        return;
+      }
+      if (motion.videoPlaying && !skipped) {
+        started = performance.now(); // the ready timeout counts from the end of the video
+        raf = requestAnimationFrame(ready);
         return;
       }
       if (!(scenes && appStore.getState().manifest !== null)) {

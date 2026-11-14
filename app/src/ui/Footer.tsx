@@ -1,3 +1,4 @@
+import { clearSeen } from "../motion/intro";
 import { useAppStore } from "../state/store";
 
 export function Footer() {
@@ -14,6 +15,16 @@ export function Footer() {
           <span key={s.id}>{s.label}</span>
         ),
       )}
+      <button
+        type="button"
+        className="footer-replay"
+        onClick={() => {
+          clearSeen();
+          location.reload();
+        }}
+      >
+        Replay intro
+      </button>
     </footer>
   );
 }

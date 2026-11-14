@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Cell, CellFeature, MarsSite } from "../data/types";
 import { appStore } from "../state/store";
-import { AnalogCard, monthsLabel } from "./AnalogCard";
+import { AnalogCard, monthsLabel, shortLabel, verdict } from "./AnalogCard";
 
 const feat = (score: number | null, status: CellFeature["status"] = "ok"): CellFeature => ({
   score, earth_value: null, mars_value: null, unit: null, status, source: null,
@@ -30,7 +30,7 @@ describe("AnalogCard", () => {
     expect(screen.getByText("77.55°S 160.85°E")).toBeInTheDocument();
     expect(screen.getByText("Pending")).toBeInTheDocument();
     expect(screen.getByText("Best overall")).toBeInTheDocument();
-    expect(screen.getByText("1 / 1")).toBeInTheDocument();
+    expect(screen.getByText(/Match 1 of 1/)).toBeInTheDocument();
   });
 
   it("shows the dryness row, penalised no-data text and the place as title", () => {
@@ -41,13 +41,13 @@ describe("AnalogCard", () => {
     expect(screen.getByText("Dryness")).toBeInTheDocument();
     expect(screen.getByText("Peary Land, Greenland")).toBeInTheDocument();
     expect(screen.getByText("No data (counted as 0)")).toBeInTheDocument();
-    expect(screen.getByText("3 of 4 features")).toBeInTheDocument();
+    expect(screen.getByText(/3 of 4 with data/)).toBeInTheDocument();
   });
 
   it("captions vs best site and shows the test window for a fallback site", () => {
     appStore.setState({ siteId: "hellas" });
     render(<AnalogCard />);
-    expect(screen.getByText("vs Arcadia Planitia")).toBeInTheDocument();
+    expect(screen.getByText("Compared with Arcadia Planitia")).toBeInTheDocument();
     expect(screen.getByText("#1 for Hellas Rim")).toBeInTheDocument();
     expect(screen.getByText("Test window: Jun–Aug · 120 h/yr")).toBeInTheDocument();
   });
@@ -72,5 +72,18 @@ describe("AnalogCard", () => {
     expect(monthsLabel([8, 6, 7])).toBe("Jun–Aug");
     expect(monthsLabel([1, 3])).toBe("Jan, Mar");
     expect(monthsLabel([1, 2, 3, 11, 12])).toBe("Nov–Mar");
+  });
+});
+
+describe("card helpers", () => {
+  it("verdict words by score band", () => {
+    expect(verdict(0.86)).toBe("Strong match");
+    expect(verdict(0.6)).toBe("Good match");
+    expect(verdict(0.45)).toBe("Fair match");
+    expect(verdict(0.1)).toBe("Weak match");
+  });
+  it("shortLabel drops the parenthesis", () => {
+    expect(shortLabel("Dryness (dry permafrost vs wet tundra)")).toBe("Dryness");
+    expect(shortLabel("Ground ice")).toBe("Ground ice");
   });
 });

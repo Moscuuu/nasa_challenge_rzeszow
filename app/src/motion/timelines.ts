@@ -69,13 +69,13 @@ export function pickLayerTimeline(layer: LayerId): Tl {
   if (!chosen) return tl;
   const others = slabs.filter((s) => s !== chosen);
   if (prefersReducedMotion()) {
-    tl.to(chosen, { opacity: 1, duration: FADE }).to(others, { opacity: 0.45, duration: FADE }, 0);
+    tl.to(chosen, { opacity: 1, duration: FADE }).to(others, { opacity: 0.7, duration: FADE }, 0);
     return tl;
   }
   gsap.killTweensOf(slabs);
   tl.to(slabs, { y: (i: number) => (i - 1) * 9, duration: 0.3, ease: "power2.out" }, 0) // split open
     .to(chosen, { x: 14, scale: 1.04, opacity: 1, duration: 0.45, ease: "power3.out" }, 0.1) // slides forward
-    .to(others, { x: 0, scale: 1, opacity: 0.45, duration: 0.4, ease: "power2.out" }, 0.1)
+    .to(others, { x: 0, scale: 1, opacity: 0.7, duration: 0.4, ease: "power2.out" }, 0.1)
     .to(slabs, { y: (i: number) => (i - 1) * 4, duration: 0.4, ease: "power2.inOut" }, 0.45); // settle, stay slightly open
   return tl;
 }

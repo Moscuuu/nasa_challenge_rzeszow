@@ -12,4 +12,24 @@ export const motion: {
   holdFly: boolean;
   /** True from mount until the intro ends: the card build is part of the intro. */
   introActive: boolean;
-} = { mars: null, earth: null, holdFly: false, introActive: false };
+  /** True while the opening video plays: the 3D intro waits for it. */
+  videoPlaying: boolean;
+} = { mars: null, earth: null, holdFly: false, introActive: false, videoPlaying: false };
+
+// videoPlaying is observable: the 3D stage stops rendering while the drill intro covers it.
+const listeners = new Set<() => void>();
+let videoPlaying = false;
+Object.defineProperty(motion, "videoPlaying", {
+  get: () => videoPlaying,
+  set: (v: boolean) => {
+    if (v === videoPlaying) return;
+    videoPlaying = v;
+    listeners.forEach((l) => l());
+  },
+});
+
+/** Subscribe to videoPlaying changes; returns the unsubscribe (useSyncExternalStore shape). */
+export function onVideoPlaying(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
