@@ -20,6 +20,12 @@ export function v2ll(v: THREE.Vector3): { lat: number; lon: number } {
   return { lat, lon };
 }
 
+/** Globe rotation (Euler XYZ) that brings (lat, lon) to face a camera on +z. */
+export function rotationFor(lat: number, lon: number): { x: number; y: number } {
+  const p = ll2v(lat, lon);
+  return { x: THREE.MathUtils.degToRad(lat), y: -Math.atan2(p.x, p.z) };
+}
+
 /** True when the pointer moved less than 6 px between pointerdown and pointerup. */
 export function isClick(down: { x: number; y: number }, up: { x: number; y: number }): boolean {
   return Math.hypot(up.x - down.x, up.y - down.y) < 6;

@@ -4,7 +4,7 @@ import { Html, PerspectiveCamera, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { useAppStore } from "../state/store";
 import type { MarsSite } from "../data/types";
-import { facesCamera, isClick, ll2v } from "./geo";
+import { facesCamera, isClick, ll2v, rotationFor } from "./geo";
 import { useTextureSize } from "./useTextureSize";
 
 export interface MarsGlobeHandle {
@@ -23,12 +23,6 @@ const reducedMotion = () =>
 
 /** Shortest signed angle from a to b. */
 const angleDelta = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
-
-/** Globe rotation (Euler XYZ) that brings (lat, lon) to face a camera on +z. */
-export function rotationFor(lat: number, lon: number): { x: number; y: number } {
-  const p = ll2v(lat, lon);
-  return { x: THREE.MathUtils.degToRad(lat), y: -Math.atan2(p.x, p.z) };
-}
 
 // Start facing the northern mid-latitude site cluster (Arcadia to Utopia), so pins show on load.
 const START = rotationFor(25, 165);

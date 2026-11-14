@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createDataSource } from "./data/source";
 import { appStore } from "./state/store";
+import type { EarthGlobeHandle } from "./scene/EarthGlobe";
 import type { MarsGlobeHandle } from "./scene/MarsGlobe";
 import { hasWebGL, NO_WEBGL_MESSAGE } from "./scene/webgl";
 
@@ -11,11 +12,13 @@ export default function App() {
   const root = useRef<HTMLDivElement>(null!);
   const mars = useRef<HTMLElement>(null!);
   const marsGlobe = useRef<MarsGlobeHandle>(null);
+  const earth = useRef<HTMLElement>(null!);
+  const earthGlobe = useRef<EarthGlobeHandle>(null);
   const [webgl] = useState(hasWebGL);
 
   useEffect(() => {
     // Dev-only hooks for browser checks (Playwright / console).
-    if (import.meta.env.DEV) Object.assign(window, { __store: appStore, __mars: marsGlobe });
+    if (import.meta.env.DEV) Object.assign(window, { __store: appStore, __mars: marsGlobe, __earth: earthGlobe });
     appStore
       .getState()
       .init(createDataSource(import.meta.env.VITE_DATA_BASE ?? "/data/"))
@@ -31,11 +34,11 @@ export default function App() {
         {!webgl && <p className="no-webgl">{NO_WEBGL_MESSAGE}</p>}
       </section>
       <section data-slot="soil" />
-      <section data-slot="earth" />
+      <section data-slot="earth" ref={earth} aria-label="Earth, similarity map" />
       <aside data-slot="card" />
       {webgl && (
         <Suspense fallback={null}>
-          <Stage eventSource={root} slots={{ mars }} marsGlobe={marsGlobe} />
+          <Stage eventSource={root} slots={{ mars, earth }} marsGlobe={marsGlobe} earthGlobe={earthGlobe} />
         </Suspense>
       )}
     </div>
