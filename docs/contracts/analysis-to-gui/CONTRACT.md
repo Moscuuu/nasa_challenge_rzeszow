@@ -20,6 +20,7 @@ GUI **nie było zmieniane** razem z danymi. Do zrobienia po stronie GUI:
 | Mapy PNG: alfa = 0 także dla komórek, które nie przeszły filtrów | |
 | `validation`: nowe pola `kind`, `cells_scored`, `cold_only_percentile`; 15 testów; `weights` puste | pokazać „samo zimno" obok |
 | Brak statusu `no_data_penalized` | |
+| `mars_sites.geojson` → `properties.surface` (albedo, bezwładność cieplna, źródła, osobno dla każdego miejsca); zmiana addytywna | nic nie trzeba zmieniać w GUI |
 | `polygon_checks.json` nie jest już generowany (stary plik w `out/` jest nieaktualny) | |
 
 ## 1. Co pokazujemy

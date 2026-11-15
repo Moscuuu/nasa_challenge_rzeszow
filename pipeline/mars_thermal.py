@@ -44,20 +44,23 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
     dz = 0.01 * 1.15 ** np.arange(36)
     dz = dz[np.cumsum(dz) < 6.0]
     zc = np.cumsum(dz) - dz / 2
-    dt = SOL / STEPS_PER_SOL
+    # adaptive step: explicit scheme needs dt small enough for the highest inertia (192 steps suffice up to TI ~250)
+    steps = max(192, int(np.ceil(SOL * kappa.max() / (0.4 * dz[0] ** 2))))
+    steps = -(-steps // 24) * 24  # multiple of 24 for the hourly reshape and noon index
+    dt = SOL / steps
     assert (kappa.max() * dt / dz[0] ** 2) < 0.5, "explicit scheme unstable"
     dist = (zc[1:] - zc[:-1])  # centre-to-centre
 
     n_sites = lat.shape[0]
     T = np.full((n_sites, dz.size), 200.0)
-    total = int(YEARS * SOLS_PER_YEAR * STEPS_PER_SOL)
-    last_year_start = total - int(SOLS_PER_YEAR * STEPS_PER_SOL)
+    total = int(YEARS * SOLS_PER_YEAR * steps)
+    last_year_start = total - int(SOLS_PER_YEAR * steps)
     surf = np.empty((n_sites, total - last_year_start), dtype=np.float32)
     ls_log = np.empty(total - last_year_start, dtype=np.float32)
     profile_sum = np.zeros_like(T)  # for the annual-mean temperature at depth
 
     for i in range(total):
-        t_sol = i / STEPS_PER_SOL
+        t_sol = i / steps
         ls = ls_of_time(np.array([t_sol]))[0]
         r = A_AU * (1 - ECC ** 2) / (1 + ECC * np.cos(ls - LS_PERI))
         dec = np.arcsin(np.sin(OBL) * np.sin(ls))
@@ -83,12 +86,12 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
             ls_log[i - last_year_start] = np.degrees(ls)
             profile_sum += T
 
-    n_sols = surf.shape[1] // STEPS_PER_SOL
-    daily = surf[:, : n_sols * STEPS_PER_SOL].reshape(n_sites, n_sols, STEPS_PER_SOL)
+    n_sols = surf.shape[1] // steps
+    daily = surf[:, : n_sols * steps].reshape(n_sites, n_sols, steps)
     dmin, dmax = daily.min(axis=2), daily.max(axis=2)
-    hourly = daily.reshape(n_sites, n_sols, 24, STEPS_PER_SOL // 24).mean(axis=3)
+    hourly = daily.reshape(n_sites, n_sols, 24, steps // 24).mean(axis=3)
     # local summer: Ls 90-180 (northern hemisphere), Ls 270-360 (southern)
-    sol_ls = ls_log[: n_sols * STEPS_PER_SOL].reshape(n_sols, STEPS_PER_SOL)[:, STEPS_PER_SOL // 2]
+    sol_ls = ls_log[: n_sols * steps].reshape(n_sols, steps)[:, steps // 2]
     north_summer = (sol_ls >= 90) & (sol_ls < 180)
     south_summer = sol_ls >= 270
     summer = np.where(np.asarray(lat_deg)[:, None] >= 0, north_summer[None, :], south_summer[None, :])
@@ -99,6 +102,8 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
         return np.array([np.interp(d, zc, mean_profile[s]) for s in range(n_sites)])
 
     return {
+        "daily_max": dmax,  # (sites, sols)
+        "sol_ls": sol_ls,  # Ls in degrees at local noon, (sols,)
         # annual-mean ground temperature at depth, matching CCI T2m / T5m / T10m
         # (the model reaches ~5.5 m; below the annual skin depth (~1 m) the profile is nearly flat,
         # so the deepest layer stands in for 10 m)

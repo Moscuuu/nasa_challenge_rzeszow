@@ -1,4 +1,5 @@
-"""Characterise the 7 Mars Base Candidate Sites: SWIM ice consistency and modelled surface temperature.
+"""Characterise the 7 Mars Base Candidate Sites: SWIM ice consistency and modelled surface temperature
+(per-site TES albedo and Putzig-Mellon thermal inertia, see tes.py).
 
 Output: data/interim/mars_sites.json
 
@@ -12,9 +13,9 @@ import numpy as np
 import rasterio
 
 from mars_thermal import run_sites
+from tes import site_surface
 
 WINDOW_DEG = 1.0
-ALBEDO, INERTIA = 0.25, 250.0  # same first-order values as the SWIM analysis
 
 # Coordinates: planetocentric latitude, east-positive longitude in -180..180.
 # coords_status: "published" = a point given in a primary source (coords_source);
@@ -98,7 +99,9 @@ def polygon_stats(swim_dir: Path, sites: list) -> list:
 
 def main(swim_dir: Path, out: Path) -> None:
     lats = np.array([s["lat"] for s in SITES])
-    temps = run_sites(lats, np.full(lats.size, ALBEDO), np.full(lats.size, INERTIA))
+    surfaces = [site_surface(s["lat"], s["lon"], Path(swim_dir).parent / "tes") for s in SITES]
+    temps = run_sites(lats, np.array([x["albedo"] for x in surfaces]),
+                      np.array([x["thermal_inertia"] for x in surfaces]))
     polygons = polygon_stats(swim_dir, SITES)
     result = []
     for i, s in enumerate(SITES):
@@ -116,7 +119,8 @@ def main(swim_dir: Path, out: Path) -> None:
         result.append({
             **s,
             "window_deg": WINDOW_DEG,
-            "albedo": ALBEDO, "thermal_inertia": INERTIA,
+            "albedo": surfaces[i]["albedo"], "thermal_inertia": surfaces[i]["thermal_inertia"],
+            "albedo_source": surfaces[i]["albedo_source"], "ti_source": surfaces[i]["ti_source"],
             "temperature": {
                 **{k: round(float(temps[k][i]), 2) for k in (
                     "tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp", "tmean", "abs_min", "abs_max",
