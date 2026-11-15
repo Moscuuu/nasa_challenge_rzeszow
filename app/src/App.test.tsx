@@ -9,7 +9,7 @@ describe("App", () => {
 
   it("renders the title and the four layout slots", () => {
     const { container } = render(<App />);
-    expect(screen.getByText("Analog Finder")).toBeInTheDocument();
+    expect(screen.getByText("DeepFrost Bridge")).toBeInTheDocument();
     for (const slot of ["mars", "soil", "earth", "card"]) {
       expect(container.querySelector(`[data-slot="${slot}"]`)).not.toBeNull();
     }

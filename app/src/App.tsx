@@ -50,8 +50,8 @@ export default function App() {
       <Starfield />
       <header>
         <div className="brand">
-          <h1>Analog Finder</h1>
-          <p className="tagline">Find places on Earth whose frozen ground behaves like Mars</p>
+          <h1>DeepFrost Bridge</h1>
+          <p className="tagline">Discover Earth analogs where permafrost replicates Martian ground ice.</p>
         </div>
       </header>
       <section data-slot="mars" ref={mars} aria-label="Mars, pick a base site">
