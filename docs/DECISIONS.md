@@ -6,6 +6,7 @@ Jedna linia na decyzję, najnowsze na górze. Stan obowiązujący opisuje spec `
 
 | decyzja | dlaczego |
 |---|---|
+| **Model cieplny Marsa: albedo z TES i bezwładność cieplna z Putzig i Mellon 2007 per miejsce** (zamiast stałych 0,25 i 250) | temperatura letnia miejsc zależała tylko od szerokości geograficznej; sprawdzenie z MCD v6.2: model chłodniejszy o 1,7–8,2 K |
 | **Teza:** miejsca na Ziemi do testów wiercenia w lodzie jak w wybranych miejscach na Marsie | zespół |
 | **Pipeline zostaje szkieletem** (ocena per miejsce, kontrakt, eksport); z analizy ML bierzemy logikę filtrów, nie jej wynik | wynik „pod odwierty" nie miał żadnego wejścia z Marsa |
 | **Temperatura gruntu i ALT to filtry**, nie cechy; zimno nie wchodzi do oceny | Mars w głębi (200–203 K) jest poza zasięgiem Ziemi (min. 234 K) |

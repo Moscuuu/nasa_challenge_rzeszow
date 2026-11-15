@@ -13,7 +13,7 @@
    ],
    "cells": 199,
    "cells_scored": 80,
-   "median_percentile": 92.1,
+   "median_percentile": 91.3,
    "cold_only_percentile": 70.1,
    "passed": true,
    "applicable": true
@@ -30,7 +30,7 @@
    ],
    "cells": 278,
    "cells_scored": 243,
-   "median_percentile": 61.1,
+   "median_percentile": 59.7,
    "cold_only_percentile": 84.7,
    "passed": false,
    "applicable": true
@@ -64,7 +64,7 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 75.2,
+   "median_percentile": 73.8,
    "cold_only_percentile": 85.6,
    "passed": false,
    "applicable": true
@@ -81,7 +81,7 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 70.5,
+   "median_percentile": 68.3,
    "cold_only_percentile": 86.0,
    "passed": false,
    "applicable": true
@@ -98,7 +98,7 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 93.7,
+   "median_percentile": 92.7,
    "cold_only_percentile": 76.7,
    "passed": true,
    "applicable": true
@@ -115,7 +115,7 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 96.6,
+   "median_percentile": 95.5,
    "cold_only_percentile": 57.2,
    "passed": true,
    "applicable": true
@@ -132,9 +132,9 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 94.3,
+   "median_percentile": 87.6,
    "cold_only_percentile": 92.8,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -149,7 +149,7 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 64.6,
+   "median_percentile": 65.6,
    "cold_only_percentile": 86.2,
    "passed": false,
    "applicable": true
@@ -166,7 +166,7 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 61.8,
+   "median_percentile": 70.1,
    "cold_only_percentile": 89.0,
    "passed": false,
    "applicable": true
@@ -183,7 +183,7 @@
    ],
    "cells": 7,
    "cells_scored": 6,
-   "median_percentile": 12.3,
+   "median_percentile": 21.2,
    "cold_only_percentile": 4.1,
    "passed": true,
    "applicable": true

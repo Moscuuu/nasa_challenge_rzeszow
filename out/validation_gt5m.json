@@ -13,7 +13,7 @@
    ],
    "cells": 199,
    "cells_scored": 80,
-   "median_percentile": 92.2,
+   "median_percentile": 91.3,
    "cold_only_percentile": 69.7,
    "passed": true,
    "applicable": true
@@ -30,7 +30,7 @@
    ],
    "cells": 278,
    "cells_scored": 243,
-   "median_percentile": 61.1,
+   "median_percentile": 61.6,
    "cold_only_percentile": 85.3,
    "passed": false,
    "applicable": true
@@ -64,7 +64,7 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 75.3,
+   "median_percentile": 74.1,
    "cold_only_percentile": 84.9,
    "passed": false,
    "applicable": true
@@ -81,7 +81,7 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 70.8,
+   "median_percentile": 68.8,
    "cold_only_percentile": 85.2,
    "passed": false,
    "applicable": true
@@ -98,7 +98,7 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 93.8,
+   "median_percentile": 92.8,
    "cold_only_percentile": 75.0,
    "passed": true,
    "applicable": true
@@ -115,7 +115,7 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 96.6,
+   "median_percentile": 95.6,
    "cold_only_percentile": 53.2,
    "passed": true,
    "applicable": true
@@ -132,9 +132,9 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 94.7,
+   "median_percentile": 86.8,
    "cold_only_percentile": 87.5,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -149,7 +149,7 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 64.7,
+   "median_percentile": 67.7,
    "cold_only_percentile": 85.2,
    "passed": false,
    "applicable": true
@@ -166,7 +166,7 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 61.9,
+   "median_percentile": 72.0,
    "cold_only_percentile": 88.0,
    "passed": false,
    "applicable": true
@@ -183,7 +183,7 @@
    ],
    "cells": 7,
    "cells_scored": 6,
-   "median_percentile": 12.5,
+   "median_percentile": 22.8,
    "cold_only_percentile": 19.3,
    "passed": true,
    "applicable": true
