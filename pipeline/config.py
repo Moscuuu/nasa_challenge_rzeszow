@@ -19,7 +19,9 @@ SNOW_FREE_MIN = 0.10         # at least this share of summer observations snow-f
 ICE_FRACTION_MAX = 0.5       # at most this share of the cell is glacier / ice sheet (not used in Antarctica)
 
 # --- features -------------------------------------------------------------------------------------------
-SUMMER_T_SCALE_K = 20.0      # summer_temperature = 1 - |Earth - Mars| / this, in kelvin (not ranks)
+SUMMER_T_TOLERANCE_K = 10.0  # |Earth - Mars| up to this counts as a full match: the Mars thermal model differs from the
+                             # Mars Climate Database by -8.2..+5.1 K (analysis/mars_tes), so smaller gaps are noise
+SUMMER_T_SCALE_K = 20.0      # beyond the tolerance, summer_temperature falls linearly to 0 over this many kelvin
 SWIM_ICE_MIN = 0.10          # a Mars site counts in a Depth Layer only if its SWIM C there is above this
 
 LAYERS = ("0-1m", "1-5m", "gt5m")

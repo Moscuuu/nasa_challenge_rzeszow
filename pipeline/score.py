@@ -13,7 +13,7 @@ Filters (a cell must pass all; thresholds in config.py):
 Features (0..1, higher = closer to the Mars conditions), the same for every region type; which of them a
 Depth Layer uses is config.LAYER_FEATURES (0-1 m: the surface three; 1-5 m: summer_temperature + ground_cold;
 > 5 m: ground_cold only):
-    summer_temperature  1 - |Earth - Mars| / 20 K. Earth: MODIS Aqua daytime land surface temperature
+    summer_temperature  1 within +-10 K of Mars (the Mars model's error), then falling linearly to 0 at 30 K. Earth: MODIS Aqua daytime land surface temperature
                         (~13:30, clear sky) in local summer, averaged over the cell's snow-free permafrost
                         pixels (fetch_lst.py). Mars: mean daily maximum in local summer (thermal model).
                         Compared in kelvin. The only feature that differs between Mars sites.
@@ -112,7 +112,8 @@ def compute(cells: dict, sites: list, layer: str, t_max: float = C.T_GROUND_MAX_
     n_sites, n = len(sites), region.size
     mars_tmax = np.array([s["temperature"]["summer_tmax"] for s in sites])[:, None]
     feats = {
-        "summer_temperature": 1.0 - np.clip(np.abs(cells["summer_tmax"][None, :] - mars_tmax) / C.SUMMER_T_SCALE_K, 0, 1),
+        "summer_temperature": 1.0 - np.clip((np.abs(cells["summer_tmax"][None, :] - mars_tmax) - C.SUMMER_T_TOLERANCE_K)
+                                            / C.SUMMER_T_SCALE_K, 0, 1),
         "ice_table": np.tile(1.0 - np.clip(alt / alt_max, 0.0, 1.0), (n_sites, 1)),
         "bare_ground": np.tile(cells["snow_free_summer"], (n_sites, 1)),
     }

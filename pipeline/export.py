@@ -131,7 +131,7 @@ def cell_features(sc, b, k, site, used):
             "temperature", {"summer_tmax_K": r3(sc["summer_tmax"][k])},
             {"summer_tmax_K": site["temperature"]["summer_tmax"]},
             "K, local summer. Earth: MODIS daytime surface temperature (~13:30, clear sky) over the cell's permafrost "
-            "pixels. Mars: mean daily maximum. Compared in kelvin, 20 K apart = 0",
+            "pixels. Mars: mean daily maximum. Compared in kelvin: within 10 K = 1 (the Mars model's error), 30 K apart = 0",
             "modis_lst"),
         "ground_ice": block(
             "ground_ice", {"active_layer_m": r3(sc["alt"][k]), "ground_temperature_K": r3(sc["t_ground"][k])},
