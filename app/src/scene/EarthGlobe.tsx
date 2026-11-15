@@ -74,7 +74,14 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   regionsRef.current = regions;
   const selectMatch = useAppStore((s) => s.selectMatch);
   // A region (pin or area) opens its best match: the region's rank is its place in the match list.
-  const openRegion = (r: AnalogRegion) => selectMatch(r.rank - 1);
+  // ...and zooms in on it: the camera turns to the best match (the region pin) and comes closer the
+  // smaller the region is.
+  const openRegion = (r: AnalogRegion) => {
+    selectMatch(r.rank - 1);
+    flyTo(r.lat, r.lon);
+    const dist = THREE.MathUtils.clamp(1.25 + THREE.MathUtils.degToRad(r.radiusDeg) * 4, 1.5, ZOOM_IN_DIST - 0.2);
+    setZoom(dist / motion.current.fit);
+  };
   const openRegionRef = useRef(openRegion);
   openRegionRef.current = openRegion;
 
