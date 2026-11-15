@@ -1,4 +1,4 @@
-import { distDeg, topForSite } from "./cells";
+import { distDeg, REGION_RADIUS_KM, topForSite } from "./cells";
 import type { Cell } from "./types";
 
 export interface AnalogPoint {
@@ -21,12 +21,11 @@ export interface AnalogRegion {
   points: AnalogPoint[];
 }
 
-/** How many top analogs are shown, and how close (deg) two must be to share a region. */
-export const ANALOG_COUNT = 30;
-export const JOIN_DEG = 6;
+/** At most this many analog points are shown inside one region (zoomed in). */
+export const POINTS_PER_REGION = 30;
 const MARGIN_DEG = 1.2;
+const KM_PER_DEG = 111.195;
 
-const rad = Math.PI / 180;
 
 function fallbackName(lat: number, lon: number): string {
   if (lat < -60) return "Antarctica";
@@ -46,46 +45,49 @@ function regionName(points: AnalogPoint[], lat: number, lon: number): string {
 }
 
 /**
- * Top analogs for a site, grouped into regions: single-linkage on distance (a point joins every
- * region it is within JOIN_DEG of, merging them). Regions are ranked by their best analog.
+ * The site's analog regions: the same regions, in the same order, as the match list (topForSite: the best
+ * cell, then the next best cell farther than radiusKm from every region already listed). A region's pin
+ * sits on its best cell, so pin, camera focus and pulse coincide. Its points are the best-ranked cells
+ * within radiusKm of it (nearest region wins), with their overall rank for the site.
  */
-export function analogRegions(cells: Cell[], siteId: string | null, n = ANALOG_COUNT, joinDeg = JOIN_DEG): AnalogRegion[] {
-  const top = topForSite(cells, siteId, n, 0); // raw top cells: the grouping into regions happens here
-  const score = (c: Cell) => (siteId === null ? c.score : c.site_scores[siteId] ?? 0);
-  const points: AnalogPoint[] = top.map((cell, i) => ({ cell, rank: i + 1, score: score(cell) }));
-
-  let groups: AnalogPoint[][] = [];
-  for (const p of points) {
-    const near = groups.filter((g) => g.some((q) => distDeg(p.cell.lat, p.cell.lon, q.cell.lat, q.cell.lon) <= joinDeg));
-    const merged = [p, ...near.flat()];
-    groups = groups.filter((g) => !near.includes(g));
-    groups.push(merged);
+export function analogRegions(
+  cells: Cell[],
+  siteId: string | null,
+  n = 10,
+  radiusKm = REGION_RADIUS_KM,
+  perRegion = POINTS_PER_REGION,
+): AnalogRegion[] {
+  const val = (c: Cell): number | null => (siteId === null ? c.score : c.site_scores[siteId] ?? null);
+  const ranked = cells
+    .map((cell) => ({ cell, score: val(cell) }))
+    .filter((x): x is { cell: Cell; score: number } => x.score !== null && x.score !== undefined)
+    .sort((a, b) => b.score - a.score)
+    .map((x, i): AnalogPoint => ({ ...x, rank: i + 1 }));
+  const heads = topForSite(cells, siteId, n, radiusKm);
+  const groups: AnalogPoint[][] = heads.map(() => []);
+  const radiusDeg = radiusKm / KM_PER_DEG;
+  for (const p of ranked) {
+    let best = -1;
+    let bestD = Infinity;
+    heads.forEach((h, i) => {
+      const d = distDeg(p.cell.lat, p.cell.lon, h.lat, h.lon);
+      if (d <= radiusDeg && d < bestD) [best, bestD] = [i, d];
+    });
+    if (best >= 0 && groups[best].length < perRegion) groups[best].push(p);
   }
 
-  return groups
-    .map((g) => g.sort((a, b) => a.rank - b.rank))
-    .sort((a, b) => a[0].rank - b[0].rank)
-    .map((g, i) => {
-      // Centre: mean of unit vectors (safe across the dateline).
-      let x = 0, y = 0, z = 0;
-      for (const p of g) {
-        const la = p.cell.lat * rad, lo = p.cell.lon * rad;
-        x += Math.cos(la) * Math.cos(lo);
-        y += Math.cos(la) * Math.sin(lo);
-        z += Math.sin(la);
-      }
-      const lat = Math.atan2(z, Math.hypot(x, y)) / rad;
-      const lon = Math.atan2(y, x) / rad;
-      const radiusDeg = Math.max(...g.map((p) => distDeg(lat, lon, p.cell.lat, p.cell.lon))) + MARGIN_DEG;
-      return {
-        id: `r${i + 1}_${g[0].cell.id}`,
-        rank: i + 1,
-        name: regionName(g, lat, lon),
-        lat,
-        lon,
-        radiusDeg,
-        best: g[0].score,
-        points: g,
-      };
-    });
+  return heads.map((h, i) => {
+    const g = groups[i];
+    const radius = Math.max(0, ...g.map((p) => distDeg(h.lat, h.lon, p.cell.lat, p.cell.lon))) + MARGIN_DEG;
+    return {
+      id: `r${i + 1}_${h.id}`,
+      rank: i + 1,
+      name: regionName(g, h.lat, h.lon),
+      lat: h.lat,
+      lon: h.lon,
+      radiusDeg: radius,
+      best: g[0]?.score ?? val(h) ?? 0,
+      points: g,
+    };
+  });
 }
