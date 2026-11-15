@@ -1,0 +1,7 @@
+# Upload only the app and the data it ships (out/); data/ is 1.4 GB of raw inputs.
+/*
+!/app
+!/out
+/app/node_modules
+/app/dist
+/app/.env*
