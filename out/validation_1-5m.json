@@ -4,33 +4,281 @@
   {
    "name": "McMurdo Dry Valleys",
    "role": "known_analog",
+   "kind": "box",
+   "bbox": [
+    160.5,
+    -78.0,
+    163.0,
+    -77.2
+   ],
    "cells": 199,
-   "median_percentile": 91.6,
+   "cells_scored": 80,
+   "median_percentile": 92.1,
+   "cold_only_percentile": 69.9,
    "passed": true,
    "applicable": true
   },
   {
    "name": "Haughton Crater (Devon Island)",
    "role": "known_analog",
-   "cells": 286,
-   "median_percentile": 92.0,
-   "passed": true,
+   "kind": "box",
+   "bbox": [
+    -91.0,
+    74.9,
+    -88.0,
+    76.0
+   ],
+   "cells": 278,
+   "cells_scored": 243,
+   "median_percentile": 61.0,
+   "cold_only_percentile": 87.1,
+   "passed": false,
    "applicable": true
   },
   {
    "name": "Alaska North Slope",
    "role": "contrast",
-   "cells": 2514,
-   "median_percentile": 67.6,
+   "kind": "box",
+   "bbox": [
+    -160.0,
+    69.0,
+    -145.0,
+    71.0
+   ],
+   "cells": 2481,
+   "cells_scored": 380,
+   "median_percentile": 0.0,
+   "cold_only_percentile": 0.0,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "University Valley",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    160.57,
+    -78.01,
+    160.87,
+    -77.71
+   ],
+   "cells": 9,
+   "cells_scored": 3,
+   "median_percentile": 75.2,
+   "cold_only_percentile": 85.1,
    "passed": false,
-   "applicable": false
+   "applicable": true
+  },
+  {
+   "name": "Beacon Valley",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    160.5,
+    -77.98,
+    160.8,
+    -77.68
+   ],
+   "cells": 9,
+   "cells_scored": 3,
+   "median_percentile": 70.6,
+   "cold_only_percentile": 85.5,
+   "passed": false,
+   "applicable": true
+  },
+  {
+   "name": "Don Juan Pond",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    161.04,
+    -77.71,
+    161.34,
+    -77.41
+   ],
+   "cells": 9,
+   "cells_scored": 6,
+   "median_percentile": 93.7,
+   "cold_only_percentile": 75.9,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Taylor Valley",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    163.0,
+    -77.76,
+    163.3,
+    -77.46
+   ],
+   "cells": 9,
+   "cells_scored": 6,
+   "median_percentile": 96.6,
+   "cold_only_percentile": 54.7,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Axel Heiberg (Expedition Fiord)",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    -90.95,
+    79.25,
+    -90.65,
+    79.55
+   ],
+   "cells": 9,
+   "cells_scored": 3,
+   "median_percentile": 94.2,
+   "cold_only_percentile": 91.5,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Haughton Crater",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    -89.83,
+    75.23,
+    -89.53,
+    75.53
+   ],
+   "cells": 9,
+   "cells_scored": 9,
+   "median_percentile": 64.6,
+   "cold_only_percentile": 86.9,
+   "passed": false,
+   "applicable": true
+  },
+  {
+   "name": "Eureka (Ellesmere)",
+   "role": "known_analog",
+   "kind": "point",
+   "bbox": [
+    -86.08,
+    79.84,
+    -85.78,
+    80.14
+   ],
+   "cells": 9,
+   "cells_scored": 9,
+   "median_percentile": 61.9,
+   "cold_only_percentile": 87.6,
+   "passed": false,
+   "applicable": true
+  },
+  {
+   "name": "Utqiagvik (Alaska)",
+   "role": "contrast",
+   "kind": "point",
+   "bbox": [
+    -156.94,
+    71.14,
+    -156.64,
+    71.44
+   ],
+   "cells": 7,
+   "cells_scored": 6,
+   "median_percentile": 12.5,
+   "cold_only_percentile": 14.4,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Tuktoyaktuk",
+   "role": "contrast",
+   "kind": "point",
+   "bbox": [
+    -133.18,
+    69.29,
+    -132.88,
+    69.59
+   ],
+   "cells": 6,
+   "cells_scored": 0,
+   "median_percentile": 0.0,
+   "cold_only_percentile": 0.0,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Duvanny Yar",
+   "role": "contrast",
+   "kind": "point",
+   "bbox": [
+    159.0,
+    68.48,
+    159.3,
+    68.78
+   ],
+   "cells": 9,
+   "cells_scored": 0,
+   "median_percentile": 0.0,
+   "cold_only_percentile": 0.0,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Adventdalen (Svalbard)",
+   "role": "contrast",
+   "kind": "point",
+   "bbox": [
+    15.7,
+    78.05,
+    16.0,
+    78.35
+   ],
+   "cells": 9,
+   "cells_scored": 0,
+   "median_percentile": 0.0,
+   "cold_only_percentile": 0.0,
+   "passed": true,
+   "applicable": true
+  },
+  {
+   "name": "Beiluhe (Tibet)",
+   "role": "contrast",
+   "kind": "point",
+   "bbox": [
+    92.77,
+    34.67,
+    93.07,
+    34.97
+   ],
+   "cells": 9,
+   "cells_scored": 0,
+   "median_percentile": 0.0,
+   "cold_only_percentile": 0.0,
+   "passed": true,
+   "applicable": true
   }
  ],
- "weights": {
-  "temperature": 0.333,
-  "ground_ice": 0.333,
-  "polygons": 0.333,
-  "dryness": 0.0
+ "cells": {
+  "permafrost": 401614,
+  "pass_filters": 52993,
+  "scored": 46195
  },
- "notes": "Percentile = position of the cell's best score among all permafrost cells. Equal weights over the features that count in the layer; missing data in such a feature scores 0 (Arcadia, Deuteronilus, Phlegra and Utopia have no SWIM polygon survey). Dryness counts only in 0-1 m; polygons not below 5 m."
+ "weights": {},
+ "feature_correlation": {
+  "t_ground~summer_tmax": 0.55,
+  "t_ground~alt": 0.53,
+  "t_ground~precip_mm_yr": 0.67,
+  "t_ground~wet_summer": 0.07,
+  "t_ground~snow_free_summer": 0.56,
+  "summer_tmax~alt": 0.6,
+  "summer_tmax~precip_mm_yr": 0.13,
+  "summer_tmax~wet_summer": -0.37,
+  "summer_tmax~snow_free_summer": 0.78,
+  "alt~precip_mm_yr": 0.37,
+  "alt~wet_summer": 0.14,
+  "alt~snow_free_summer": 0.58,
+  "precip_mm_yr~wet_summer": 0.33,
+  "precip_mm_yr~snow_free_summer": 0.12,
+  "wet_summer~snow_free_summer": -0.13
+ },
+ "notes": "Percentile = position among the cells of the same region type that passed the filters. A contrast cell that fails the filters counts as 0. cold_only_percentile is the same check with 'colder ground = better' as the score: where it is as high as median_percentile, the features add nothing beyond cold. Sanity check on a handful of places, not proof."
 }

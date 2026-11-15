@@ -17,12 +17,15 @@ from pathlib import Path
 import ee
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from ee_init import init as ee_init  # noqa: E402  (service account; see scripts/ee_init.py)
+
 YEAR = 2023
 NX, NY, RES = 3600, 1800, 0.1
 ROWS_PER_CHUNK = 100
 COL_CHUNKS = 2  # requests spanning the full +-180 range fail at the antimeridian
-# Only latitudes where Earth Cells of permafrost exist (CCI: 25-85 N, 60-85 S).
-ROW_RANGES = [(50, 650), (1450, 1750)]
+# All land between 85 N and 85 S: the PZI mask adds mountain permafrost at low latitudes (Andes etc.).
+ROW_RANGES = [(50, 1750)]
 
 
 def stats_image() -> ee.Image:
@@ -39,7 +42,7 @@ def stats_image() -> ee.Image:
 
 
 def main(out: Path) -> None:
-    ee.Initialize()
+    ee_init()
     img = stats_image()
     bands = ["wet_summer", "precip_mm_yr"]
     arrays = {b: np.full((NY, NX), np.nan, dtype=np.float32) for b in bands}

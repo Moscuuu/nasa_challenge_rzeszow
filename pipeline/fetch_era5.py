@@ -17,6 +17,9 @@ from pathlib import Path
 import ee
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from ee_init import init as ee_init  # noqa: E402  (service account; see scripts/ee_init.py)
+
 YEAR = 2023
 NX, NY, RES = 3600, 1800, 0.1
 ROWS_PER_CHUNK = 150
@@ -41,7 +44,7 @@ def stats_image() -> ee.Image:
 
 
 def main(out: Path) -> None:
-    ee.Initialize()
+    ee_init()
     img = stats_image()
     bands = ["tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp"]
     arrays = {b: np.full((NY, NX), np.nan, dtype=np.float32) for b in bands}

@@ -1,5 +1,7 @@
 # Analogi zmarzliny Ziemia ↔ Mars: specyfikacja i plan analizy
 
+> **Historia.** Zastąpione przez `2026-11-15-drilling-analog-design.md`. Ten plik opisuje przebiegi 1–8 starej metody (porównanie rankingowe) i nie jest już stanem obowiązującym.
+
 Data: 2026-11-14. Zastępuje `2026-11-14-mars-analog-data-pipeline-design.md`.
 Pojęcia: `GLOSSARY.md`. Kontrakt z zespołem GUI: `docs/contracts/analysis-to-gui/CONTRACT.md`.
 Budżet: **15 h** (od 2026-11-14 ~16:00).

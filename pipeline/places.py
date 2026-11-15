@@ -6,7 +6,7 @@ Covers the top cells of every scored Depth Layer.
 
 Output: data/interim/places.json  {cell_id: "Verkhoyansk Range, Russia"}
 
-Usage: python -I pipeline/places.py data/raw/naturalearth data/interim
+Usage: python pipeline/places.py data/raw/naturalearth data/interim
 """
 import json
 import sys
@@ -18,7 +18,6 @@ import shapely
 from shapely import STRtree
 
 RES = 0.1
-TOP_N = 2000
 
 
 def load(path: Path, name_fields: tuple) -> tuple[np.ndarray, list]:
@@ -45,8 +44,7 @@ def main(ne_dir: Path, interim: Path) -> None:
         if not path.exists():
             continue
         with np.load(path) as z:
-            best, rows, cols = z["best"], z["rows"], z["cols"]
-        top = np.argsort(-np.nan_to_num(best, nan=-1), kind="stable")[:TOP_N]
+            top, rows, cols = z["top"], z["rows"], z["cols"]  # the exported cells (score.py)
         for k in top:
             lat, lon = 90 - (rows[k] + 0.5) * RES, -180 + (cols[k] + 0.5) * RES
             cells[f"c_{lat:.2f}_{lon:.2f}"] = (lon, lat)

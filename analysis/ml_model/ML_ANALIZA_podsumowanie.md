@@ -1,5 +1,7 @@
 # Analiza cech i model ML pod analogi odwiertowe — podsumowanie
 
+> **Co z tego weszło do pipeline'u (2026-11-15):** temperatura i ALT jako filtry, usunięcie amplitudy i duplikatów cech, Andy przez PZI, osobne listy. **Nie weszło:** wynik „pod odwierty" jako ocena (brak wejścia z Marsa), model ilości lodu, siatka 1 km. Powody: `docs/DECISIONS.md`.
+
 Data: 2026-11-14. Pojęcia: `GLOSSARY.md`. Spec zespołu: `docs/superpowers/specs/2026-11-14-permafrost-analog-analysis-design.md`.
 
 ## Cel

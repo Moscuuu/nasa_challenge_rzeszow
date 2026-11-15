@@ -1,6 +1,8 @@
 # Ocena łączna (Ziemia ↔ Mars) — pierwsza wersja
 
 Data: 2026-11-14
+
+> **Historia.** Wcześniejsza, osobna ocena (średnia geometryczna). Obowiązuje `pipeline/score.py`; opis w `docs/superpowers/specs/2026-11-15-drilling-analog-design.md`. Zestaw 12 punktów kontrolnych stąd przeszedł do `pipeline/config.py`.
 Skrypt: `analysis/combine/combine_score.py`. Wyniki w `data/combine/` (poza gitem).
 
 ## Jak to działa (po ludzku)

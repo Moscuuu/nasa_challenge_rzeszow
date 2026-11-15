@@ -15,9 +15,11 @@ from pathlib import Path
 import ee
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from ee_init import init as ee_init  # noqa: E402  (service account; see scripts/ee_init.py)
+
 LAYER = sys.argv[2] if len(sys.argv) > 2 else "0-1m"  # Depth Layer
 RES = 0.1
-TOP_N = 2000
 BATCH = 250
 YEAR = 2023
 DAYS = np.array([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
@@ -35,11 +37,11 @@ def climatology_image() -> ee.Image:
 
 
 def main(interim: Path) -> None:
-    ee.Initialize()
+    ee_init()
     sites = json.loads((interim / "mars_sites.json").read_text(encoding="utf-8"))
     with np.load(interim / f"scores_{LAYER}.npz") as z:
         sc = {k: z[k] for k in z.files}
-    top = np.argsort(-np.nan_to_num(sc["best"], nan=-1), kind="stable")[:TOP_N]
+    top = sc["top"]  # the exported cells: best of every region type (score.py)
     lat = 90 - (sc["rows"][top] + 0.5) * RES
     lon = -180 + (sc["cols"][top] + 0.5) * RES
     img = climatology_image()
