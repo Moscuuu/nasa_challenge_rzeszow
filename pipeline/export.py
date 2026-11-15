@@ -17,10 +17,10 @@ import config as C
 LAYERS = [("0-1m", "0–1 m (dry cover and ice table)"), ("1-5m", "1–5 m (shallow drilling)"),
           ("gt5m", "> 5 m (deep drilling)")]
 RES = C.RES
-CONTRACT_VERSION = "0.9"
+CONTRACT_VERSION = "0.10"
 FEATURES = [
-    {"id": "temperature", "label": "Summer surface temperature (daily maximum)", "comparison": "direct"},
-    {"id": "ground_ice", "label": "Depth to never-thawing ground", "comparison": "monotone"},
+    {"id": "temperature", "label": "Summer surface temperature (midday, clear sky)", "comparison": "direct"},
+    {"id": "ground_ice", "label": "Depth to never-thawing ground (filter only, not scored)", "comparison": "filter"},
     {"id": "dryness", "label": "Dryness (dry cover vs wet tundra)", "comparison": "rank"},
     {"id": "bare_ground", "label": "Bare ground in summer (no snow or ice cover)", "comparison": "monotone"},
 ]
@@ -30,19 +30,20 @@ REGION_TYPES = [
     {"id": "northern", "label": "Arctic and northern permafrost",
      "caveats": ["Ground temperature and thaw depth are model output (ESA Permafrost CCI), not measurements."]},
     {"id": "antarctic", "label": "Antarctic ice-free ground",
-     "caveats": ["Thaw depth is not ranked: CCI gives ~0 m everywhere here, a known underestimate.",
+     "caveats": ["Thaw depth from CCI is ~0 m everywhere here, a known underestimate (it is only a filter).",
                  "CCI cannot tell dry-frozen ground (no ice) from ice-cemented ground.",
                  "No SMAP soil wetness on permanent ice: dryness rests on precipitation alone."]},
     {"id": "pzi_only", "label": "Outside CCI coverage, PZI map only (Andes, other mountains, Arctic coast gaps)",
      "caveats": ["Ground temperature = PZI air temperature + 2 K (assumed), not a ground product.",
-                 "No thaw depth and no usable summer surface temperature (ERA5-Land smooths mountain terrain): "
-                 "ranked on dryness and bare ground only.",
+                 "No thaw depth: the thaw-depth filter does not apply here.",
+                 "Ground temperature is the same for all Depth Layers (one PZI air temperature per cell).",
                  "ERA5-Land precipitation is known to be too high in high mountains."]},
 ]
 SOURCES = [
     {"id": "pzi", "label": "Global Permafrost Zonation Index, 1 km (Gruber 2012): permafrost mask, air temperature", "url": "https://doi.org/10.5194/tc-6-221-2012"},
     {"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5.0 (ground temperature, active-layer thickness; mask in Antarctica), 2023", "url": "https://climate.esa.int/en/projects/permafrost/"},
-    {"id": "era5_land", "label": "ERA5-Land daily aggregates (ECMWF, via Google Earth Engine), 2023", "url": "https://doi.org/10.24381/cds.e2161bac"},
+    {"id": "modis_lst", "label": "NASA MODIS Aqua MYD11A1 v6.1 daytime land surface temperature, 1 km, local summer 2023, over the cell's snow-free permafrost pixels (via Google Earth Engine)", "url": "https://doi.org/10.5067/MODIS/MYD11A1.061"},
+    {"id": "era5_land", "label": "ERA5-Land daily aggregates (ECMWF, via Google Earth Engine), 2023: precipitation (dryness)", "url": "https://doi.org/10.24381/cds.e2161bac"},
     {"id": "smap_l4", "label": "NASA SMAP L4 SPL4SMGP v8 (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/T5RUATAQREF8"},
     {"id": "modis", "label": "NASA MODIS MOD10A1 v6.1 snow cover and MCD12Q1 v6.1 land cover (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/MODIS/MOD10A1.061"},
     {"id": "swim", "label": "SWIM4MIM ice consistency composites (PSI / NASA)", "url": "https://swim.psi.edu"},
@@ -121,13 +122,15 @@ def cell_features(sc, b, k, site, used):
         "temperature": block(
             "temperature", {"summer_tmax_K": r3(sc["summer_tmax"][k])},
             {"summer_tmax_K": site["temperature"]["summer_tmax"]},
-            "K, mean daily maximum of surface temperature in local summer; compared in kelvin, 20 K apart = 0",
-            "era5_land"),
+            "K, local summer. Earth: MODIS daytime surface temperature (~13:30, clear sky) over the cell's permafrost "
+            "pixels. Mars: mean daily maximum. Compared in kelvin, 20 K apart = 0",
+            "modis_lst"),
         "ground_ice": block(
             "ground_ice", {"active_layer_m": r3(sc["alt"][k]), "ground_temperature_K": r3(sc["t_ground"][k])},
             {"swim_c": site["ice"][str(sc["layer"])]["c"]},
-            "Earth: summer thaw depth, 0 m = 1 and 0.5 m = 0. Mars: SWIM ice consistency of this Depth Layer "
-            "(context, not compared)", "esa_cci_permafrost"),
+            "Not scored (filter only: summer thaw depth <= 0.5 m where CCI knows it). Earth: thaw depth [m] and ground "
+            "temperature of this Depth Layer [K]. Mars: SWIM ice consistency of this Depth Layer (context)",
+            "esa_cci_permafrost"),
         "dryness": block(
             "dryness", {"precip_mm_yr": r3(sc["precip_mm_yr"][k]), "wet_summer": r3(sc["wet_summer"][k])},
             {"precip_mm_yr": 0.0, "wet_summer": 0.0},

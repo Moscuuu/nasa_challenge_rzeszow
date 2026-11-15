@@ -2,6 +2,18 @@
 
 Jedna linia na decyzję, najnowsze na górze. Stan obowiązujący opisuje spec `docs/superpowers/specs/2026-11-15-drilling-analog-design.md`; tu jest tylko „co i dlaczego". Decyzję odwracamy nowym wpisem, starego nie kasujemy.
 
+## 2026-11-15 (druga runda: porównywalne wyniki)
+
+| decyzja | dlaczego |
+|---|---|
+| **Wszystkie typy regionów oceniane na tych samych 3 cechach:** temperatura letnia, suchość, goły grunt | Andy (`pzi_only`) liczone z 2 cech miały ~0,96 i wygrywały dla każdego miejsca na Marsie; wyniki typów nie były porównywalne, a lista „per miejsce" była prawie identyczna |
+| **Temperatura letnia z MODIS Aqua LST (dzień, ~13:30, bezchmurnie), uśredniona po pikselach zmarzliny (PZI ≥ 0,5, bez śniegu)**, zamiast ERA5-Land | ERA5 (9 km, wygładzona rzeźba) dawało w górach temperaturę średniej wysokości komórki; MODIS ma 1 km i działa też w Andach. ERA5 zostaje w eksporcie do porównania |
+| **`ice_table` (1 − ALT/0,5 m) już nie jest cechą**, tylko filtrem ALT ≤ 0,5 m i kontekstem | ALT jest tylko w CCI (brak w `pzi_only`, ~0 m w Antarktydzie); dublował filtr |
+| **Temperatura letnia zostaje we wszystkich warstwach** | wiertło i zwierciny zawsze pracują na powierzchni (jak przy suchości); temperatura w głębi jest poza zasięgiem Ziemi i zostaje filtrem |
+| **Odrzucone: porównanie SWIM C z `ice_1_5`/`ice_gt5`** | to udział zmarzliny (= 1 w każdej ocenianej komórce), nie ilość lodu; SWIM C to zgodność −1..1 |
+| **Model termiczny Marsa: rozbieg z resetem kolumny** do średniej temperatury powierzchni po 1. roku | 3 lata od 200 K zaniżały temperaturę w głębi do ~6 K (Amazonis 201,6 → 208,1 K); zgodne z 20-letnim przebiegiem do 0,2 K |
+| **Eksport: oprócz top-1000 na typ także top-200 każdego miejsca na Marsie w każdym typie** | listy per miejsce w GUI nie mogą zależeć od komórek wybranych pod inne miejsce |
+
 ## 2026-11-15
 
 | decyzja | dlaczego |

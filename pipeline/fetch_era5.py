@@ -11,6 +11,7 @@ Daily min/max come from ECMWF/ERA5_LAND/DAILY_AGGR (UTC days).
 Usage: python pipeline/fetch_era5.py data/interim/era5_skin_2023.npz
 """
 import io
+import os
 import sys
 from pathlib import Path
 
@@ -22,7 +23,7 @@ from ee_init import init as ee_init  # noqa: E402  (service account; see scripts
 
 YEAR = 2023
 NX, NY, RES = 3600, 1800, 0.1
-ROWS_PER_CHUNK = 150
+ROWS_PER_CHUNK = int(os.environ.get("ERA5_ROWS", 50))  # smaller requests stay under the Earth Engine user memory limit
 
 
 def _min_max_amp(ic: ee.ImageCollection, prefix: str) -> ee.Image:

@@ -14,6 +14,7 @@ Produces data/interim/surface_2023.npz (1800 x 3600, row 0 = 90 N, col 0 = -180)
 Usage: python pipeline/fetch_surface.py data/interim/surface_2023.npz
 """
 import io
+import os
 import sys
 import time
 import warnings
@@ -28,7 +29,7 @@ from ee_init import init  # noqa: E402
 YEAR = 2023
 NX, NY, RES = 3600, 1800, 0.1
 ROWS_PER_CHUNK, COLS_PER_CHUNK = 25, 300  # small chunks keep each Earth Engine request within its budget
-WORKERS = 8  # parallel requests
+WORKERS = int(os.environ.get("EE_WORKERS", 8))  # parallel requests; 2 in Earth Engine restricted mode
 FINE = 5  # each cell is requested as FINE x FINE sub-pixels (0.02 deg) and averaged here
 ROW_RANGE = (50, 1750)  # skip the polar caps (|lat| > 85): requests touching the pole fail
 SNOW_NDSI = 40  # NDSI_Snow_Cover >= 40 counts as snow (the usual 0.4 NDSI threshold)

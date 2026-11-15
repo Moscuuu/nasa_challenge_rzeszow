@@ -25,20 +25,23 @@ SWIM_ICE_MIN = 0.10          # a Mars site counts in a Depth Layer only if its S
 LAYERS = ("0-1m", "1-5m", "gt5m")
 LAYER_TEMP = {"0-1m": "gst", "1-5m": "t_1_5", "gt5m": "t_gt5"}  # earth_grid variable used by the filter
 
-FEATURES = ("summer_temperature", "ice_table", "dryness", "bare_ground")
+FEATURES = ("summer_temperature", "dryness", "bare_ground")
 REGION_TYPES = ("northern", "antarctic", "pzi_only")
-# Features that are ranked on, per region type. A feature is used only if it is available and reliable
-# for the whole list, so nothing is ever "missing" inside a ranking:
-#   antarctic: CCI active-layer thickness is ~0 m everywhere (known underestimate) -> ice_table not used
-#   pzi_only (outside CCI: Andes and other mountains, gaps on the Arctic coast): no ALT; ERA5-Land skin temperature is wrong on smoothed orography
+# Features that are ranked on, per region type. Since 2026-11-15 (second pass) every type uses the same
+# three, so scores are comparable across types and one ranking per Mars site is meaningful:
+#   summer_temperature  MODIS Aqua daytime LST over the cell's permafrost pixels (fetch_lst.py), available in
+#                       mountains too (ERA5-Land skin temperature was wrong there: smoothed orography)
+#   ice_table           no longer scored: ALT exists only in CCI (not in pzi_only, ~0 m in Antarctica), and
+#                       "summer thaw stays in the cover" is already the ALT <= ALT_MAX_M filter. Kept as context.
 TYPE_FEATURES = {
-    "northern": ("summer_temperature", "ice_table", "dryness", "bare_ground"),
-    "antarctic": ("summer_temperature", "dryness", "bare_ground"),
-    "pzi_only": ("dryness", "bare_ground"),
+    "northern": FEATURES,
+    "antarctic": FEATURES,
+    "pzi_only": FEATURES,
 }
 
 # --- outputs --------------------------------------------------------------------------------------------
-TOP_PER_TYPE = 1000          # exported cells per region type and Depth Layer
+TOP_PER_TYPE = 1000          # exported cells per region type and Depth Layer (by best-site score)
+TOP_PER_SITE = 200           # plus each Mars site's own top cells per region type, so per-site lists are complete
 AREA_MAX_CELLS = 5           # an area spans at most this many cells in each direction (5 x 5)
 STABLE_PERCENTILE = 0.90     # robustness: share of variants in which the cell is in the top 10 % of its type
 
