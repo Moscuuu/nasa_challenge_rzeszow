@@ -12,7 +12,12 @@ const H = 1080;
 const pause = (page, ms) => page.waitForTimeout(ms);
 
 await mkdir(outDir, { recursive: true });
-const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+// HEADED=1 runs a visible Chrome window so WebGL uses the GPU instead of SwiftShader (much smoother).
+const headed = process.env.HEADED === "1";
+const browser = await chromium.launch({
+  headless: !headed,
+  args: headed ? [] : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+});
 const context = await browser.newContext({
   viewport: { width: W, height: H },
   recordVideo: { dir: outDir, size: { width: W, height: H } },

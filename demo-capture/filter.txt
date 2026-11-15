@@ -1,0 +1,9 @@
+[0:v]trim=0:5,setpts=PTS-STARTPTS,scale=1920:1080,setsar=1,fps=25,format=yuv420p[h];
+[1:v]trim=start=18:duration=20,setpts=PTS-STARTPTS,scale=1920:1080,setsar=1,fps=25,format=yuv420p[w];
+color=c=0x0b0d14:s=1920x1080:r=25:d=5,format=yuv420p,drawtext=fontfile=arial.ttf:textfile=title.txt:fontsize=120:fontcolor=white:x=(w-text_w)/2:y=h/2-130,drawtext=fontfile=arial.ttf:textfile=sub.txt:fontsize=48:fontcolor=0xc9b8a6:x=(w-text_w)/2:y=h/2+40[t];
+[h][w][t]concat=n=3:v=1:a=0,
+drawtext=fontfile=arial.ttf:textfile=cap1.txt:fontsize=46:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18:x=(w-text_w)/2:y=h-130:enable='between(t,0.3,4.3)',
+drawtext=fontfile=arial.ttf:textfile=cap2.txt:fontsize=46:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18:x=(w-text_w)/2:y=h-130:enable='between(t,4.5,9.5)',
+drawtext=fontfile=arial.ttf:textfile=cap3.txt:fontsize=46:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18:x=(w-text_w)/2:y=h-130:enable='between(t,9.7,14.5)',
+drawtext=fontfile=arial.ttf:textfile=cap4.txt:fontsize=46:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18:x=(w-text_w)/2:y=h-130:enable='between(t,14.7,20.4)'[v];
+[2:a]adelay=300|300,apad,atrim=0:30,asetpts=N/SR/TB[a]
