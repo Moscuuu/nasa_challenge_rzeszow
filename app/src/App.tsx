@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createDataSource } from "./data/source";
 import { useMotion } from "./motion/useMotion";
+import { motion } from "./motion/registry";
 import { appStore, useAppStore } from "./state/store";
 import type { EarthGlobeHandle } from "./scene/EarthGlobe";
 import type { MarsGlobeHandle } from "./scene/MarsGlobe";
@@ -9,8 +10,6 @@ import { hasWebGL, NO_WEBGL_MESSAGE } from "./scene/webgl";
 import { AnalogCard } from "./ui/AnalogCard";
 import { Footer } from "./ui/Footer";
 import { HoldToDrill } from "./ui/HoldToDrill";
-import { MapLegend } from "./ui/MapLegend";
-import { ShowAllToggle } from "./ui/ShowAllToggle";
 import { SitePicker } from "./ui/SitePicker";
 import { SoilPicker } from "./ui/SoilPicker";
 import { Starfield } from "./ui/Starfield";
@@ -65,18 +64,20 @@ export default function App() {
         <SoilPicker />
       </section>
       <section data-slot="earth" ref={earth} aria-label="Earth, similarity map">
-        <div className="panel-head panel-head--row" data-ui>
+        <div className="panel-head" data-ui>
           <h2 className="panel-title">
             <span className="step">3</span> Matches on Earth
           </h2>
-          <ShowAllToggle />
         </div>
-        <MapLegend />
+        <button type="button" className="earth-back" data-ui onClick={() => motion.earth?.zoomOut()}>
+          ← Whole Earth
+        </button>
       </section>
       <aside data-slot="card">
         <AnalogCard error={error} />
       </aside>
       <Footer />
+      <div className="depth-veil" aria-hidden="true" />
       <Effects />
       {webgl && <HoldToDrill />}
       {veil && (

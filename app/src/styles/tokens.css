@@ -33,19 +33,30 @@ body {
 .layout {
   display: grid;
   height: 100%;
+  overflow: clip; /* the hidden card sits 24px off the right edge; Mars scales up mid-glide */
   grid-template-columns: minmax(220px, 1fr) minmax(0, 3fr) minmax(300px, 1.1fr);
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     "head head head"
-    "mars earth card"
-    "soil earth card"
+    "mars earth earth"
+    "soil earth earth"
     "foot foot foot";
 }
 .layout > header { grid-area: head; }
 .layout [data-slot="mars"] { grid-area: mars; }
 .layout [data-slot="soil"] { grid-area: soil; }
 .layout [data-slot="earth"] { grid-area: earth; }
-.layout [data-slot="card"] { grid-area: card; }
+/* Card floats over the Earth panel, top right; Earth takes the whole centre + right. */
+.layout [data-slot="card"] {
+  grid-area: earth;
+  position: relative;
+  z-index: 3;
+  justify-self: end;
+  align-self: start;
+  width: min(340px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  margin: 16px;
+}
 .layout > footer { grid-area: foot; }
 
 .layout > header {
@@ -85,6 +96,10 @@ body {
   }
   .layout > header { padding: 8px 16px; }
   .layout [data-slot="card"] {
+    grid-area: card;
+    justify-self: stretch;
+    width: auto;
+    margin: 0;
     max-height: 40vh;
     overflow-y: auto;
     border-radius: 14px 14px 0 0;
@@ -115,12 +130,79 @@ body {
 .layout[data-stage="pick"] :is([data-slot="soil"], [data-slot="earth"], [data-slot="card"]) {
   display: none;
 }
+/* Depth step: Mars stays centred but blurred behind a veil; the depth panel is the focus, centred on top. */
+.layout[data-stage="depth"] {
+  grid-template-areas:
+    "head head head"
+    ". mars ."
+    ". mars ."
+    "foot foot foot";
+}
+.layout[data-stage="depth"] :is([data-slot="earth"], [data-slot="card"]) {
+  display: none;
+}
+.layout[data-stage="depth"] [data-slot="mars"] {
+  pointer-events: none;
+}
+.layout[data-stage="depth"] :is(.pin, [data-slot="mars"] .panel-head) {
+  visibility: hidden;
+}
+.layout[data-stage="depth"] [data-slot="soil"] {
+  grid-area: mars;
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.layout[data-stage="depth"] [data-slot="soil"] .soil {
+  width: min(420px, 100% - 32px);
+  height: auto;
+  padding: 24px;
+  gap: 8px;
+  pointer-events: auto;
+}
+.layout[data-stage="depth"] .soil .panel-title {
+  font-size: 1.375rem;
+  margin-bottom: 0;
+}
+.layout[data-stage="depth"] .soil .panel-hint {
+  margin: 0 0 12px;
+}
+.layout[data-stage="depth"] .soil .slab {
+  min-height: 56px;
+  padding: 0 18px;
+  font-size: 0.9375rem;
+}
+.depth-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  background: rgb(0 0 0 / 0.35);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: opacity 450ms ease, visibility 0s 450ms;
+}
+.layout[data-stage="depth"] .depth-veil {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 450ms ease, visibility 0s;
+}
 /* While Mars glides into its corner the pin buttons would sit in the wrong place: hide them. */
 .layout[data-moving] .pin {
   visibility: hidden;
 }
 .layout[data-moving] [data-slot="mars"] {
   z-index: 3;
+}
+/* The depth panel flies over the 3D canvas into its slot. */
+.layout[data-moving] [data-slot="soil"] {
+  position: relative;
+  z-index: 6;
 }
 /* Card: kept in the grid (Earth never jumps), shown only once an Earth spot is clicked. */
 .layout [data-slot="card"] {
@@ -146,6 +228,14 @@ body {
       "head head"
       "mars mars"
       "foot foot";
+  }
+  .layout[data-stage="depth"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "head"
+      "mars"
+      "foot";
   }
   .layout:not([data-card="open"]) [data-slot="card"] {
     display: none;

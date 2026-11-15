@@ -44,11 +44,19 @@ describe("app store", () => {
     expect(currentCell(s)?.id).toBe(top.id);
   });
 
-  it("stage: starts on pick; a site pick moves to explore at once; the card opens only on an Earth click", async () => {
+  it("stage: pick -> depth on a site pick -> explore on an available depth; the card opens only on an Earth click", async () => {
     const { store } = await freshStore();
     expect(store.getState().stage).toBe("pick");
     expect(store.getState().cardOpen).toBe(false);
-    const pending = store.getState().selectSite("hellas_rim");
+    await store.getState().selectSite("hellas_rim");
+    expect(store.getState().stage).toBe("depth");
+    const layers = store.getState().manifest!.layers;
+    const soon = layers.find((l) => !l.available);
+    if (soon) {
+      await store.getState().selectLayer(soon.id);
+      expect(store.getState().stage).toBe("depth"); // an unavailable depth does not advance
+    }
+    const pending = store.getState().selectLayer(layers.find((l) => l.available)!.id);
     expect(store.getState().stage).toBe("explore"); // synchronous: the layout move starts on the click
     await pending;
     expect(store.getState().cardOpen).toBe(false);
@@ -114,12 +122,10 @@ describe("app store", () => {
     expect(currentCell(store.getState())?.id).toBe(h2?.kind === "cell" ? h2.cell.id : "");
   });
 
-  it("toggleShowAll survives selectSite; selectSite clears earthHit", async () => {
+  it("selectSite clears earthHit", async () => {
     const { store } = await freshStore();
-    store.getState().toggleShowAll();
     store.getState().clickEarth(0, -30);
     await store.getState().selectSite("hellas_rim");
-    expect(store.getState().showAll).toBe(true);
     expect(store.getState().earthHit).toBeNull();
   });
 

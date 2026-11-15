@@ -48,7 +48,9 @@ SOURCES = [
     {"id": "smap_l4", "label": "NASA SMAP L4 SPL4SMGP v8 (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/T5RUATAQREF8"},
     {"id": "modis", "label": "NASA MODIS MOD10A1 v6.1 snow cover and MCD12Q1 v6.1 land cover (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/MODIS/MOD10A1.061"},
     {"id": "swim", "label": "SWIM4MIM ice consistency composites (PSI / NASA)", "url": "https://swim.psi.edu"},
-    {"id": "mars_thermal_model", "label": "Team 1-D Mars surface thermal model (A=0.25, I=250)", "url": None},
+    {"id": "tes_albedo", "label": "Mars Global Surveyor TES bolometric albedo map (Christensen et al. 2001, JGR 106:23823)", "url": "https://pds-geosciences.wustl.edu/missions/mgs/tesmaps.html"},
+    {"id": "tes_ti_putzig_mellon2007", "label": "Apparent thermal inertia of Mars from TES (Putzig & Mellon 2007, Icarus 191:68-94)", "url": "https://www.psi.edu/research/thermal_inertia"},
+    {"id": "mars_thermal_model", "label": "Team 1-D Mars surface thermal model (per-site TES albedo and thermal inertia)", "url": None},
 ]
 KNOWN = [(name, box) for name, role, box in C.CHECK_BOXES if role == "known_analog"]
 MARS_TEMP_KEYS = ("tmin", "tmax", "amp", "summer_tmin", "summer_tmax", "summer_amp", "t_1_5", "t_gt5")
@@ -74,6 +76,8 @@ def site_feature(s, layers):
         "properties": {
             "id": s["id"], "name": s["name"], "window_deg": s["window_deg"], "coords_status": s["coords_status"],
             "coords_source": s["coords_source"],
+            "surface": {"albedo": s["albedo"], "thermal_inertia": s["thermal_inertia"],
+                        "albedo_source": s["albedo_source"], "ti_source": s["ti_source"]},
             "features": {
                 "temperature": {**{f"{q}_K": t[q] for q in MARS_TEMP_KEYS},
                                 "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",

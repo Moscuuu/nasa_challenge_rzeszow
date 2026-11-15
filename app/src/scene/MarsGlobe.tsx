@@ -4,7 +4,7 @@ import { Html, PerspectiveCamera, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { appStore, useAppStore } from "../state/store";
 import type { MarsSite } from "../data/types";
-import { facesCamera, isClick, ll2v, nearestPin, rotationFor } from "./geo";
+import { facesCamera, isClick, ll2v, nearestPin, rotationFor, slotCalculatePosition } from "./geo";
 import { unitRing } from "./Pulse";
 import { useTextureSize } from "./useTextureSize";
 
@@ -173,7 +173,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       if (down && isClick(down, { x: e.clientX, y: e.clientY })) {
         m.vx = m.vy = 0;
         const id = nearest(e);
-        if (id) void appStore.getState().selectSite(id);
+        if (id && appStore.getState().stage !== "depth") void appStore.getState().selectSite(id);
       }
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
     };
@@ -283,7 +283,9 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
               selected={site.id === siteId}
               pulse={picking}
               slot={slot}
-              onSelect={() => void selectSite(site.id)}
+              onSelect={() => {
+                if (appStore.getState().stage !== "depth") void selectSite(site.id); // depth step: site is locked
+              }}
               onFocusChange={(focused) => {
                 motion.current.pinFocused = focused;
                 if (focused) rotateTo(site.lat, site.lon);
@@ -362,7 +364,7 @@ function Pin({ site, index, count, intro, selected, pulse, slot, onSelect, onFoc
     <group ref={group} position={position} quaternion={quaternion}>
       <mesh geometry={selected ? dotGeometry : ringGeometry} material={pinMaterial} />
       <mesh ref={beat} geometry={ringGeometry} material={beatMaterial} visible={false} renderOrder={2} />
-      <Html center portal={slot} zIndexRange={[20, 10]}>
+      <Html center portal={slot} calculatePosition={slotCalculatePosition(slot)} zIndexRange={[20, 10]}>
         <button
           ref={button}
           type="button"

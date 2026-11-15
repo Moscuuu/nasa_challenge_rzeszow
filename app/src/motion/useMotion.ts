@@ -88,9 +88,10 @@ export function useMotion(
     };
     raf = requestAnimationFrame(ready);
 
-    // First pick: Mars moves aside, depth and Earth come in. Every pick: Mars turn + rings, then the Earth echo.
+    // Site pick: the depth panel appears under Mars. Depth pick: Mars moves aside, Earth comes in. Every pick: Mars turn + rings, then the Earth echo.
     const unsubscribe = appStore.subscribe((s, prev) => {
-      if (s.stage === "explore" && prev.stage === "pick") {
+      if (s.stage === "depth" && prev.stage === "pick") motion.relayout?.(); // Mars slot shrinks for the depth panel
+      if (s.stage === "explore" && prev.stage !== "explore") {
         if (motion.introActive) skip();
         exploreTimeline();
       }

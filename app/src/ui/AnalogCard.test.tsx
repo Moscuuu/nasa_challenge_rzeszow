@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Cell, CellFeature, MarsSite } from "../data/types";
 import { appStore } from "../state/store";
-import { AnalogCard, monthsLabel, shortLabel, verdict } from "./AnalogCard";
+import { AnalogCard, formatValues, shortLabel } from "./AnalogCard";
 
 const feat = (score: number | null, status: CellFeature["status"] = "ok"): CellFeature => ({
   score, earth_value: null, mars_value: null, unit: null, status, source: null,
@@ -25,31 +25,36 @@ beforeEach(() =>
 );
 
 describe("AnalogCard", () => {
-  it("shows coordinates when place is null, Pending for polygons and Best overall", () => {
+  it("shows rank, coordinates as title when place is null, and a dash for features without values", () => {
     render(<AnalogCard />);
+    expect(screen.getByText("Rank #3")).toBeInTheDocument();
+    expect(screen.getByText("80%")).toBeInTheDocument();
     expect(screen.getByText("77.55°S 160.85°E")).toBeInTheDocument();
-    expect(screen.getByText("Pending")).toBeInTheDocument();
-    expect(screen.getByText("Best overall")).toBeInTheDocument();
+    expect(screen.getByText("Polygons")).toBeInTheDocument();
     expect(screen.getByText(/Match 1 of 1/)).toBeInTheDocument();
   });
 
-  it("shows the dryness row, penalised no-data text and the place as title", () => {
-    appStore.setState({
-      list: [{ ...cell, place: "Peary Land, Greenland", features: { ...cell.features, polygons: { ...cell.features.polygons, status: "no_data_penalized" }, dryness: { ...cell.features.ground_ice, score: 0.8 } } }],
-    });
+  it("shows the place as title with coordinates under it and no mention of the Mars site", () => {
+    appStore.setState({ siteId: "hellas", list: [{ ...cell, place: "Peary Land, Greenland" }] });
     render(<AnalogCard />);
-    expect(screen.getByText("Dryness")).toBeInTheDocument();
     expect(screen.getByText("Peary Land, Greenland")).toBeInTheDocument();
-    expect(screen.getByText("No data (counted as 0)")).toBeInTheDocument();
-    expect(screen.getByText(/3 of 4 with data/)).toBeInTheDocument();
+    expect(screen.getByText("77.55°S 160.85°E")).toBeInTheDocument();
+    expect(screen.queryByText(/Hellas|Arcadia/)).toBeNull();
+    expect(screen.queryByText(/Similarity to Mars/)).toBeNull();
   });
 
-  it("captions vs best site and shows the test window for a fallback site", () => {
-    appStore.setState({ siteId: "hellas" });
-    render(<AnalogCard />);
-    expect(screen.getByText("Compared with Arcadia Planitia")).toBeInTheDocument();
-    expect(screen.getByText("#1 for Hellas Rim")).toBeInTheDocument();
-    expect(screen.getByText("Test window: Jun–Aug · 120 h/yr")).toBeInTheDocument();
+  it("shows Earth value with muted Mars value next to it", () => {
+    const withValues: Cell = {
+      ...cell,
+      features: {
+        ...cell.features,
+        temperature: { ...feat(0.9), earth_value: { tmin_K: 221.4 }, mars_value: { tmin_K: 150.2 } },
+      },
+    };
+    appStore.setState({ list: [withValues] });
+    const { container } = render(<AnalogCard />);
+    expect(container.querySelector(".f-val")?.textContent).toBe("221 K150 K");
+    expect(container.querySelector(".f-mars")?.textContent).toBe("150 K");
   });
 
   it("none hit shows 'No permafrost here' and no score", () => {
@@ -62,28 +67,21 @@ describe("AnalogCard", () => {
   it("score hit shows the mini card; pending layer dims", () => {
     appStore.setState({ earthHit: { kind: "score", score: 0.42, lat: 10, lon: 20 }, layerPending: true });
     const { container } = render(<AnalogCard />);
-    expect(screen.getByText("Similarity 0.42")).toBeInTheDocument();
+    expect(screen.getByText("Similarity 42%")).toBeInTheDocument();
     expect(screen.getByText("Outside top cells — no feature details")).toBeInTheDocument();
     expect(screen.getByText("Layer not delivered yet")).toBeInTheDocument();
     expect(container.querySelector(".card--dim")).not.toBeNull();
   });
-
-  it("formats months", () => {
-    expect(monthsLabel([8, 6, 7])).toBe("Jun–Aug");
-    expect(monthsLabel([1, 3])).toBe("Jan, Mar");
-    expect(monthsLabel([1, 2, 3, 11, 12])).toBe("Nov–Mar");
-  });
 });
 
 describe("card helpers", () => {
-  it("verdict words by score band", () => {
-    expect(verdict(0.86)).toBe("Strong match");
-    expect(verdict(0.6)).toBe("Good match");
-    expect(verdict(0.45)).toBe("Fair match");
-    expect(verdict(0.1)).toBe("Weak match");
-  });
   it("shortLabel drops the parenthesis", () => {
     expect(shortLabel("Dryness (dry permafrost vs wet tundra)")).toBe("Dryness");
     expect(shortLabel("Ground ice")).toBe("Ground ice");
+  });
+  it("formatValues joins keys and formats units", () => {
+    expect(formatValues({ tmin_K: 221.4, active_layer_m: 0.5 })).toBe("221 K · 0.50 m");
+    expect(formatValues({ x_K: null })).toBe("—");
+    expect(formatValues(null)).toBe("");
   });
 });

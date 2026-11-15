@@ -23,9 +23,9 @@ At every candidate site the ice lies under a dry cover, never thaws, and the gro
 
 ## Where it breaks
 
-- Method check: 4 of 9 known analogs land in the top 10 % of their region type; all 6 wet or warm contrasts are rejected. Haughton Crater and Eureka sit mid-table (61–65): their surface warms to about +15 °C in summer, some 25 K above the Mars sites.
+- Method check: 3 of 9 known analogs land in the top 10 % of their region type; all 6 wet or warm contrasts are rejected. Haughton Crater and Eureka sit mid-table (60–70): their surface warms to about +15 °C in summer, some 25 K above the Mars sites.
 - Earth data cannot tell dry-frozen ground from ice-cemented ground. Ice amount is not scored.
-- The Mars sites differ only in summer surface temperature, and six of the seven are within 6 K of each other, so ties between sites are normal.
+- The Mars sites differ in summer surface temperature (264–285 K, from per-site TES albedo and thermal inertia), but modelled values are only good to a few kelvin (model is 2–8 K colder than MCD v6.2), so ties between sites are still possible.
 - Ground temperature and thaw depth are model products (ESA CCI), for 2023 only. Outside CCI coverage the ground temperature is air temperature plus an assumed 2 K.
 - Earth cannot reproduce Mars pressure, gravity, radiation or its 200 K ground.
 

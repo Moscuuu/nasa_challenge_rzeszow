@@ -26,6 +26,19 @@ export function rotationFor(lat: number, lon: number): { x: number; y: number } 
   return { x: THREE.MathUtils.degToRad(lat), y: -Math.atan2(p.x, p.z) };
 }
 
+/**
+ * Position for drei <Html portal={slot}> overlays: the slot's live pixel size. drei's default uses the `size` a View
+ * captured at its last React render, which goes stale when the layout moves, so pins drift off their points.
+ */
+export function slotCalculatePosition(slot: { current: HTMLElement | null }) {
+  return (el: THREE.Object3D, camera: THREE.Camera): [number, number] => {
+    const p = new THREE.Vector3().setFromMatrixPosition(el.matrixWorld).project(camera);
+    const w = slot.current?.clientWidth ?? 0;
+    const h = slot.current?.clientHeight ?? 0;
+    return [((p.x + 1) / 2) * w, ((1 - p.y) / 2) * h];
+  };
+}
+
 /** True when the pointer moved less than 6 px between pointerdown and pointerup. */
 export function isClick(down: { x: number; y: number }, up: { x: number; y: number }): boolean {
   return Math.hypot(up.x - down.x, up.y - down.y) < 6;

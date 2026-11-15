@@ -13,10 +13,10 @@
    ],
    "cells": 199,
    "cells_scored": 80,
-   "median_percentile": 91.3,
-   "type_percentile": 79.2,
+   "median_percentile": 72.8,
+   "type_percentile": 76.8,
    "cold_only_percentile": 99.8,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -31,8 +31,8 @@
    ],
    "cells": 278,
    "cells_scored": 277,
-   "median_percentile": 73.5,
-   "type_percentile": 73.7,
+   "median_percentile": 51.8,
+   "type_percentile": 51.4,
    "cold_only_percentile": 84.5,
    "passed": false,
    "applicable": true
@@ -67,10 +67,10 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 93.5,
-   "type_percentile": 81.9,
+   "median_percentile": 56.3,
+   "type_percentile": 65.7,
    "cold_only_percentile": 99.9,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -85,10 +85,10 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 90.1,
-   "type_percentile": 78.0,
+   "median_percentile": 48.2,
+   "type_percentile": 55.7,
    "cold_only_percentile": 99.9,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -103,10 +103,10 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 98.7,
-   "type_percentile": 93.2,
+   "median_percentile": 86.6,
+   "type_percentile": 87.0,
    "cold_only_percentile": 99.8,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -121,8 +121,8 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 78.2,
-   "type_percentile": 60.9,
+   "median_percentile": 66.2,
+   "type_percentile": 72.5,
    "cold_only_percentile": 99.5,
    "passed": false,
    "applicable": true
@@ -139,8 +139,8 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 74.9,
-   "type_percentile": 75.1,
+   "median_percentile": 74.0,
+   "type_percentile": 73.7,
    "cold_only_percentile": 92.7,
    "passed": false,
    "applicable": true
@@ -157,8 +157,8 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 76.1,
-   "type_percentile": 76.2,
+   "median_percentile": 62.7,
+   "type_percentile": 62.3,
    "cold_only_percentile": 86.5,
    "passed": false,
    "applicable": true
@@ -175,8 +175,8 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 92.2,
-   "type_percentile": 92.3,
+   "median_percentile": 96.7,
+   "type_percentile": 96.7,
    "cold_only_percentile": 89.0,
    "passed": true,
    "applicable": true
@@ -193,10 +193,10 @@
    ],
    "cells": 7,
    "cells_scored": 6,
-   "median_percentile": 38.3,
-   "type_percentile": 38.3,
+   "median_percentile": 54.8,
+   "type_percentile": 54.4,
    "cold_only_percentile": 4.3,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {

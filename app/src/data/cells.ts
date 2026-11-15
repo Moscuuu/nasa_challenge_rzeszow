@@ -46,7 +46,7 @@ export function topForSite(cells: Cell[], siteId: string | null, n = 10, radiusK
 }
 
 const rad = Math.PI / 180;
-function distDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
+export function distDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const dLat = (lat2 - lat1) * rad;
   const dLon = (lon2 - lon1) * rad;
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2;
