@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { ScoreMap } from "../data/scoreMap";
-import { HEAT_CORE, HEAT_DIM, HEAT_HALO, HEAT_MAX, HOT_CONTOUR, HEAT_MIN_ALL, HEAT_MIN_TOP, MASK_EPS, PULSE_CLEAR_MIN } from "./heat";
+import { HEAT_CORE, HEAT_DIM, HEAT_HALO, HOT_CONTOUR, PULSE_CLEAR_MIN } from "./heat";
 
 /**
  * Frost white (--frost). The overlay has no other colour: colour lives only in the satellite imagery.
@@ -54,8 +54,6 @@ const f = (x: number) => x.toFixed(4);
 const fragmentShader = /* glsl */ `
   #define PI 3.14159265
   uniform sampler2D uScore;
-  uniform float uThreshold;
-  uniform float uShowAll;
   uniform vec3 uOrigin;
   uniform float uReveal;
   uniform float uOutline;
@@ -64,14 +62,7 @@ const fragmentShader = /* glsl */ `
   varying vec2 vUv;
   varying vec3 vPos;
 
-  // GLSL twins of heatAlpha() and pulseClear() in heat.ts: keep them in sync.
-  float heatAlpha(float score, float mask, float threshold, bool showAll) {
-    if (mask < 0.5) return 0.0;
-    if (showAll) return ${f(HEAT_MIN_ALL)} + ${f(HEAT_MAX - HEAT_MIN_ALL)} * clamp(score, 0.0, 1.0);
-    if (score < threshold) return 0.0;
-    float t = threshold >= 1.0 ? 1.0 : (score - threshold) / (1.0 - threshold);
-    return ${f(HEAT_MIN_TOP)} + ${f(HEAT_MAX - HEAT_MIN_TOP)} * clamp(t, 0.0, 1.0);
-  }
+  // GLSL twins of topHeatAlpha(), topDimAlpha() and pulseClear() in heat.ts: keep them in sync.
 
   float topHeatAlpha(float hot, float halo, float mask) {
     float core = mask < 0.5 ? 0.0 : ${f(HEAT_CORE)} * smoothstep(0.2, 0.6, hot);
@@ -92,20 +83,12 @@ const fragmentShader = /* glsl */ `
     // PNG row 0 is lat +90; SphereGeometry v = 1 at the north pole.
     vec2 rg = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y)).rg;
     float mask = rg.g;
-    float score = mask > 0.0 ? min(1.0, rg.r / max(mask, ${f(MASK_EPS)})) : 0.0; // unpackTexel
-    float heat;
-    float dim = 0.0;
-    float hotEdge = 0.0;
-    if (uShowAll > 0.5) {
-      heat = heatAlpha(score, mask, uThreshold, true);
-    } else {
-      // Coarser mip bias keeps small clusters visible at far zoom; the halo is a much blurrier copy.
-      float hot = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y), 1.5).b;
-      float halo = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y), 4.5).b;
-      heat = topHeatAlpha(hot, halo, mask);
-      dim = topDimAlpha(hot, halo);
-      hotEdge = ${f(HOT_CONTOUR)} * (1.0 - smoothstep(0.0, max(fwidth(hot), 1e-4), abs(hot - 0.5))) * step(0.5, mask);
-    }
+    // Coarser mip bias keeps small clusters visible at far zoom; the halo is a much blurrier copy.
+    float hot = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y), 1.5).b;
+    float halo = texture2D(uScore, vec2(vUv.x, 1.0 - vUv.y), 4.5).b;
+    float heat = topHeatAlpha(hot, halo, mask);
+    float dim = topDimAlpha(hot, halo);
+    float hotEdge = ${f(HOT_CONTOUR)} * (1.0 - smoothstep(0.0, max(fwidth(hot), 1e-4), abs(hot - 0.5))) * step(0.5, mask);
 
     float ang = acos(clamp(dot(normalize(vPos), uOrigin), -1.0, 1.0));
     // Reveal: only within uReveal radians of uOrigin (soft 0.05 rad edge). uReveal = PI shows all.
@@ -131,8 +114,6 @@ export interface HeatUniforms {
   [name: string]: THREE.IUniform;
   /** RG score texture (see scoreTexture). */
   uScore: THREE.IUniform<THREE.Texture | null>;
-  uThreshold: THREE.IUniform<number>;
-  uShowAll: THREE.IUniform<number>;
   uOrigin: THREE.IUniform<THREE.Vector3>;
   uReveal: THREE.IUniform<number>;
   uOutline: THREE.IUniform<number>;
@@ -145,8 +126,6 @@ export interface HeatUniforms {
 export function createHeatMaterial(): THREE.ShaderMaterial & { uniforms: HeatUniforms } {
   const uniforms: HeatUniforms = {
     uScore: { value: null },
-    uThreshold: { value: 1 },
-    uShowAll: { value: 0 },
     uOrigin: { value: new THREE.Vector3(0, 1, 0) },
     uReveal: { value: Math.PI },
     uOutline: { value: OUTLINE_OPACITY },

@@ -11,8 +11,11 @@ export type EarthHit =
   | { kind: "score"; score: number; lat: number; lon: number }
   | { kind: "none"; lat: number; lon: number };
 
-/** pick: Mars alone, centred, waiting for a site. explore: Mars + depth + Earth (+ card once an Earth spot is clicked). */
-export type Stage = "pick" | "explore";
+/**
+ * pick: Mars alone, centred, waiting for a site. depth: site chosen, Mars locked, only the soil depth
+ * can be chosen. explore: Mars + depth + Earth (+ card once an Earth spot is clicked).
+ */
+export type Stage = "pick" | "depth" | "explore";
 
 export interface AppState {
   stage: Stage;
@@ -29,7 +32,6 @@ export interface AppState {
   list: Cell[];
   index: number;
   earthHit: EarthHit | null;
-  showAll: boolean;
   validationOpen: boolean;
   focus: { lat: number; lon: number } | null;
   init(ds: DataSource): Promise<void>;
@@ -37,7 +39,6 @@ export interface AppState {
   selectLayer(layer: LayerId): Promise<void>;
   step(delta: 1 | -1): void;
   clickEarth(lat: number, lon: number): void;
-  toggleShowAll(): void;
   openValidation(open: boolean): void;
   focusCheck(check: ValidationCheck): void;
   /** Skip the pick step (no WebGL: there are no pins to click). */
@@ -102,7 +103,6 @@ export function createAppStore() {
       list: [],
       index: 0,
       earthHit: null,
-      showAll: false,
       validationOpen: false,
       focus: null,
 
@@ -127,7 +127,7 @@ export function createAppStore() {
       selectSite(id) {
         wantSite = id;
         // A new site means new matches: close the card until the user clicks Earth again.
-        set(id && get().stage === "pick" ? { stage: "explore", cardOpen: false } : { cardOpen: false });
+        set(id && get().stage === "pick" ? { stage: "depth", cardOpen: false } : { cardOpen: false });
         return load();
       },
 
@@ -140,6 +140,8 @@ export function createAppStore() {
         }
         wantLayer = layer;
         wantPending = false;
+        // Depth step: choosing an available depth opens the main view.
+        if (get().stage === "depth") set({ stage: "explore", cardOpen: false });
         return load();
       },
 
@@ -159,7 +161,6 @@ export function createAppStore() {
       },
 
       enterExplore: (openCard = false) => set({ stage: "explore", cardOpen: openCard }),
-      toggleShowAll: () => set((s) => ({ showAll: !s.showAll })),
       openValidation: (open) => set({ validationOpen: open }),
 
       focusCheck(check) {

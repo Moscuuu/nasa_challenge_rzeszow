@@ -8,6 +8,8 @@ export function SoilPicker() {
   const layers = useAppStore((s) => s.manifest?.layers ?? []);
   const layer = useAppStore((s) => s.layer);
   const selectLayer = useAppStore((s) => s.selectLayer);
+  const choosing = useAppStore((s) => s.stage === "depth");
+  const siteName = useAppStore((s) => s.sites.find((x) => x.id === s.siteId)?.name);
   const first = useRef(true);
   const count = layers.length;
   // Picking a layer splits the block like a core sample (the first run just sets the resting state).
@@ -19,9 +21,11 @@ export function SoilPicker() {
   }, [layer, count]);
   return (
     <div className="soil" role="group" aria-labelledby="soil-title">
+      {choosing && siteName && <p className="soil-site">{siteName}</p>}
       <h2 className="panel-title" id="soil-title">
         <span className="step">2</span> Choose soil depth
       </h2>
+      {choosing && <p className="panel-hint">Pick a depth to see the matches on Earth</p>}
       {layers.map((l, i) => (
         <button
           key={l.id}

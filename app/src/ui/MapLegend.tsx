@@ -1,20 +1,17 @@
-import { useAppStore } from "../state/store";
-
-/** Key for the Earth view: what the white heat, the outlines and the rings mean. */
+/** Key for the Earth view: what the pins, the glowing areas and the rings mean. */
 export function MapLegend() {
-  const showAll = useAppStore((s) => s.showAll);
   return (
     <div className="legend" aria-label="Map legend">
       <div className="legend-row">
-        <span className="legend-ramp" aria-hidden="true" />
+        <span className="legend-pin" aria-hidden="true"><i>1</i></span>
         <span>
-          Brighter = more Mars-like
-          <small>{showAll ? "all permafrost shown" : "only the top 10% of permafrost shown"}</small>
+          Analog region, ranked
+          <small>×7 = analogs inside. Click to zoom in</small>
         </span>
       </div>
       <div className="legend-row">
-        <span className="legend-outline" aria-hidden="true" />
-        <span>Outline = best-match region</span>
+        <span className="legend-area" aria-hidden="true" />
+        <span>Region of interest</span>
       </div>
       <div className="legend-row">
         <span className="legend-rings" aria-hidden="true" />

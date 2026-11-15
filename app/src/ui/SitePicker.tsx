@@ -5,8 +5,8 @@ export function SitePicker() {
   const sites = useAppStore((s) => s.sites);
   const siteId = useAppStore((s) => s.siteId);
   const selectSite = useAppStore((s) => s.selectSite);
-  const picking = useAppStore((s) => s.stage === "pick");
-  if (picking) {
+  const stage = useAppStore((s) => s.stage);
+  if (stage === "pick") {
     // Pick step: Mars alone; the pulsing pins are the only control (they are buttons, reachable with Tab).
     return (
       <div className="panel-head" data-ui>

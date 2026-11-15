@@ -3,3 +3,5 @@ data/
 __pycache__/
 app/node_modules/
 app/dist/
+
+.superpowers/
