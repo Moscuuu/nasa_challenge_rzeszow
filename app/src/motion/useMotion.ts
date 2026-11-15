@@ -64,7 +64,8 @@ export function useMotion(
       motion.earth = earthRef.current;
       const scenes = motion.mars !== null && motion.earth !== null;
       if (kind === "none") {
-        if (!scenes) raf = requestAnimationFrame(ready);
+        // Wait for the sites too: settleMars turns Mars to the focus site.
+        if (!scenes || (appStore.getState().sites.length === 0 && !failedRef.current)) raf = requestAnimationFrame(ready);
         else settleMars();
         return;
       }

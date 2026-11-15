@@ -28,6 +28,12 @@ describe("analogRegions", () => {
     expect(r.map((x) => x.points[0].cell.id)).toEqual(topForSite(cells, "s").map((c) => c.id));
   });
 
+  it("hides points below 90 % similarity but keeps a region's best point", () => {
+    const weak = [cell("w1", 10, 10, 0.85), cell("w2", 10.5, 10, 0.8), cell("s1", 50, 50, 0.95), cell("s2", 50.5, 50, 0.7)];
+    const r = analogRegions(weak, "s");
+    expect(r.map((x) => x.points.map((p) => p.cell.id))).toEqual([["s1"], ["w1"]]);
+  });
+
   it("merges chains of points across the join distance and handles the dateline", () => {
     const r = analogRegions([cell("e", 70, 179, 0.9), cell("w", 70, -179, 0.8)], "s");
     expect(r).toHaveLength(1);

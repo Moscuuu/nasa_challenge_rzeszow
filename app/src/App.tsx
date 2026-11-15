@@ -13,7 +13,6 @@ import { HoldToDrill } from "./ui/HoldToDrill";
 import { SitePicker } from "./ui/SitePicker";
 import { SoilPicker } from "./ui/SoilPicker";
 import { Starfield } from "./ui/Starfield";
-import { ValidationPanel } from "./ui/ValidationPanel";
 import "./ui/ui.css";
 
 // three.js and the scene load in their own chunk, after first paint.
@@ -54,7 +53,6 @@ export default function App() {
           <h1>Analog Finder</h1>
           <p className="tagline">Find places on Earth whose frozen ground behaves like Mars</p>
         </div>
-        <ValidationPanel />
       </header>
       <section data-slot="mars" ref={mars} aria-label="Mars, pick a base site">
         <SitePicker />

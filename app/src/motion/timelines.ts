@@ -124,10 +124,24 @@ export function pickSiteTimeline(lat: number, lon: number, cell: Cell): Tl {
 export const PICK_ZOOM = 1.12 / 1.3;
 const restZoom = () => (appStore.getState().stage === "explore" ? 1 : PICK_ZOOM);
 
+/** The intro ends with Mars turned to this site (and held there until the user drags). */
+const FOCUS_SITE_ID = "hellas_rim";
+/** Intro spin: starts at this speed (rad/s) and eases to 0, about one and a half turns in all. */
+const SPIN_START = 6;
+const SPIN_FULL_S = 3.0;
+const SPIN_SHORT_S = 2.0;
+
+function focusMarsSite(): void {
+  const site = appStore.getState().sites.find((x) => x.id === FOCUS_SITE_ID);
+  if (site) motion.mars?.rotateTo(site.lat, site.lon, true);
+}
+
 /**
- * Intro. full (~2.6 s): veil lifts on Mars filling the centre frame, the camera eases back as the
- * analog sites flicker in; then they pulse and wait for a pick (Earth and the card come later).
- * short (~0.5 s): veil fade only. Any click or key jumps to the end (see useMotion).
+ * Intro. full (~3 s): veil lifts on Mars filling the centre frame, the camera eases back as the
+ * analog sites flicker in while the planet spins fast and slows down (there are many sites to pick
+ * from); then it turns to Hellas rim and stays there, the sites pulse and wait for a pick (Earth and
+ * the card come later). short (~2 s): veil fade and a shorter spin, then the same turn to Hellas rim.
+ * Any click or key jumps to the end (see useMotion).
  */
 export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => void): Tl {
   const { mars } = motion;
@@ -136,10 +150,10 @@ export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => v
   const rest = restZoom();
 
   // 0.8 is about the closest zoom that still fits the globe inside the slot at the pick framing.
-  const s = { veil: 1, zoom: full ? rest * 0.93 : rest, pins: full ? 0 : 1 };
+  const s = { veil: 1, zoom: full ? rest * 0.93 : rest, pins: full ? 0 : 1, spin: SPIN_START };
   const apply = () => {
     if (veil) veil.style.opacity = String(s.veil);
-    mars?.setIntro({ zoom: s.zoom, pins: s.pins });
+    mars?.setIntro({ zoom: s.zoom, pins: s.pins, spin: s.spin });
   };
   // Starting state, applied now (before the first tick) so nothing flashes.
   apply();
@@ -148,14 +162,17 @@ export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => v
   if (full) {
     tl.to(s, { veil: 0, duration: 0.8, ease: "power1.inOut" }, 0.1)
       .to(s, { zoom: rest, duration: 2.0, ease: "power2.inOut" }, 0.3) // Mars eases back into place
-      .to(s, { pins: 1, duration: 1.2, ease: "none" }, 1.0); // sites flicker in turn
+      .to(s, { pins: 1, duration: 1.2, ease: "none" }, 1.0) // sites flicker in turn
+      .to(s, { spin: 0, duration: SPIN_FULL_S, ease: "power2.out" }, 0); // fast spin slows down
   } else {
-    tl.to(s, { veil: 0, duration: 0.35, ease: "power1.out" }, 0);
+    tl.to(s, { veil: 0, duration: 0.35, ease: "power1.out" }, 0)
+      .to(s, { spin: 0, duration: SPIN_SHORT_S, ease: "power2.out" }, 0);
   }
 
   tl.eventCallback("onComplete", () => {
-    Object.assign(s, { veil: 0, zoom: restZoom(), pins: 1 });
+    Object.assign(s, { veil: 0, zoom: restZoom(), pins: 1, spin: 0 });
     apply();
+    focusMarsSite();
     onDone?.();
   });
   return tl;
@@ -163,7 +180,8 @@ export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => v
 
 /** Without an intro, Mars still needs the pick framing. */
 export function settleMars(): void {
-  motion.mars?.setIntro({ zoom: restZoom(), pins: 1 });
+  motion.mars?.setIntro({ zoom: restZoom(), pins: 1, spin: 0 });
+  focusMarsSite();
 }
 
 /**

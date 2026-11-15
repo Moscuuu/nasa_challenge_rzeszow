@@ -9,12 +9,13 @@ import { unitRing } from "./Pulse";
 import { useTextureSize } from "./useTextureSize";
 
 export interface MarsGlobeHandle {
-  /** Turn the globe so (lat, lon) faces the camera. */
-  rotateTo(lat: number, lon: number): void;
+  /** Turn the globe so (lat, lon) faces the camera; hold = then stay there (no idle spin) until the user drags. */
+  rotateTo(lat: number, lon: number, hold?: boolean): void;
   /** Radar rings on the surface at (lat, lon); progress 0..1, null hides them. */
   radar(lat: number, lon: number, progress: number | null): void;
-  /** Intro drivers: camera distance factor (1 = framed) and how far the pin flicker-in has got (0..1). */
-  setIntro(v: { zoom?: number; pins?: number }): void;
+  /** Intro drivers: camera distance factor (1 = framed), how far the pin flicker-in has got (0..1) and an
+   *  extra spin speed (rad/s) that shows the planet's many sites before it settles. */
+  setIntro(v: { zoom?: number; pins?: number; spin?: number }): void;
 }
 
 const IDLE_SPEED = 0.015; // rad/s, slow idle spin
@@ -65,13 +66,14 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     target: null as { x: number; y: number } | null,
     pinFocused: false, // a pin button has keyboard/pointer focus
     hovered: false, // pointer is over the Mars slot
+    hold: false, // stay on the last rotateTo(..., true) target: no idle spin until the user drags
   });
   const { width, height } = useThree((s) => s.size);
   // Latest size for fit(): the timelines hold on to the first handle object, so its closures go stale.
   const sizeRef = useRef({ width, height });
   sizeRef.current = { width, height };
   const getThree = useThree((s) => s.get);
-  const intro = useRef({ zoom: 1, pins: 1 });
+  const intro = useRef({ zoom: 1, pins: 1, spin: 0 });
   const radarRef = useRef<{ lat: number; lon: number; p: number | null }>({ lat: 0, lon: 0, p: null });
   const radarGroup = useRef<THREE.Group>(null);
   const radarRings = useRef<Array<THREE.LineLoop | null>>([]);
@@ -85,8 +87,9 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
   );
   useEffect(() => () => radarMats.forEach((m) => m.dispose()), [radarMats]);
 
-  const rotateTo = (lat: number, lon: number) => {
+  const rotateTo = (lat: number, lon: number, hold = false) => {
     const t = rotationFor(lat, lon);
+    motion.current.hold = hold;
     const g = globe.current;
     if (g && reducedMotion()) {
       g.rotation.set(t.x, t.y, 0);
@@ -153,6 +156,8 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       down = last = { x: e.clientX, y: e.clientY };
       m.dragging = true;
       m.target = null;
+      m.hold = false;
+      intro.current.spin = 0;
       el.setPointerCapture(e.pointerId);
     };
     const onMove = (e: PointerEvent) => {
@@ -247,8 +252,8 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     m.vx *= decay;
     m.vy *= decay;
     g.rotation.x = THREE.MathUtils.clamp(g.rotation.x + m.vx * step, -MAX_TILT, MAX_TILT);
-    const idle = reducedMotion() || m.pinFocused || m.hovered ? 0 : IDLE_SPEED;
-    g.rotation.y += (m.vy + idle) * step;
+    const idle = reducedMotion() || m.pinFocused || m.hovered || m.hold ? 0 : IDLE_SPEED;
+    g.rotation.y += (m.vy + idle + intro.current.spin) * step;
   });
 
   return (
