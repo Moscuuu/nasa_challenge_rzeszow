@@ -52,19 +52,13 @@ try {
   await soil.click();
   console.log("soil 1-5 m");
 
-  // Earth: zoom into the top region (keyboard, as for the Mars pins), then open its top analog.
+  // Earth: pick the top region (keyboard, as for the Mars pins). Picking a region zooms in and opens the card.
   const regionPin = page.locator('button[aria-label^="#1 "]').first();
   await regionPin.waitFor({ state: "attached", timeout: 60000 });
   await pause(page, 3000);
   await regionPin.focus();
   await page.keyboard.press("Enter");
   console.log("earth region #1");
-  await pause(page, 4000);
-  const analogPin = page.locator('button[aria-label^="Analog #1,"]').first();
-  await analogPin.waitFor({ state: "attached", timeout: 30000 });
-  await analogPin.focus();
-  await page.keyboard.press("Enter");
-  console.log("earth analog #1");
 
   const card = page.getByLabel("Analog card");
   await card.waitFor({ state: "visible", timeout: 60000 });
