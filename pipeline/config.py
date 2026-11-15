@@ -25,18 +25,26 @@ SWIM_ICE_MIN = 0.10          # a Mars site counts in a Depth Layer only if its S
 LAYERS = ("0-1m", "1-5m", "gt5m")
 LAYER_TEMP = {"0-1m": "gst", "1-5m": "t_1_5", "gt5m": "t_gt5"}  # earth_grid variable used by the filter
 
-FEATURES = ("summer_temperature", "dryness", "bare_ground")
+SURFACE_FEATURES = ("summer_temperature", "dryness", "bare_ground")
+FEATURES = SURFACE_FEATURES + ("ground_cold",)  # every feature any layer uses
 REGION_TYPES = ("northern", "antarctic", "pzi_only")
-# Features that are ranked on, per region type. Since 2026-11-15 (second pass) every type uses the same
-# three, so scores are comparable across types and one ranking per Mars site is meaningful:
-#   summer_temperature  MODIS Aqua daytime LST over the cell's permafrost pixels (fetch_lst.py), available in
-#                       mountains too (ERA5-Land skin temperature was wrong there: smoothed orography)
-#   ice_table           no longer scored: ALT exists only in CCI (not in pzi_only, ~0 m in Antarctica), and
-#                       "summer thaw stays in the cover" is already the ALT <= ALT_MAX_M filter. Kept as context.
-TYPE_FEATURES = {
-    "northern": FEATURES,
-    "antarctic": FEATURES,
-    "pzi_only": FEATURES,
+GROUND_COLD_SCALE_K = 35.0   # ground_cold = (T_GROUND_MAX_K - T at the layer depth) / this: -5 C = 0, 233 K = 1
+# Features per Depth Layer (2026-11-15, third pass). The same for every region type, so scores are comparable
+# across types; they differ by depth because the test can be prepared (pre-drilled hole, casing, snow
+# cleared): below the surface the surface conditions are logistics, not the analog.
+#   0-1 m  the experiment is at the surface: summer surface temperature, dryness of the cover, bare ground
+#   1-5 m  the seasonal wave still reaches 2-3 m on Earth: summer surface temperature + cold ground at depth
+#   > 5 m  only the ground at depth: cold ground. Mars at depth is 200-208 K and every Earth cell is >= 27 K
+#          warmer, so colder = closer to Mars here (unlike at the surface). Site-independent: in this layer
+#          the Mars sites differ only by SWIM ice (which sites count). Equals the "cold only" check baseline.
+#   ice_table (1 - ALT / 0.5 m) is not scored: ALT exists only in CCI and is already the ALT filter.
+#   massive_ice (debris-covered glaciers, fetch_debris_ice.py) is context only: it cannot see the Antarctic
+#   analogs (MODIS snow product and GLIMS outlines fail in the Dry Valleys), so scoring it would penalise
+#   missing data, not missing ice.
+LAYER_FEATURES = {
+    "0-1m": SURFACE_FEATURES,
+    "1-5m": ("summer_temperature", "ground_cold"),
+    "gt5m": ("ground_cold",),
 }
 
 # --- outputs --------------------------------------------------------------------------------------------

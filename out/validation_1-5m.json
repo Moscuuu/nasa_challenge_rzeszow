@@ -13,8 +13,8 @@
    ],
    "cells": 199,
    "cells_scored": 80,
-   "median_percentile": 91.1,
-   "type_percentile": 79.2,
+   "median_percentile": 99.8,
+   "type_percentile": 77.7,
    "cold_only_percentile": 99.7,
    "passed": true,
    "applicable": true
@@ -31,8 +31,8 @@
    ],
    "cells": 278,
    "cells_scored": 277,
-   "median_percentile": 73.4,
-   "type_percentile": 73.5,
+   "median_percentile": 86.6,
+   "type_percentile": 87.6,
    "cold_only_percentile": 86.5,
    "passed": false,
    "applicable": true
@@ -67,8 +67,8 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 93.4,
-   "type_percentile": 81.9,
+   "median_percentile": 100.0,
+   "type_percentile": 97.1,
    "cold_only_percentile": 99.9,
    "passed": true,
    "applicable": true
@@ -85,10 +85,10 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 89.9,
-   "type_percentile": 77.9,
+   "median_percentile": 100.0,
+   "type_percentile": 97.1,
    "cold_only_percentile": 99.9,
-   "passed": false,
+   "passed": true,
    "applicable": true
   },
   {
@@ -103,8 +103,8 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 98.6,
-   "type_percentile": 93.1,
+   "median_percentile": 99.9,
+   "type_percentile": 88.9,
    "cold_only_percentile": 99.8,
    "passed": true,
    "applicable": true
@@ -121,10 +121,10 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 77.9,
-   "type_percentile": 60.8,
+   "median_percentile": 98.7,
+   "type_percentile": 37.2,
    "cold_only_percentile": 99.5,
-   "passed": false,
+   "passed": true,
    "applicable": true
   },
   {
@@ -139,9 +139,9 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 74.8,
-   "type_percentile": 74.9,
-   "cold_only_percentile": 91.5,
+   "median_percentile": 73.0,
+   "type_percentile": 74.1,
+   "cold_only_percentile": 91.4,
    "passed": false,
    "applicable": true
   },
@@ -157,8 +157,8 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 76.0,
-   "type_percentile": 76.1,
+   "median_percentile": 82.8,
+   "type_percentile": 83.9,
    "cold_only_percentile": 87.2,
    "passed": false,
    "applicable": true
@@ -175,10 +175,10 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 92.2,
-   "type_percentile": 92.3,
+   "median_percentile": 58.1,
+   "type_percentile": 59.1,
    "cold_only_percentile": 87.9,
-   "passed": true,
+   "passed": false,
    "applicable": true
   },
   {
@@ -192,10 +192,10 @@
     71.44
    ],
    "cells": 7,
-   "cells_scored": 6,
-   "median_percentile": 38.1,
-   "type_percentile": 38.0,
-   "cold_only_percentile": 14.6,
+   "cells_scored": 7,
+   "median_percentile": 30.5,
+   "type_percentile": 31.0,
+   "cold_only_percentile": 14.7,
    "passed": true,
    "applicable": true
   },
@@ -275,7 +275,7 @@
  "cells": {
   "permafrost": 401614,
   "pass_filters": 52993,
-  "scored": 49890
+  "scored": 50083
  },
  "weights": {},
  "feature_correlation": {

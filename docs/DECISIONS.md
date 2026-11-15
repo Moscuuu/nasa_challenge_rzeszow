@@ -2,6 +2,15 @@
 
 Jedna linia na decyzję, najnowsze na górze. Stan obowiązujący opisuje spec `docs/superpowers/specs/2026-11-15-drilling-analog-design.md`; tu jest tylko „co i dlaczego". Decyzję odwracamy nowym wpisem, starego nie kasujemy.
 
+## 2026-11-15 (trzecia runda: cechy zależne od warstwy)
+
+| decyzja | dlaczego |
+|---|---|
+| **Cechy zależą od warstwy:** 0–1 m = temperatura letnia, suchość, goły grunt; 1–5 m = temperatura letnia + zimny grunt w głębi; > 5 m = tylko zimny grunt w głębi | test można przygotować (odwiert wcześniej, rura osłonowa, odgarnięty śnieg): pod powierzchnią warunki powierzchni to logistyka, nie analog. Zastępuje „wiertło zawsze przechodzi przez pokrywę" (suchość) i „temperatura letnia we wszystkich warstwach" |
+| **Zimny grunt w głębi = cecha (zimniej = bliżej Marsa), tylko poniżej 1 m:** (−5 °C − T warstwy) / 35 K | Mars w głębi 200–208 K, każda komórka na Ziemi ≥ 27 K cieplej; przy powierzchni (gdzie Ziemia osiąga Marsa) zostaje zasada „zimniej ≠ bardziej jak Mars". W > 5 m wynik = test „samo zimno" i nie zależy od miejsca na Marsie (różni je tylko SWIM) |
+| **Lodowce pokryte gruzem (GLIMS + MODIS) tylko jako informacja, nie cecha** | wskaźnik działa w Andach i Himalajach, ale nie widzi analogów w Antarktydzie (Mullins = 0): ocena karałaby brak danych, nie brak lodu |
+| **Znane ograniczenie: MODIS MOD10A1 widzi śnieg na gołym dnie Suchych Dolin** (Beacon Valley: NDSI ~64, Landsat: Wright Valley 88 % dni bez śniegu) | zaniża „goły grunt" i zasięg LST w Antarktydzie; do poprawy Landsatem (kolekcje T2) |
+
 ## 2026-11-15 (druga runda: porównywalne wyniki)
 
 | decyzja | dlaczego |

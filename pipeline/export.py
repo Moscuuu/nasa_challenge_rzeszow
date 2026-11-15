@@ -20,11 +20,11 @@ RES = C.RES
 CONTRACT_VERSION = "0.10"
 FEATURES = [
     {"id": "temperature", "label": "Summer surface temperature (midday, clear sky)", "comparison": "direct"},
-    {"id": "ground_ice", "label": "Depth to never-thawing ground (filter only, not scored)", "comparison": "filter"},
+    {"id": "ground_ice", "label": "Frozen ground at drilling depth (colder = closer to Mars; scored below 1 m)", "comparison": "monotone"},
     {"id": "dryness", "label": "Dryness (dry cover vs wet tundra)", "comparison": "rank"},
     {"id": "bare_ground", "label": "Bare ground in summer (no snow or ice cover)", "comparison": "monotone"},
 ]
-FEATURE_KEY = {"temperature": "summer_temperature", "ground_ice": "ice_table", "dryness": "dryness",
+FEATURE_KEY = {"temperature": "summer_temperature", "ground_ice": "ground_cold", "dryness": "dryness",
                "bare_ground": "bare_ground"}  # contract id -> score.py name
 REGION_TYPES = [
     {"id": "northern", "label": "Arctic and northern permafrost",
@@ -43,6 +43,7 @@ SOURCES = [
     {"id": "pzi", "label": "Global Permafrost Zonation Index, 1 km (Gruber 2012): permafrost mask, air temperature", "url": "https://doi.org/10.5194/tc-6-221-2012"},
     {"id": "esa_cci_permafrost", "label": "ESA Permafrost CCI v5.0 (ground temperature, active-layer thickness; mask in Antarctica), 2023", "url": "https://climate.esa.int/en/projects/permafrost/"},
     {"id": "modis_lst", "label": "NASA MODIS Aqua MYD11A1 v6.1 daytime land surface temperature, 1 km, local summer 2023, over the cell's snow-free permafrost pixels (via Google Earth Engine)", "url": "https://doi.org/10.5067/MODIS/MYD11A1.061"},
+    {"id": "glims_modis", "label": "Debris-covered glaciers and rock glaciers: GLIMS glacier outlines (2023-06-07 release) that are snow-free in summer by MODIS MOD10A1, plus GLIMS debris-cover and rock-glacier outlines (via Google Earth Engine). Misses the Antarctic Dry Valleys.", "url": "https://www.glims.org"},
     {"id": "era5_land", "label": "ERA5-Land daily aggregates (ECMWF, via Google Earth Engine), 2023: precipitation (dryness)", "url": "https://doi.org/10.24381/cds.e2161bac"},
     {"id": "smap_l4", "label": "NASA SMAP L4 SPL4SMGP v8 (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/T5RUATAQREF8"},
     {"id": "modis", "label": "NASA MODIS MOD10A1 v6.1 snow cover and MCD12Q1 v6.1 land cover (via Google Earth Engine), 2023", "url": "https://doi.org/10.5067/MODIS/MOD10A1.061"},
@@ -111,8 +112,10 @@ def score_png(path: Path, rows, cols, values):
 
 
 def cell_features(sc, b, k, site, used):
-    """Feature blocks of one cell against one Mars site. A feature its region type does not rank on
-    keeps its values but has status "not_relevant" and no score."""
+    """Feature blocks of one cell against one Mars site. A feature its Depth Layer does not use keeps its
+    values but has status "not_relevant" and no score."""
+    layer = str(sc["layer"])
+    mars_ground = {"1-5m": site["temperature"].get("t_1_5"), "gt5m": site["temperature"].get("t_gt5")}.get(layer)
     def block(fid, earth, mars, unit, source, extra=None):
         on = FEATURE_KEY[fid] in used
         return {"score": r3(sc[f"feat_{FEATURE_KEY[fid]}"][b, k]) if on else None, **(extra or {}),
@@ -128,9 +131,10 @@ def cell_features(sc, b, k, site, used):
             "modis_lst"),
         "ground_ice": block(
             "ground_ice", {"active_layer_m": r3(sc["alt"][k]), "ground_temperature_K": r3(sc["t_ground"][k])},
-            {"swim_c": site["ice"][str(sc["layer"])]["c"]},
-            "Not scored (filter only: summer thaw depth <= 0.5 m where CCI knows it). Earth: thaw depth [m] and ground "
-            "temperature of this Depth Layer [K]. Mars: SWIM ice consistency of this Depth Layer (context)",
+            {"swim_c": site["ice"][layer]["c"], "ground_temperature_K": mars_ground},
+            "Scored below 1 m: (-5 C - Earth ground temperature of this Depth Layer) / 35 K, colder = closer to Mars "
+            "(Mars at depth is 200-208 K, beyond any Earth ground). Thaw depth <= 0.5 m is a filter. Mars: SWIM ice "
+            "consistency of this Depth Layer (context) and annual-mean ground temperature at depth",
             "esa_cci_permafrost"),
         "dryness": block(
             "dryness", {"precip_mm_yr": r3(sc["precip_mm_yr"][k]), "wet_summer": r3(sc["wet_summer"][k])},
@@ -163,7 +167,7 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
     for k in top:
         b = int(sc["best_site"][k])
         rtype = C.REGION_TYPES[int(sc["region"][k])]
-        feats = cell_features(sc, b, k, sites[b], C.TYPE_FEATURES[rtype])
+        feats = cell_features(sc, b, k, sites[b], C.LAYER_FEATURES[layer])
         strengths, breaks = strengths_breaks(feats)
         scores = {sid: (r3(sc["overall"][i, k]) if site_ok[i] else None) for i, sid in enumerate(site_ids)}
         feats_out.append({
@@ -182,6 +186,9 @@ def export_layer(interim: Path, out: Path, layer: str, sites: list) -> dict:
                 "ground_temperature_source": TEMP_SOURCE[int(sc["temp_source"][k])],
                 "features": feats, "strengths": strengths, "breaks_down": breaks,
                 "known_analog": known_analog(lon[k], lat[k]), "place": places.get(cid(k)),
+                # massive ice under debris (GLIMS + MODIS, fetch_debris_ice.py): context, not scored; 0 = not known
+                "massive_ice": {"debris_ice_share": r3(sc["debris_ice_share"][k]), "glacier_share": r3(sc["glacier_share"][k]),
+                                "source": "glims_modis"},
                 "experiment_window": windows.get(cid(k)),
             },
         })
@@ -246,8 +253,10 @@ def main(interim: Path, out: Path) -> None:
         "cell_size_deg": RES,
         "layers": [{"id": lay, "label": label, "available": lay in done} for lay, label in LAYERS],
         "features": FEATURES,
-        "region_types": [{**t, "features": [fid for fid, name in FEATURE_KEY.items() if name in C.TYPE_FEATURES[t["id"]]]}
-                         for t in REGION_TYPES],
+        "region_types": REGION_TYPES,
+        # features each Depth Layer scores on (the same for every region type), contract ids
+        "layer_features": {lay: [fid for fid, name in FEATURE_KEY.items() if name in C.LAYER_FEATURES[lay]]
+                           for lay, _ in LAYERS},
         "filters": {"ground_temperature_max_K": C.T_GROUND_MAX_K, "active_layer_max_m": C.ALT_MAX_M,
                     "snow_free_summer_min": C.SNOW_FREE_MIN, "ice_fraction_max": C.ICE_FRACTION_MAX},
         "robustness": {"variants": max((f["n_variants"] for f in files.values()), default=0),
