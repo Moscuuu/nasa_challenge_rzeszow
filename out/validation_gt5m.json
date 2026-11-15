@@ -232,8 +232,8 @@
    "median_percentile": 0.0,
    "type_percentile": 0.0,
    "cold_only_percentile": 0.0,
-   "passed": true,
-   "applicable": true
+   "passed": null,
+   "applicable": false
   },
   {
    "name": "Adventdalen (Svalbard)",

@@ -86,6 +86,7 @@ def site_feature(s, layers):
             },
             "chlorine_wt_pct": s["chlorine_wt_pct"],
             "description": s["description"], "citation": s["citation"],
+            "ice_type": s.get("ice_type"),  # literature class of the Mars ice (mars_sites.py)
         },
     }
 

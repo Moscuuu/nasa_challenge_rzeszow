@@ -17,37 +17,55 @@ WINDOW_DEG = 1.0
 ALBEDO, INERTIA = 0.25, 250.0  # same first-order values as the SWIM analysis
 
 # Coordinates: planetocentric latitude, east-positive longitude in -180..180.
+# ice_type.class (literature check 2026-11-15, see docs/DECISIONS.md):
+#   debris_covered_glacier    lobate debris aprons: massive, nearly pure ice under a debris cover
+#   buried_ice_sheet          excess-ice layer in the plains under regolith, ice mixed with dust
+#   pore_ice_over_relict_ice  pore-ice-cemented regolith over a relict ice layer that has nearly vanished
 # coords_status: "published" = a point given in a primary source (coords_source);
 #                "approximate" = no published point found; centre of the published area, from memory/maps.
 SITES = [
     {"id": "arcadia_planitia", "name": "Arcadia Planitia", "lat": 46.58, "lon": -165.15, "coords_status": "published",
      "coords_source": "Bramson et al. 2015, GRL 42:6566: terraced crater 'Badger' (46.581 N, 194.85 E) inside the mapped excess-ice layer (38-52 N)",
      "description": "Mid-latitude plains with a widespread shallow excess-ice layer mapped by radar and fresh ice-exposing craters.",
-     "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)"},
+     "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)",
+     "ice_type": {"class": "buried_ice_sheet", "summary": "Widespread excess-ice layer, decameters thick, under regolith; purity debated (mostly ice in 2015, more regolith in a 2018 re-mapping).",
+                  "confidence": "high (ice), medium (purity)", "sources": "Bramson et al. 2015, GRL 42:6566; Viola et al. 2015, Icarus 248:190"}},
     {"id": "deuteronilus_mensae", "name": "Deuteronilus Mensae", "lat": 39.11, "lon": 23.20, "coords_status": "published",
      "coords_source": "Head et al. 2015, First Landing Site/Exploration Zone Workshop, abstract 1033: EZ centre",
      "description": "Mesas fringed by debris-covered glaciers and lobate aprons holding buried ice.",
-     "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)"},
+     "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)",
+     "ice_type": {"class": "debris_covered_glacier", "summary": "Lobate debris aprons: radar shows predominantly water ice (later regional survey: 80-90 %), hundreds of metres thick, under a thin debris cover.",
+                  "confidence": "high", "sources": "Plaut et al. 2009, GRL 36:L02203"}},
     {"id": "phlegra_montes", "name": "Phlegra Montes", "lat": 40.0, "lon": 164.0, "coords_status": "approximate",
      "coords_source": "No published point found for Phlegra Montes itself; nearest published landing site: Barker et al. 2015 (EZ abstract 1002), Phlegra Dorsa 39 N 172 E",
      "description": "Mountain range with radar-detected ice in surrounding aprons, proposed for human exploration.",
-     "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)"},
+     "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)",
+     "ice_type": {"class": "debris_covered_glacier", "summary": "Lobate debris aprons interpreted as debris-covered glaciers; radar supports nearly pure ice; debris cover estimated ~20 m in one abstract.",
+                  "confidence": "medium", "sources": "EPSC2009-635; EGU2009-3955; Morgan et al. 2021, Nature Astronomy (SWIM)"}},
     {"id": "erebus_montes", "name": "Erebus Montes", "lat": 39.0, "lon": -167.9, "coords_status": "published",
      "coords_source": "Viola, McEwen & Dundas 2015, Exploration Zone Workshop, abstract 1011: EZ centre (39.0 N, 192.1 E)",
      "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
-     "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011)"},
+     "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011; not verified, 2026-11-15); Sinha & Ray 2021, Icarus",
+     "ice_type": {"class": "debris_covered_glacier", "summary": "Lobate debris aprons mapped as a debris-covered glacial landsystem; no radar ice estimate found for this region.",
+                  "confidence": "low", "sources": "Sinha & Ray 2021, Icarus (geomorphic mapping)"}},
     {"id": "amazonis_posiolova", "name": "Amazonis Planitia (Posiolova crater)", "lat": 35.1, "lon": -170.2, "coords_status": "published",
      "coords_source": "Posiolova et al. 2022, Science 378:412; Dundas et al. 2023, GRL: Dec 2021 ice-exposing crater (35.1 N, ~189.8 E, +-0.1 deg)",
      "description": "A 2021 impact excavated ice boulders here, the lowest-latitude ice exposure seen.",
-     "citation": "Posiolova et al. 2022, Science"},
+     "citation": "Posiolova et al. 2022, Science",
+     "ice_type": {"class": "pore_ice_over_relict_ice", "summary": "Relict, relatively pure ice layer (once up to tens of metres) that is unstable and has nearly vanished, under a pore-ice-cemented cover.",
+                  "confidence": "high", "sources": "Posiolova et al. 2022, Science 378:412; Dundas et al. 2023, GRL 50"}},
     {"id": "utopia_planitia", "name": "Utopia Planitia", "lat": 45.0, "lon": 95.0, "coords_status": "approximate",
      "coords_source": "Stuurman et al. 2016, GRL: deposit spans ~39-49 N in western Utopia; longitude of the centre not verified",
      "description": "Scalloped terrain over a radar-detected ice deposit comparable in volume to Lake Superior.",
-     "citation": "Stuurman et al. 2016, GRL"},
+     "citation": "Stuurman et al. 2016, GRL",
+     "ice_type": {"class": "buried_ice_sheet", "summary": "Buried ice deposit 80-170 m thick, 50-85 % water ice mixed with dust, under ~1-10 m of soil.",
+                  "confidence": "high", "sources": "Stuurman et al. 2016, GRL"}},
     {"id": "hellas_rim", "name": "Hellas rim", "lat": -39.05, "lon": 101.91, "coords_status": "published",
      "coords_source": "Levy & Holt 2015, Exploration Zone Workshop, abstract 1037: EZ centre on the eastern Hellas rim",
      "description": "Lobate debris aprons on the eastern Hellas rim, among the few southern ice-rich candidates.",
-     "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)"},
+     "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)",
+     "ice_type": {"class": "debris_covered_glacier", "summary": "Lobate debris aprons with radar properties of massive water ice (no internal rock echoes): buried debris-covered glaciers.",
+                  "confidence": "high", "sources": "Holt et al. 2008, Science 322:1235"}},
 ]
 
 

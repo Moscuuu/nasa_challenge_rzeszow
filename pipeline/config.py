@@ -65,3 +65,7 @@ CHECK_POINTS = [  # name, role, lat, lon  (from analysis/combine)
     ("Adventdalen (Svalbard)", "contrast", 78.20, 15.85),
     ("Beiluhe (Tibet)", "contrast", 34.82, 92.92),
 ]
+# Contrasts that only hold near the surface: Duvanny Yar is the Yedoma stratotype (40-50 m Ice Complex, up to
+# ~80 vol % ice), wet tundra at the surface but ice-rich at depth, like the buried ice sheet of Utopia.
+# In 1-5 m and > 5 m it is reported as not applicable instead of as a failure.
+CONTRAST_SURFACE_ONLY = ("Duvanny Yar",)

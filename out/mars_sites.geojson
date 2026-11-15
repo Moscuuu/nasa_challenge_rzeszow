@@ -55,7 +55,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mid-latitude plains with a widespread shallow excess-ice layer mapped by radar and fresh ice-exposing craters.",
-    "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)"
+    "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)",
+    "ice_type": {
+     "class": "buried_ice_sheet",
+     "summary": "Widespread excess-ice layer, decameters thick, under regolith; purity debated (mostly ice in 2015, more regolith in a 2018 re-mapping).",
+     "confidence": "high (ice), medium (purity)",
+     "sources": "Bramson et al. 2015, GRL 42:6566; Viola et al. 2015, Icarus 248:190"
+    }
    }
   },
   {
@@ -112,7 +118,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mesas fringed by debris-covered glaciers and lobate aprons holding buried ice.",
-    "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)"
+    "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons: radar shows predominantly water ice (later regional survey: 80-90 %), hundreds of metres thick, under a thin debris cover.",
+     "confidence": "high",
+     "sources": "Plaut et al. 2009, GRL 36:L02203"
+    }
    }
   },
   {
@@ -169,7 +181,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mountain range with radar-detected ice in surrounding aprons, proposed for human exploration.",
-    "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)"
+    "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons interpreted as debris-covered glaciers; radar supports nearly pure ice; debris cover estimated ~20 m in one abstract.",
+     "confidence": "medium",
+     "sources": "EPSC2009-635; EGU2009-3955; Morgan et al. 2021, Nature Astronomy (SWIM)"
+    }
    }
   },
   {
@@ -226,7 +244,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
-    "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011)"
+    "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011; not verified, 2026-11-15); Sinha & Ray 2021, Icarus",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons mapped as a debris-covered glacial landsystem; no radar ice estimate found for this region.",
+     "confidence": "low",
+     "sources": "Sinha & Ray 2021, Icarus (geomorphic mapping)"
+    }
    }
   },
   {
@@ -283,7 +307,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "A 2021 impact excavated ice boulders here, the lowest-latitude ice exposure seen.",
-    "citation": "Posiolova et al. 2022, Science"
+    "citation": "Posiolova et al. 2022, Science",
+    "ice_type": {
+     "class": "pore_ice_over_relict_ice",
+     "summary": "Relict, relatively pure ice layer (once up to tens of metres) that is unstable and has nearly vanished, under a pore-ice-cemented cover.",
+     "confidence": "high",
+     "sources": "Posiolova et al. 2022, Science 378:412; Dundas et al. 2023, GRL 50"
+    }
    }
   },
   {
@@ -340,7 +370,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Scalloped terrain over a radar-detected ice deposit comparable in volume to Lake Superior.",
-    "citation": "Stuurman et al. 2016, GRL"
+    "citation": "Stuurman et al. 2016, GRL",
+    "ice_type": {
+     "class": "buried_ice_sheet",
+     "summary": "Buried ice deposit 80-170 m thick, 50-85 % water ice mixed with dust, under ~1-10 m of soil.",
+     "confidence": "high",
+     "sources": "Stuurman et al. 2016, GRL"
+    }
    }
   },
   {
@@ -397,7 +433,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Lobate debris aprons on the eastern Hellas rim, among the few southern ice-rich candidates.",
-    "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)"
+    "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons with radar properties of massive water ice (no internal rock echoes): buried debris-covered glaciers.",
+     "confidence": "high",
+     "sources": "Holt et al. 2008, Science 322:1235"
+    }
    }
   }
  ]

@@ -57,8 +57,10 @@ def main(interim: Path) -> None:
                "type_percentile": None if med_type is None else round(med_type, 1),
                "cold_only_percentile": None if med_cold is None else round(med_cold, 1),
                "passed": bool(passed), "applicable": True}
+        if role == "contrast" and name in C.CONTRAST_SURFACE_ONLY and LAYER != "0-1m":
+            out["passed"], out["applicable"] = None, False  # ice-rich at depth: not a contrast here
         print(f"{name:34s} {role:13s} cells {n:5d} scored {n_scored:5d}  median pct {out['median_percentile']} (in type {out['type_percentile']})  "
-              f"cold only {out['cold_only_percentile']}  passed {passed}")
+              f"cold only {out['cold_only_percentile']}  passed {out['passed']}")
         return out
 
     checks = []
@@ -86,6 +88,7 @@ def main(interim: Path) -> None:
     (interim / f"validation_{LAYER}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     known = [c for c in checks if c["role"] == "known_analog"]
     contrast = [c for c in checks if c["role"] == "contrast"]
+    contrast = [c for c in contrast if c["applicable"]]
     print(f"known analogs passed {sum(c['passed'] for c in known)}/{len(known)}, "
           f"contrasts passed {sum(c['passed'] for c in contrast)}/{len(contrast)}")
 

@@ -13,6 +13,8 @@ Jedna linia na decyzję, najnowsze na górze. Stan obowiązujący opisuje spec `
 | **Odrzucone: porównanie SWIM C z `ice_1_5`/`ice_gt5`** | to udział zmarzliny (= 1 w każdej ocenianej komórce), nie ilość lodu; SWIM C to zgodność −1..1 |
 | **Model termiczny Marsa: rozbieg z resetem kolumny** do średniej temperatury powierzchni po 1. roku | 3 lata od 200 K zaniżały temperaturę w głębi do ~6 K (Amazonis 201,6 → 208,1 K); zgodne z 20-letnim przebiegiem do 0,2 K |
 | **Eksport: oprócz top-1000 na typ także top-200 każdego miejsca na Marsie w każdym typie** | listy per miejsce w GUI nie mogą zależeć od komórek wybranych pod inne miejsce |
+| **Typ lodu każdego miejsca na Marsie z literatury** (`ice_type` w `mars_sites.py`): lodowiec pokryty gruzem (Deuteronilus, Hellas, Phlegra, Erebus), pokrywa lodowa pod regolitem (Arcadia, Utopia), lód w porach nad zanikłym lodem (Amazonis) | lód na tych miejscach to w większości lód masywny/nadmiarowy, nie lód w porach jak w typowej zmarzlinie; na razie tylko informacja, nie cecha. Erebus: tylko mapowanie form terenu, brak pomiaru radarowego; cytat „Viola 2015, abstrakt 1011” niezweryfikowany |
+| **Duvanny Yar jest kontrastem tylko w 0–1 m**; w 1–5 m i > 5 m „nie dotyczy" | stratotyp jedomy (40–50 m kompleksu lodowego, do ~80 % obj. lodu): mokra tundra na powierzchni, ale w głębi bogata w lód jak Utopia |
 
 ## 2026-11-15
 
