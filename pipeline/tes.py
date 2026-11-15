@@ -5,6 +5,7 @@ Thermal inertia: night-time annual map, 20 ppd (Putzig & Mellon 2007, PDS mgs-m-
 with its interpolation mask (0 = pixel infilled by interpolation).
 """
 import re
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -35,8 +36,14 @@ def _find_label(img: Path) -> Path:
     return img  # attached label
 
 
-def load_map(img: Path) -> tuple[np.ndarray, dict]:
-    """Read a PDS3 map image via its label. Returns (float64 array with NaN nodata, geo dict east-positive)."""
+@lru_cache(maxsize=None)
+def load_map(img: Path, nodata: float | None = None) -> tuple[np.ndarray, dict]:
+    """Read a PDS3 map image via its label. Returns (float64 array with NaN nodata, geo dict east-positive).
+
+    nodata: raw value to treat as no data when the label gives no MISSING_CONSTANT (e.g. 0 for the TI map).
+    Results are cached per (path, nodata): treat the returned array as read-only.
+    No wrap at +-180 deg: window_mean raises for a box crossing the map edge (no Mars site lies within 0.5 deg of it).
+    """
     img = Path(img)
     lab_path = _find_label(img)
     head = lab_path.read_bytes()[:20000].decode("latin-1")
@@ -49,8 +56,8 @@ def load_map(img: Path) -> tuple[np.ndarray, dict]:
     arr = np.fromfile(img, dtype=dtype, count=lines * samples, offset=offset).reshape(lines, samples).astype("f8")
     if "MISSING_CONSTANT" in lab:
         arr[arr == _num(lab["MISSING_CONSTANT"])] = np.nan
-    elif dtype.endswith("i2") or dtype.endswith("u2"):
-        arr[arr == 0] = np.nan  # TI map: 0 marks no data (label gives no explicit value)
+    elif nodata is not None:
+        arr[arr == nodata] = np.nan
     arr = arr * (_num(lab["SCALING_FACTOR"]) if "SCALING_FACTOR" in lab else 1.0) \
         + (_num(lab["OFFSET"]) if "OFFSET" in lab else 0.0)
     west, east = _num(lab["WESTERNMOST_LONGITUDE"]), _num(lab["EASTERNMOST_LONGITUDE"])
@@ -84,7 +91,7 @@ def window_mean(arr: np.ndarray, geo: dict, lat: float, lon: float, half_deg: fl
 def site_surface(lat: float, lon: float, raw_dir: Path = Path("data/raw/tes")) -> dict:
     raw_dir = Path(raw_dir)
     alb, ageo = load_map(raw_dir / "global_albedo_8ppd.img")
-    ti, tgeo = load_map(raw_dir / "GLOBAL_TI_NIGHT_2007.IMG")
+    ti, tgeo = load_map(raw_dir / "GLOBAL_TI_NIGHT_2007.IMG", nodata=0)  # TI map: 0 = no data (min real value is 4)
     msk, _ = load_map(raw_dir / "GLOBAL_TI_MSK_NIGHT_2007.IMG")
     return {
         "albedo": window_mean(alb, ageo, lat, lon),

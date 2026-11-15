@@ -3,7 +3,7 @@
 
 Output: data/interim/mars_sites.json
 
-Usage: python -I pipeline/mars_sites.py data/raw/swim data/interim/mars_sites.json
+Usage: python pipeline/mars_sites.py data/raw/swim data/interim/mars_sites.json
 """
 import json
 import sys
@@ -16,6 +16,7 @@ from mars_thermal import run_sites
 from tes import site_surface
 
 WINDOW_DEG = 1.0
+TES_DIR = Path(__file__).resolve().parents[1] / "data" / "raw" / "tes"  # fetched by fetch_tes.py
 
 # Coordinates: planetocentric latitude, east-positive longitude in -180..180.
 # coords_status: "published" = a point given in a primary source (coords_source);
@@ -99,7 +100,7 @@ def polygon_stats(swim_dir: Path, sites: list) -> list:
 
 def main(swim_dir: Path, out: Path) -> None:
     lats = np.array([s["lat"] for s in SITES])
-    surfaces = [site_surface(s["lat"], s["lon"], Path(swim_dir).parent / "tes") for s in SITES]
+    surfaces = [site_surface(s["lat"], s["lon"], TES_DIR) for s in SITES]
     temps = run_sites(lats, np.array([x["albedo"] for x in surfaces]),
                       np.array([x["thermal_inertia"] for x in surfaces]))
     polygons = polygon_stats(swim_dir, SITES)
@@ -119,7 +120,7 @@ def main(swim_dir: Path, out: Path) -> None:
         result.append({
             **s,
             "window_deg": WINDOW_DEG,
-            "albedo": surfaces[i]["albedo"], "thermal_inertia": surfaces[i]["thermal_inertia"],
+            "albedo": round(surfaces[i]["albedo"], 3), "thermal_inertia": round(surfaces[i]["thermal_inertia"], 1),
             "albedo_source": surfaces[i]["albedo_source"], "ti_source": surfaces[i]["ti_source"],
             "temperature": {
                 **{k: round(float(temps[k][i]), 2) for k in (

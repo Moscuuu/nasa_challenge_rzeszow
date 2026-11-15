@@ -1,7 +1,7 @@
 """Check the Mars thermal model (TES albedo / thermal inertia) against Phoenix MET and the Mars Climate Database.
 
 python analysis/mars_tes/model_checks.py            # uses cached MCD csv
-python analysis/mars_tes/model_checks.py --fetch    # (re)query MCD v6.2 web interface, 24 queries
+python analysis/mars_tes/model_checks.py --fetch    # rebuild the MCD csv from mcd_raw/ (delete mcd_raw/ to re-query the v6.2 web interface, 24 queries)
 No tuning here: the differences are reported, not minimised.
 """
 import csv
@@ -72,14 +72,17 @@ def phoenix_check(s):
     summer = float(out["summer_tmax"][0])
     met = list(csv.DictReader(open(ROOT / "analysis/phoenix/phoenix_met_daily.csv")))
     met_tmax = float(np.mean([float(r["t_max"]) for r in met if r["full_sol"] == "True"]))
-    return mission, summer, met_tmax, int(win.sum())
+    # daily min: model surface vs MET air, same caveat (surface is colder than air at night)
+    mission_min = float(out["daily_min"][0][win].mean())
+    met_tmin = float(np.mean([float(r["t_min"]) for r in met if r["full_sol"] == "True"]))
+    return mission, summer, met_tmax, int(win.sum()), mission_min, met_tmin
 
 
 def main():
     sites = load_sites()
     ph = site_surface(PHOENIX["lat"], PHOENIX["lon"], ROOT / "data/raw/tes")
     ph_s = {**PHOENIX, "albedo": ph["albedo"], "ti": ph["thermal_inertia"]}
-    mission, summer, met, nsol = phoenix_check(ph_s)
+    mission, summer, met, nsol, mission_min, met_min = phoenix_check(ph_s)
     ph_s["model"] = summer
     points = sites + [ph_s]
     if "--fetch" in sys.argv or not MCD_CSV.exists():
@@ -87,6 +90,9 @@ def main():
     mcd = {r["id"]: float(r["mcd_summer_tmax_K"]) for r in csv.DictReader(open(MCD_CSV))}
     print(f"\nPhoenix mission window Ls 77-148 ({nsol} sols): model surface tmax {mission:.1f} K, "
           f"MET air tmax (full sols) {met:.1f} K, diff {mission - met:+.1f} K")
+    print(f"Phoenix daily min, same window: model surface tmin {mission_min:.1f} K, "
+          f"MET air tmin (full sols) {met_min:.1f} K, diff {mission_min - met_min:+.1f} K "
+          f"(surface vs air at 1 m, not the same quantity)")
     print(f"\n{'id':22s}{'albedo':>8s}{'TI':>8s}{'model':>8s}{'MCD':>8s}{'delta':>8s}")
     d = []
     for p in points:

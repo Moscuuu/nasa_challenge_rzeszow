@@ -17,8 +17,8 @@
     "coords_status": "published",
     "coords_source": "Bramson et al. 2015, GRL 42:6566: terraced crater 'Badger' (46.581 N, 194.85 E) inside the mapped excess-ice layer (38-52 N)",
     "surface": {
-     "albedo": 0.24302574550663983,
-     "thermal_inertia": 195.79901960784315,
+     "albedo": 0.243,
+     "thermal_inertia": 195.8,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },
@@ -80,8 +80,8 @@
     "coords_status": "published",
     "coords_source": "Head et al. 2015, First Landing Site/Exploration Zone Workshop, abstract 1033: EZ centre",
     "surface": {
-     "albedo": 0.1469183442769227,
-     "thermal_inertia": 257.39467312348665,
+     "albedo": 0.147,
+     "thermal_inertia": 257.4,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },
@@ -143,8 +143,8 @@
     "coords_status": "approximate",
     "coords_source": "No published point found for Phlegra Montes itself; nearest published landing site: Barker et al. 2015 (EZ abstract 1002), Phlegra Dorsa 39 N 172 E",
     "surface": {
-     "albedo": 0.262710599694401,
-     "thermal_inertia": 161.96774193548387,
+     "albedo": 0.263,
+     "thermal_inertia": 162.0,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },
@@ -206,8 +206,8 @@
     "coords_status": "published",
     "coords_source": "Viola, McEwen & Dundas 2015, Exploration Zone Workshop, abstract 1011: EZ centre (39.0 N, 192.1 E)",
     "surface": {
-     "albedo": 0.24447805703514153,
-     "thermal_inertia": 132.85826771653544,
+     "albedo": 0.244,
+     "thermal_inertia": 132.9,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },
@@ -269,8 +269,8 @@
     "coords_status": "published",
     "coords_source": "Posiolova et al. 2022, Science 378:412; Dundas et al. 2023, GRL: Dec 2021 ice-exposing crater (35.1 N, ~189.8 E, +-0.1 deg)",
     "surface": {
-     "albedo": 0.24340337919600216,
-     "thermal_inertia": 80.80243902439024,
+     "albedo": 0.243,
+     "thermal_inertia": 80.8,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },
@@ -332,8 +332,8 @@
     "coords_status": "approximate",
     "coords_source": "Stuurman et al. 2016, GRL: deposit spans ~39-49 N in western Utopia; longitude of the centre not verified",
     "surface": {
-     "albedo": 0.12890312657691538,
-     "thermal_inertia": 341.2392026578073,
+     "albedo": 0.129,
+     "thermal_inertia": 341.2,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },
@@ -395,8 +395,8 @@
     "coords_status": "published",
     "coords_source": "Levy & Holt 2015, Exploration Zone Workshop, abstract 1037: EZ centre on the eastern Hellas rim",
     "surface": {
-     "albedo": 0.17721703427809257,
-     "thermal_inertia": 228.20356234096693,
+     "albedo": 0.177,
+     "thermal_inertia": 228.2,
      "albedo_source": "tes_albedo_christensen2001",
      "ti_source": "tes_ti_putzig_mellon2007"
     },

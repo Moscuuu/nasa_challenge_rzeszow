@@ -1,6 +1,6 @@
 """Download TES global albedo (Christensen 2001) and Putzig & Mellon 2007 night-time thermal inertia.
 
-Usage: python -I pipeline/fetch_tes.py data/raw/tes
+Usage: python pipeline/fetch_tes.py data/raw/tes
 """
 import sys
 from pathlib import Path

@@ -20,7 +20,7 @@ SIGMA, EPS = 5.670e-8, 0.95
 RHO_C = 1.2e6  # volumetric heat capacity [J m-3 K-1]
 T_FROST = 148.0  # CO2 frost point near 6 hPa [K]
 IR_FRAC = 0.04  # downwelling atmospheric IR as a fraction of noon absorbed insolation (Kieffer-style)
-STEPS_PER_SOL = 192
+MIN_STEPS_PER_SOL = 192
 YEARS = 3
 
 
@@ -44,8 +44,9 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
     dz = 0.01 * 1.15 ** np.arange(36)
     dz = dz[np.cumsum(dz) < 6.0]
     zc = np.cumsum(dz) - dz / 2
-    # adaptive step: explicit scheme needs dt small enough for the highest inertia (192 steps suffice up to TI ~250)
-    steps = max(192, int(np.ceil(SOL * kappa.max() / (0.4 * dz[0] ** 2))))
+    # adaptive step: explicit scheme needs dt small enough for the highest inertia (192 steps suffice up to TI ~350).
+    # Note: steps follow the highest inertia in the batch, so a site's dt depends on which sites share the call.
+    steps = max(MIN_STEPS_PER_SOL, int(np.ceil(SOL * kappa.max() / (0.4 * dz[0] ** 2))))
     steps = -(-steps // 24) * 24  # multiple of 24 for the hourly reshape and noon index
     dt = SOL / steps
     assert (kappa.max() * dt / dz[0] ** 2) < 0.5, "explicit scheme unstable"
@@ -103,7 +104,8 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
 
     return {
         "daily_max": dmax,  # (sites, sols)
-        "sol_ls": sol_ls,  # Ls in degrees at local noon, (sols,)
+        "daily_min": dmin,  # (sites, sols)
+        "sol_ls": sol_ls,  # Ls in degrees at the sol's mid-point step (steps // 2), (sols,). The logged year starts ~0.2 sol after local midnight, so this is not exactly local noon (known, ~0.1 deg Ls)
         # annual-mean ground temperature at depth, matching CCI T2m / T5m / T10m
         # (the model reaches ~5.5 m; below the annual skin depth (~1 m) the profile is nearly flat,
         # so the deepest layer stands in for 10 m)
