@@ -4,7 +4,7 @@ import { Html, PerspectiveCamera, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { appStore, useAppStore } from "../state/store";
 import type { MarsSite } from "../data/types";
-import { facesCamera, isClick, ll2v, nearestPin, rotationFor } from "./geo";
+import { facesCamera, isClick, ll2v, nearestPin, rotationFor, slotCalculatePosition } from "./geo";
 import { unitRing } from "./Pulse";
 import { useTextureSize } from "./useTextureSize";
 
@@ -364,7 +364,7 @@ function Pin({ site, index, count, intro, selected, pulse, slot, onSelect, onFoc
     <group ref={group} position={position} quaternion={quaternion}>
       <mesh geometry={selected ? dotGeometry : ringGeometry} material={pinMaterial} />
       <mesh ref={beat} geometry={ringGeometry} material={beatMaterial} visible={false} renderOrder={2} />
-      <Html center portal={slot} zIndexRange={[20, 10]}>
+      <Html center portal={slot} calculatePosition={slotCalculatePosition(slot)} zIndexRange={[20, 10]}>
         <button
           ref={button}
           type="button"
