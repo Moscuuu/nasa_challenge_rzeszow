@@ -122,7 +122,7 @@ export function pickSiteTimeline(lat: number, lon: number, cell: Cell): Tl {
 
 /** Mars camera zoom on the pick step: Mars framed as tightly as Earth (fit margin 1.12 vs 1.3). */
 export const PICK_ZOOM = 1.12 / 1.3;
-const restZoom = () => (appStore.getState().stage === "pick" ? PICK_ZOOM : 1);
+const restZoom = () => (appStore.getState().stage === "explore" ? 1 : PICK_ZOOM);
 
 /**
  * Intro. full (~2.6 s): veil lifts on Mars filling the centre frame, the camera eases back as the
@@ -167,7 +167,7 @@ export function settleMars(): void {
 }
 
 /**
- * Pick -> explore, on the first site pick: Mars shrinks and glides from the centre into its
+ * Depth -> explore, on the first depth pick: Mars shrinks and glides from the centre into its
  * column (FLIP on its slot), the depth panel rises in beneath it and Earth grows in the centre.
  * The site's radar and Earth echo (pickSiteTimeline) run on top of this.
  */
@@ -178,9 +178,18 @@ export function exploreTimeline(): Tl {
   const soil = qs('[data-slot="soil"]');
   const { mars, earth } = motion;
   if (!root) return tl;
+  const panel = soil?.querySelector<HTMLElement>(".soil") ?? null;
   const first = slot?.getBoundingClientRect();
+  const panelFirst = panel?.getBoundingClientRect();
   root.dataset.stage = "explore"; // React sets the same value on its next render
   const last = slot?.getBoundingClientRect();
+  // Earth was hidden during the depth step: turn it to the best analog as it grows in.
+  const f = appStore.getState().focus;
+  if (f) {
+    motion.holdFly = false;
+    earth?.flyTo(f.lat, f.lon);
+  }
+  const panelLast = panel?.getBoundingClientRect();
 
   const done = () => {
     if (slot) gsap.set(slot, { clearProps: "transform" });
@@ -207,10 +216,21 @@ export function exploreTimeline(): Tl {
   requestAnimationFrame(() => requestAnimationFrame(() => motion.relayout?.()));
 
   const z = { zoom: PICK_ZOOM, earth: 0 };
-  tl.to(slot, { x: 0, y: 0, scale: 1, duration: 1.0, ease: "power3.inOut" }, 0)
-    .to(z, { zoom: 1, duration: 1.0, ease: "power3.inOut", onUpdate: () => mars?.setIntro({ zoom: z.zoom }) }, 0)
-    .to(z, { earth: 1, duration: 1.1, ease: "power3.out", onUpdate: () => earth?.setIntro({ scale: z.earth }) }, 0.5);
-  if (soil) tl.fromTo(soil, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", clearProps: "opacity,transform" }, 0.75);
+  tl.to(slot, { x: 0, y: 0, scale: 1, duration: 0.85, ease: "power3.inOut" }, 0)
+    .to(z, { zoom: 1, duration: 0.85, ease: "power3.inOut", onUpdate: () => mars?.setIntro({ zoom: z.zoom }) }, 0)
+    .to(z, { earth: 1, duration: 1.0, ease: "power3.out", onUpdate: () => earth?.setIntro({ scale: z.earth }) }, 0.4);
+  if (panel && panelFirst?.width && panelLast?.width) {
+    // The depth panel flies from the centre of the screen into its slot under Mars.
+    gsap.set(panel, {
+      transformOrigin: "50% 50%",
+      x: panelFirst.left + panelFirst.width / 2 - (panelLast.left + panelLast.width / 2),
+      y: panelFirst.top + panelFirst.height / 2 - (panelLast.top + panelLast.height / 2),
+      scale: panelFirst.width / panelLast.width,
+    });
+    tl.to(panel, { x: 0, y: 0, scale: 1, duration: 0.8, ease: "power3.inOut", clearProps: "transform" }, 0.05);
+  } else if (soil) {
+    tl.fromTo(soil, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", clearProps: "opacity,transform" }, 0.75);
+  }
   tl.eventCallback("onComplete", done);
   return tl;
 }

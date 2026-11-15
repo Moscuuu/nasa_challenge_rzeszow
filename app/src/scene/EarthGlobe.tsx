@@ -10,6 +10,13 @@ import { Pulse } from "./Pulse";
 import { motion as motionRegistry } from "../motion/registry";
 import { useTextureSize } from "./useTextureSize";
 import { ValidationBoxes } from "./ValidationBoxes";
+import { AnalogMarkers, ZOOM_IN_DIST } from "./AnalogMarkers";
+import { analogRegions, type AnalogRegion } from "../data/regions";
+import { distDeg } from "../data/cells";
+
+/** A click within this share of a region's radius (plus a few degrees) counts as a click on the region. */
+const REGION_HIT_SCALE = 1.35;
+const REGION_HIT_PAD_DEG = 2.5;
 
 export interface EarthGlobeHandle {
   /** Turn the globe so (lat, lon) faces the camera. */
@@ -20,6 +27,8 @@ export interface EarthGlobeHandle {
   setPulseVisible(visible: boolean): void;
   /** Intro: globe scale 0..1 (rises into view). */
   setIntro(v: { scale?: number }): void;
+  /** Back to the whole globe after zooming into a region. */
+  zoomOut(): void;
 }
 
 const IDLE_SPEED = 0.01; // rad/s, slow idle spin
@@ -28,7 +37,7 @@ const MAX_TILT = 1.4; // rad
 const FOV = 35;
 const FLOAT_AMP = 0.02; // globe radii: a gentle drift, so the planet floats in space
 const FLOAT_PERIOD = 9; // s
-const MIN_DIST = 1.4;
+const MIN_DIST = 1.2;
 const MAX_DIST = 6;
 const HEAT_R = 1.002;
 const TOP_FRACTION = 0.1; // heat map shows the top 10 % of permafrost pixels
@@ -54,11 +63,16 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   texture.anisotropy = 4;
 
   const scoreMap = useAppStore((s) => s.scoreMap);
-  const showAll = useAppStore((s) => s.showAll);
   const focus = useAppStore((s) => s.focus);
   const checks = useAppStore((s) => s.checks);
   const validationOpen = useAppStore((s) => s.validationOpen);
   const clickEarth = useAppStore((s) => s.clickEarth);
+  const cells = useAppStore((s) => s.cells);
+  const siteId = useAppStore((s) => s.siteId);
+  const regions = useMemo(() => analogRegions(cells, siteId), [cells, siteId]);
+  const regionsRef = useRef(regions);
+  regionsRef.current = regions;
+  const zoomToRegionRef = useRef<(r: AnalogRegion) => void>(() => {});
 
   const globe = useRef<THREE.Group>(null);
   const float = useRef<THREE.Group>(null);
@@ -75,11 +89,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   useEffect(() => () => heat.dispose(), [heat]);
   useEffect(() => {
     heat.uniforms.uScore.value = scoreTex;
-    heat.uniforms.uThreshold.value = threshold;
-  }, [heat, scoreTex, threshold]);
-  useEffect(() => {
-    heat.uniforms.uShowAll.value = showAll ? 1 : 0;
-  }, [heat, showAll]);
+  }, [heat, scoreTex]);
   useEffect(() => {
     // Reveal origin = focus cell. uReveal stays at PI (fully shown) until the timelines drive it.
     // Heat under the pulse rings is thinned so they stay visible.
@@ -95,6 +105,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     hovered: false, // pointer is over the Earth slot
     fit: 4, // camera distance that frames the whole globe in the slot
     zoom: 1, // user zoom: camera distance = fit * zoom, kept within MIN_DIST..MAX_DIST
+    floatT: 0, // float drift clock; paused while zoomed in so the view holds still
   });
 
   const flyTo = (lat: number, lon: number) => {
@@ -118,12 +129,25 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     setIntro({ scale }) {
       if (scale !== undefined) globe.current?.scale.setScalar(Math.max(scale, 0.0001));
     },
+    zoomOut() {
+      setZoom(1);
+    },
   }));
 
+  // Region pin: turn to the region and zoom in until its analog points show.
+  const zoomToRegion = (r: AnalogRegion) => {
+    flyTo(r.lat, r.lon);
+    const dist = THREE.MathUtils.clamp(1.25 + THREE.MathUtils.degToRad(r.radiusDeg) * 4, 1.5, ZOOM_IN_DIST - 0.2);
+    setZoom(dist / motion.current.fit);
+  };
+  zoomToRegionRef.current = zoomToRegion;
+
   // The globe follows the focus cell (step, layer change, check highlight). A site pick holds this
-  // until the Mars rings finish; its timeline then flies the globe itself.
+  // until the Mars rings finish; its timeline then flies the globe itself. Zoomed in, the user is
+  // exploring nearby: clicking a point must not swing the view.
   useEffect(() => {
-    if (focus && !motionRegistry.holdFly) flyTo(focus.lat, focus.lon);
+    const zoomed = (camera.current?.position.z ?? Infinity) < ZOOM_IN_DIST;
+    if (focus && !motionRegistry.holdFly && !zoomed) flyTo(focus.lat, focus.lon);
   }, [focus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setZoom = (zoom: number) => {
@@ -146,18 +170,40 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     };
     const raycaster = new THREE.Raycaster();
 
-    const pick = (x: number, y: number) => {
+    /** Globe point under the pointer, or null over empty space. */
+    const pointAt = (x: number, y: number) => {
       const cam = camera.current;
       const mesh = earth.current;
       const g = globe.current;
-      if (!cam || !mesh || !g) return;
+      if (!cam || !mesh || !g) return null;
       const r = el.getBoundingClientRect();
       const ndc = new THREE.Vector2(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
       raycaster.setFromCamera(ndc, cam);
       const hit = raycaster.intersectObject(mesh, false)[0];
-      if (!hit) return; // clicked space beside the globe
-      const { lat, lon } = v2ll(g.worldToLocal(hit.point.clone()));
-      clickEarth(lat, lon);
+      return hit ? v2ll(g.worldToLocal(hit.point.clone())) : null;
+    };
+    /** Zoomed out: the region whose area contains the point (nearest centre wins). */
+    const regionAt = (lat: number, lon: number): AnalogRegion | null => {
+      const cam = camera.current;
+      if (!cam || cam.position.z < ZOOM_IN_DIST) return null;
+      let best: AnalogRegion | null = null;
+      let bestD = Infinity;
+      for (const r of regionsRef.current) {
+        const d = distDeg(lat, lon, r.lat, r.lon);
+        if (d <= r.radiusDeg * REGION_HIT_SCALE + REGION_HIT_PAD_DEG && d < bestD) [best, bestD] = [r, d];
+      }
+      return best;
+    };
+    const pick = (x: number, y: number) => {
+      const p = pointAt(x, y);
+      if (!p) return; // clicked space beside the globe
+      const region = regionAt(p.lat, p.lon);
+      if (region) zoomToRegionRef.current(region);
+      else clickEarth(p.lat, p.lon);
+    };
+    const hover = (x: number, y: number) => {
+      const p = pointAt(x, y);
+      el.style.cursor = p && regionAt(p.lat, p.lon) ? "pointer" : "";
     };
 
     const onDown = (e: PointerEvent) => {
@@ -175,7 +221,10 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
       m.dragging = true;
     };
     const onMove = (e: PointerEvent) => {
-      if (!pointers.has(e.pointerId)) return;
+      if (!pointers.has(e.pointerId)) {
+        if (e.pointerType === "mouse" && (e.target as Element).closest?.("button, [data-ui]") === null) hover(e.clientX, e.clientY);
+        return;
+      }
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pinch && pointers.size === 2) {
         setZoom((pinch.zoom * pinch.dist) / Math.max(1, spread()));
@@ -240,21 +289,30 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     setZoom(m.zoom);
   }, [width, height]);
 
-  useFrame(({ clock }, dt) => {
-    if (float.current && !reducedMotion()) {
-      const t = (clock.elapsedTime / FLOAT_PERIOD) * Math.PI * 2 + 1.7;
-      float.current.position.set(Math.cos(t * 0.5) * FLOAT_AMP * 0.4, Math.sin(t) * FLOAT_AMP, 0);
-    }
+  useFrame((_, dt) => {
     const g = globe.current;
     const cam = camera.current;
     if (!g || !cam) return;
     const m = motion.current;
     const step = Math.min(dt, 0.1);
+    const close = cam.position.z < ZOOM_IN_DIST;
+    if (float.current && !reducedMotion()) {
+      if (!close) m.floatT += step;
+      const t = (m.floatT / FLOAT_PERIOD) * Math.PI * 2 + 1.7;
+      float.current.position.set(Math.cos(t * 0.5) * FLOAT_AMP * 0.4, Math.sin(t) * FLOAT_AMP, 0);
+    }
 
     // Zoom: ease the camera to the target distance.
     const dist = THREE.MathUtils.clamp(m.fit * m.zoom, MIN_DIST, MAX_DIST);
     const ease = reducedMotion() ? 1 : 1 - Math.exp(-10 * step);
     cam.position.z += (dist - cam.position.z) * ease;
+    // Lets the DOM show the "back to whole Earth" button while zoomed in.
+    const zoomedIn = cam.position.z < ZOOM_IN_DIST;
+    const el = slot.current;
+    if (el && (el.dataset.zoomed !== undefined) !== zoomedIn) {
+      if (zoomedIn) el.dataset.zoomed = "";
+      else delete el.dataset.zoomed;
+    }
 
     if (m.dragging) return;
     if (m.target) {
@@ -266,12 +324,12 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
       if (Math.abs(dx) < 1e-3 && Math.abs(dy) < 1e-3) m.target = null;
       return;
     }
-    // Inertia after a drag, then the slow idle spin (paused while the user is on the globe).
+    // Inertia after a drag, then the slow idle spin (paused while the user is on the globe or zoomed in).
     const decay = Math.exp(-3 * step);
     m.vx *= decay;
     m.vy *= decay;
     g.rotation.x = THREE.MathUtils.clamp(g.rotation.x + m.vx * step, -MAX_TILT, MAX_TILT);
-    const idle = reducedMotion() || m.hovered ? 0 : IDLE_SPEED;
+    const idle = reducedMotion() || m.hovered || close ? 0 : IDLE_SPEED;
     g.rotation.y += (m.vy + idle) * step;
   });
 
@@ -287,11 +345,18 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
             <meshStandardMaterial map={texture} roughness={1} metalness={0} />
           </mesh>
           {/* Same SphereGeometry UVs as the satellite texture: both equirectangular, left edge 180°W. */}
-          <mesh material={heat} renderOrder={1} visible={scoreTex !== null}>
+          {/* Heat glow retired in favour of the region markers; kept mounted for the reveal timelines. */}
+          <mesh material={heat} renderOrder={1} visible={false}>
             <sphereGeometry args={[HEAT_R, 128, 96]} />
           </mesh>
           <group ref={pulseGroup}>{focus && <Pulse lat={focus.lat} lon={focus.lon} />}</group>
           {validationOpen && <ValidationBoxes checks={checks} />}
+          <AnalogMarkers
+            regions={regions}
+            slot={slot}
+            onRegion={zoomToRegion}
+            onPoint={(p) => clickEarth(p.cell.lat, p.cell.lon)}
+          />
         </group>
       </group>
     </>

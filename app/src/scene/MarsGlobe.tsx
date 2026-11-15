@@ -173,7 +173,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       if (down && isClick(down, { x: e.clientX, y: e.clientY })) {
         m.vx = m.vy = 0;
         const id = nearest(e);
-        if (id) void appStore.getState().selectSite(id);
+        if (id && appStore.getState().stage !== "depth") void appStore.getState().selectSite(id);
       }
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
     };
@@ -283,7 +283,9 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
               selected={site.id === siteId}
               pulse={picking}
               slot={slot}
-              onSelect={() => void selectSite(site.id)}
+              onSelect={() => {
+                if (appStore.getState().stage !== "depth") void selectSite(site.id); // depth step: site is locked
+              }}
               onFocusChange={(focused) => {
                 motion.current.pinFocused = focused;
                 if (focused) rotateTo(site.lat, site.lon);

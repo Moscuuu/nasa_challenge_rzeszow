@@ -1,6 +1,6 @@
 {
  "contract_version": "0.9",
- "generated_at": "2026-11-15T01:35:39Z",
+ "generated_at": "2026-11-15T07:13:10Z",
  "mock": false,
  "cell_size_deg": 0.1,
  "layers": [
@@ -212,8 +212,18 @@
    "url": "https://swim.psi.edu"
   },
   {
+   "id": "tes_albedo",
+   "label": "Mars Global Surveyor TES bolometric albedo map (Christensen et al. 2001, JGR 106:23823)",
+   "url": "https://pds-geosciences.wustl.edu/missions/mgs/tesmaps.html"
+  },
+  {
+   "id": "tes_ti_putzig_mellon2007",
+   "label": "Apparent thermal inertia of Mars from TES (Putzig & Mellon 2007, Icarus 191:68-94)",
+   "url": "https://www.psi.edu/research/thermal_inertia"
+  },
+  {
    "id": "mars_thermal_model",
-   "label": "Team 1-D Mars surface thermal model (A=0.25, I=250)",
+   "label": "Team 1-D Mars surface thermal model (per-site TES albedo and thermal inertia)",
    "url": null
   }
  ]

@@ -53,7 +53,7 @@ Każda 0–1, wyżej = bliżej warunków Marsa.
 | suchość (`dryness`) | ranking wśród komórek po filtrach, najsuchsza = 1; średnia z opadu rocznego i letniej wilgotności 0–5 cm, tam gdzie każde istnieje | ERA5-Land, NASA SMAP L4 |
 | goły grunt latem (`bare_ground`) | udział bezchmurnych obserwacji lata bez śniegu | NASA MODIS MOD10A1 |
 
-- **Letnia temperatura to jedyna cecha różna między miejscami na Marsie.** Sześć miejsc ma 260–267 K, Hellas 276 K. Remisy między miejscami są regułą.
+- **Letnia temperatura to jedyna cecha różna między miejscami na Marsie.** Albedo (TES, Christensen 2001) i bezwładność cieplna (TES, Putzig i Mellon 2007) są liczone per miejsce, więc maksima letnie wynoszą 264,5–284,8 K (przedtem, ze stałym albedo i bezwładnością, 260,4–276,0 K). Remisy między miejscami są rzadsze, ale różnice rzędu kilku K mieszczą się w błędzie modelu.
 - **Miejsce liczy się w warstwie tylko, gdy SWIM pokazuje tam lód (C > 0,1).** W > 5 m odpadają Erebus Montes i Amazonis.
 - Śnieg **nie** odróżnia mokrej tundry od suchej zmarzliny (obie są latem bez śniegu). Odróżnia goły grunt od lodowca.
 - Ocena ogólna = zwykła średnia cech używanych w danym typie regionu.
@@ -82,8 +82,8 @@ Eksportowane komórki (do 1000 najlepszych w każdym typie) są grupowane: najle
 
 | typ | ocenionych | czołówka |
 |---|---|---|
-| `northern` | 42 844 | **Peary Land, północna Grenlandia** (~82°N, 30–37°W): 692 z 1000 najlepszych komórek; grunt −17 °C, ALT 0,0–0,1 m, letnie maksimum −6 °C, opad ~130 mm, odporność ~1,0. Dalej Ellesmere. |
-| `antarctic` | 2 478 | rejon McMurdo Sound (78°S, 164–165°E), Terra Nova Bay (75°S, 163,5°E); najwięcej komórek w Górach Królowej Maud (325 z 1000) |
+| `northern` | 42 844 | **Peary Land, północna Grenlandia** (~82°N, 30–37°W): 664 z 1000 najlepszych komórek; grunt −17 °C, ALT 0,0–0,1 m, letnie maksimum −5 °C, opad ~137 mm, odporność ~1,0. Dalej Ellesmere. |
+| `antarctic` | 2 478 | Terra Nova Bay (75°S, 163,5°E), dalej rejon McMurdo Sound (78°S, 164–165°E); najwięcej komórek w Górach Królowej Maud (306 z 1000) |
 | `pzi_only` | 873 | **Andy, Puna de Atacama** (27–29°S, 69°W; rejon Ojos del Salado), 68 komórek, miejsce 1 w typie; dalej nunataki północnej Grenlandii |
 
 Trzy warstwy dają prawie tę samą listę: różni je tylko temperatura w filtrze i zestaw miejsc na Marsie.
@@ -94,24 +94,24 @@ Trzy warstwy dają prawie tę samą listę: różni je tylko temperatura w filtr
 
 | miejsce | rola | percentyl | samo zimno | wynik |
 |---|---|---|---|---|
-| Suche Doliny McMurdo (pudełko) | znany analog | 92,1 | 69,9 | ✓ |
-| Taylor Valley | znany analog | 96,6 | 54,7 | ✓ |
-| Don Juan Pond | znany analog | 93,7 | 75,9 | ✓ |
-| Axel Heiberg | znany analog | 94,2 | 91,5 | ✓ |
-| University Valley | znany analog | 75,2 | 85,1 | ✗ |
-| Beacon Valley | znany analog | 70,6 | 85,5 | ✗ |
-| Haughton / Devon (pudełko) | znany analog | 61,0 | 87,1 | ✗ |
-| Haughton (punkt) | znany analog | 64,6 | 86,9 | ✗ |
-| Eureka | znany analog | 61,9 | 87,6 | ✗ |
-| Alaska North Slope, Utqiagvik, Tuktoyaktuk, Duvanny Yar, Adventdalen, Beiluhe | kontrast | 0–12,5 | 0–14,4 | ✓ (6/6) |
+| Suche Doliny McMurdo (pudełko) | znany analog | 91,3 | 69,9 | ✓ |
+| Taylor Valley | znany analog | 95,5 | 54,7 | ✓ |
+| Don Juan Pond | znany analog | 92,7 | 75,9 | ✓ |
+| Axel Heiberg | znany analog | 87,5 | 91,5 | ✗ |
+| University Valley | znany analog | 73,8 | 85,1 | ✗ |
+| Beacon Valley | znany analog | 68,4 | 85,5 | ✗ |
+| Haughton / Devon (pudełko) | znany analog | 59,9 | 87,1 | ✗ |
+| Haughton (punkt) | znany analog | 65,7 | 86,9 | ✗ |
+| Eureka | znany analog | 70,2 | 87,6 | ✗ |
+| Alaska North Slope, Utqiagvik, Tuktoyaktuk, Duvanny Yar, Adventdalen, Beiluhe | kontrast | 0–21,5 | 0–14,4 | ✓ (6/6) |
 
-**Znane analogi: 4 z 9 powyżej progu 90. Kontrasty: 6 z 6.** Progów nie dostrajano do testu.
+**Znane analogi: 3 z 9 powyżej progu 90 (po zmianie modelu Marsa, przedtem 4; Axel Heiberg 94,2 → 87,5). Kontrasty: 6 z 6.** Progów nie dostrajano do testu.
 
 Co z tego wynika:
 
-- **Haughton i Eureka wypadają w środku stawki (61–65).** Powód: powierzchnia nagrzewa się tam latem do ok. +15 °C, czyli ~25 K powyżej miejsc na Marsie. To prawdziwe miejsce, gdzie analogia pęka, a nie błąd metody. „Samo zimno" stawia je wyżej (87).
-- **University Valley i Beacon Valley (70–75)** tracą na gołym gruncie: komórka 0,1° uśrednia wąską dolinę z lodem wokół (śnieg-wolne 40 %).
-- W Antarktydzie cechy dają więcej niż samo zimno (Taylor 97 wobec 55). W Arktyce Kanady mniej.
+- **Haughton i Eureka wypadają w środku stawki (60–70).** Powód: powierzchnia nagrzewa się tam latem do ok. +15 °C, czyli ~25 K powyżej miejsc na Marsie. To prawdziwe miejsce, gdzie analogia pęka, a nie błąd metody. „Samo zimno" stawia je wyżej (87).
+- **University Valley i Beacon Valley (68–74)** tracą na gołym gruncie: komórka 0,1° uśrednia wąską dolinę z lodem wokół (śnieg-wolne 40 %).
+- W Antarktydzie cechy dają więcej niż samo zimno (Taylor 96 wobec 55). W Arktyce Kanady mniej.
 - Kontrasty odpadają głównie na filtrach. To cel filtrów, ale test kontrastu jest przez to słaby.
 - To kontrola na kilkunastu miejscach, nie dowód podobieństwa do Marsa.
 
@@ -120,13 +120,12 @@ Co z tego wynika:
 - CCI i ERA5-Land to modele, nie pomiary. Rok 2023 (wyjątkowo ciepły).
 - CCI nie odróżnia suchej zmarzliny (bez lodu) od gruntu scementowanego lodem. **Ilość lodu nie jest w ocenie.**
 - Korelacje cech wśród ocenionych komórek (Spearman): letnie maksimum ~ goły grunt 0,78 (goły grunt nagrzewa się; te dwie cechy ciągną w przeciwne strony), temperatura gruntu ~ opad 0,67. Zimno nadal częściowo siedzi w suchości.
-- Model cieplny Marsa: te same albedo (0,25) i bezwładność (250) dla wszystkich miejsc, więc różnice temperatur między miejscami to tylko szerokość geograficzna. Niesprawdzony na pomiarze.
+- Model cieplny Marsa: albedo z TES (Christensen 2001) i bezwładność cieplna z Putzig i Mellon (2007), średnia z okna ±0,5° wokół każdego miejsca. Sprawdzenie na Mars Climate Database v6.2 (lato, maksimum dobowe temperatury powierzchni): model − MCD = −1,7 do −8,2 K dla siedmiu miejsc, średnio −4,6 K (model chłodniejszy). Phoenix: model (powierzchnia, okno misji Ls 77–148) 257,5 K, czujniki MET (powietrze) 245,6 K, czyli tylko dolna granica; szeregu TECP nie pobrano, więc nie ma porównania z pomiarem temperatury gruntu. `summer_tmax` jest dokładne do kilku kelwinów, nie lepiej. Tabela dla każdego miejsca, stare i nowe albedo, TI i `summer_tmax` (stare: 0,25 i 250 wszędzie; zmiana +4,1 do +13,8 K) wraz z MCD: `analysis/mars_tes/MARS_TES_podsumowanie.md`, sekcja „Model vs MCD”.
 - `pzi_only`: temperatura gruntu z założenia (powietrze + 2 K), opad ERA5 w górach zawyżony, tylko 2 cechy. Odporność niska (0,5): próg −10 °C usuwa Andy.
 - Komórka 0,1° uśrednia doliny ze stokami.
 
 ## 12. Nie zrobione
 
-- Albedo i bezwładność cieplna per miejsce (mapy TES), sprawdzenie modelu Marsa na danych Phoenix MET.
 - Ilość lodu jako opis komórki (GGD318 na półkuli N), typologia przez grupowanie.
 - Podłoże i rzeźba, dostępność logistyczna, poligony obserwowane na zdjęciach.
 - GUI nie jest dostosowane do kontraktu 0.9 (lista zmian w kontrakcie).

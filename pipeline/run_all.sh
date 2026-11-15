@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 python pipeline/fetch_cci.py data/raw/cci
 python pipeline/fetch_pzi.py data/raw/pzi                              # 6.2 GB, public
 python pipeline/fetch_swim.py data/raw/swim 0_1 1_5 5 landforms
+python pipeline/fetch_tes.py data/raw/tes
 python pipeline/fetch_era5.py data/interim/era5_skin_2023.npz          # Earth Engine, ~15 min
 python pipeline/fetch_smap.py data/interim/dryness_2023.npz            # Earth Engine: SMAP L4 wetness + ERA5-Land precip
 python pipeline/earth_grid.py data/raw/cci data/raw/pzi data/interim/earth_grid.npz
