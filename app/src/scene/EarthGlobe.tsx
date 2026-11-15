@@ -105,6 +105,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     hovered: false, // pointer is over the Earth slot
     fit: 4, // camera distance that frames the whole globe in the slot
     zoom: 1, // user zoom: camera distance = fit * zoom, kept within MIN_DIST..MAX_DIST
+    floatT: 0, // float drift clock; paused while zoomed in so the view holds still
   });
 
   const flyTo = (lat: number, lon: number) => {
@@ -142,9 +143,11 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   zoomToRegionRef.current = zoomToRegion;
 
   // The globe follows the focus cell (step, layer change, check highlight). A site pick holds this
-  // until the Mars rings finish; its timeline then flies the globe itself.
+  // until the Mars rings finish; its timeline then flies the globe itself. Zoomed in, the user is
+  // exploring nearby: clicking a point must not swing the view.
   useEffect(() => {
-    if (focus && !motionRegistry.holdFly) flyTo(focus.lat, focus.lon);
+    const zoomed = (camera.current?.position.z ?? Infinity) < ZOOM_IN_DIST;
+    if (focus && !motionRegistry.holdFly && !zoomed) flyTo(focus.lat, focus.lon);
   }, [focus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setZoom = (zoom: number) => {
@@ -286,16 +289,18 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     setZoom(m.zoom);
   }, [width, height]);
 
-  useFrame(({ clock }, dt) => {
-    if (float.current && !reducedMotion()) {
-      const t = (clock.elapsedTime / FLOAT_PERIOD) * Math.PI * 2 + 1.7;
-      float.current.position.set(Math.cos(t * 0.5) * FLOAT_AMP * 0.4, Math.sin(t) * FLOAT_AMP, 0);
-    }
+  useFrame((_, dt) => {
     const g = globe.current;
     const cam = camera.current;
     if (!g || !cam) return;
     const m = motion.current;
     const step = Math.min(dt, 0.1);
+    const close = cam.position.z < ZOOM_IN_DIST;
+    if (float.current && !reducedMotion()) {
+      if (!close) m.floatT += step;
+      const t = (m.floatT / FLOAT_PERIOD) * Math.PI * 2 + 1.7;
+      float.current.position.set(Math.cos(t * 0.5) * FLOAT_AMP * 0.4, Math.sin(t) * FLOAT_AMP, 0);
+    }
 
     // Zoom: ease the camera to the target distance.
     const dist = THREE.MathUtils.clamp(m.fit * m.zoom, MIN_DIST, MAX_DIST);
@@ -319,12 +324,12 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
       if (Math.abs(dx) < 1e-3 && Math.abs(dy) < 1e-3) m.target = null;
       return;
     }
-    // Inertia after a drag, then the slow idle spin (paused while the user is on the globe).
+    // Inertia after a drag, then the slow idle spin (paused while the user is on the globe or zoomed in).
     const decay = Math.exp(-3 * step);
     m.vx *= decay;
     m.vy *= decay;
     g.rotation.x = THREE.MathUtils.clamp(g.rotation.x + m.vx * step, -MAX_TILT, MAX_TILT);
-    const idle = reducedMotion() || m.hovered ? 0 : IDLE_SPEED;
+    const idle = reducedMotion() || m.hovered || close ? 0 : IDLE_SPEED;
     g.rotation.y += (m.vy + idle) * step;
   });
 
