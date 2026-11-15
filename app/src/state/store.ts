@@ -38,6 +38,8 @@ export interface AppState {
   selectSite(id: string | null): Promise<void>;
   selectLayer(layer: LayerId): Promise<void>;
   step(delta: 1 | -1): void;
+  /** Make match i of the list current (camera focus and pulse go there) and open its card. */
+  selectMatch(i: number): void;
   clickEarth(lat: number, lon: number): void;
   openValidation(open: boolean): void;
   focusCheck(check: ValidationCheck): void;
@@ -150,6 +152,12 @@ export function createAppStore() {
         if (list.length === 0) return;
         const next = (((index + delta) % list.length) + list.length) % list.length;
         set({ index: next, earthHit: null, focus: pointOf(list[next]) });
+      },
+
+      selectMatch(i) {
+        const { list } = get();
+        if (i < 0 || i >= list.length) return;
+        set({ index: i, earthHit: null, focus: pointOf(list[i]), cardOpen: true });
       },
 
       clickEarth(lat, lon) {

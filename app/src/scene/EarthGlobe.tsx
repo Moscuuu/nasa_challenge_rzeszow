@@ -72,7 +72,11 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   const regions = useMemo(() => analogRegions(cells, siteId), [cells, siteId]);
   const regionsRef = useRef(regions);
   regionsRef.current = regions;
-  const zoomToRegionRef = useRef<(r: AnalogRegion) => void>(() => {});
+  const selectMatch = useAppStore((s) => s.selectMatch);
+  // A region (pin or area) opens its best match: the region's rank is its place in the match list.
+  const openRegion = (r: AnalogRegion) => selectMatch(r.rank - 1);
+  const openRegionRef = useRef(openRegion);
+  openRegionRef.current = openRegion;
 
   const globe = useRef<THREE.Group>(null);
   const float = useRef<THREE.Group>(null);
@@ -134,13 +138,6 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
     },
   }));
 
-  // Region pin: turn to the region and zoom in until its analog points show.
-  const zoomToRegion = (r: AnalogRegion) => {
-    flyTo(r.lat, r.lon);
-    const dist = THREE.MathUtils.clamp(1.25 + THREE.MathUtils.degToRad(r.radiusDeg) * 4, 1.5, ZOOM_IN_DIST - 0.2);
-    setZoom(dist / motion.current.fit);
-  };
-  zoomToRegionRef.current = zoomToRegion;
 
   // The globe follows the focus cell (step, layer change, check highlight). A site pick holds this
   // until the Mars rings finish; its timeline then flies the globe itself. Clicking a point on the
@@ -181,10 +178,8 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
       const hit = raycaster.intersectObject(mesh, false)[0];
       return hit ? v2ll(g.worldToLocal(hit.point.clone())) : null;
     };
-    /** Zoomed out: the region whose area contains the point (nearest centre wins). */
+    /** The region whose area contains the point (nearest centre wins). */
     const regionAt = (lat: number, lon: number): AnalogRegion | null => {
-      const cam = camera.current;
-      if (!cam || cam.position.z < ZOOM_IN_DIST) return null;
       let best: AnalogRegion | null = null;
       let bestD = Infinity;
       for (const r of regionsRef.current) {
@@ -197,7 +192,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
       const p = pointAt(x, y);
       if (!p) return; // clicked space beside the globe
       const region = regionAt(p.lat, p.lon);
-      if (region) zoomToRegionRef.current(region);
+      if (region) openRegionRef.current(region);
       else clickEarth(p.lat, p.lon);
     };
     const hover = (x: number, y: number) => {
@@ -353,8 +348,7 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
           <AnalogMarkers
             regions={regions}
             slot={slot}
-            onRegion={zoomToRegion}
-            onPoint={(p) => clickEarth(p.cell.lat, p.cell.lon)}
+            onRegion={openRegion}
           />
         </group>
       </group>

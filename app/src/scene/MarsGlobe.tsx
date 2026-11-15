@@ -13,9 +13,8 @@ export interface MarsGlobeHandle {
   rotateTo(lat: number, lon: number, hold?: boolean): void;
   /** Radar rings on the surface at (lat, lon); progress 0..1, null hides them. */
   radar(lat: number, lon: number, progress: number | null): void;
-  /** Intro drivers: camera distance factor (1 = framed), how far the pin flicker-in has got (0..1) and an
-   *  extra spin speed (rad/s) that shows the planet's many sites before it settles. */
-  setIntro(v: { zoom?: number; pins?: number; spin?: number }): void;
+  /** Intro drivers: camera distance factor (1 = framed) and how far the pin flicker-in has got (0..1). */
+  setIntro(v: { zoom?: number; pins?: number }): void;
 }
 
 const IDLE_SPEED = 0.015; // rad/s, slow idle spin
@@ -73,7 +72,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
   const sizeRef = useRef({ width, height });
   sizeRef.current = { width, height };
   const getThree = useThree((s) => s.get);
-  const intro = useRef({ zoom: 1, pins: 1, spin: 0 });
+  const intro = useRef({ zoom: 1, pins: 1 });
   const radarRef = useRef<{ lat: number; lon: number; p: number | null }>({ lat: 0, lon: 0, p: null });
   const radarGroup = useRef<THREE.Group>(null);
   const radarRings = useRef<Array<THREE.LineLoop | null>>([]);
@@ -157,7 +156,6 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
       m.dragging = true;
       m.target = null;
       m.hold = false;
-      intro.current.spin = 0;
       el.setPointerCapture(e.pointerId);
     };
     const onMove = (e: PointerEvent) => {
@@ -253,7 +251,7 @@ export const MarsGlobe = forwardRef<MarsGlobeHandle, Props>(function MarsGlobe({
     m.vy *= decay;
     g.rotation.x = THREE.MathUtils.clamp(g.rotation.x + m.vx * step, -MAX_TILT, MAX_TILT);
     const idle = reducedMotion() || m.pinFocused || m.hovered || m.hold ? 0 : IDLE_SPEED;
-    g.rotation.y += (m.vy + idle + intro.current.spin) * step;
+    g.rotation.y += (m.vy + idle) * step;
   });
 
   return (
