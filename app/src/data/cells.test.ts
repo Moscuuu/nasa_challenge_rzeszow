@@ -19,13 +19,24 @@ describe("topForSite", () => {
       ...Array.from({ length: 6 }, (_, i) => mk(`h${i}`, { site_scores: { hellas_rim: 0.1 * (i + 1) } })),
       ...Array.from({ length: 4 }, (_, i) => mk(`n${i}`, { site_scores: { hellas_rim: null } })),
     ];
-    const r = topForSite(cells, "hellas_rim");
+    const r = topForSite(cells, "hellas_rim", 10, 0);
     expect(r).toHaveLength(6);
     expect(r[0].id).toBe("h5");
   });
+  it("lists one cell per region: neighbours within the radius are skipped", () => {
+    const cells = [
+      mk("dv1", { lat: -77.45, lon: 161.75, score: 0.9 }),
+      mk("dv2", { lat: -77.85, lon: 160.85, score: 0.89 }), // ~45 km away: same region
+      mk("peary", { lat: 82.05, lon: -30.25, score: 0.8 }),
+      mk("dv3", { lat: -77.55, lon: 161.55, score: 0.79 }),
+      mk("andes", { lat: -27.25, lon: -68.85, score: 0.6 }),
+    ];
+    expect(topForSite(cells, null).map((c) => c.id)).toEqual(["dv1", "peary", "andes"]);
+    expect(topForSite(cells, null, 10, 0).map((c) => c.id)).toEqual(["dv1", "dv2", "peary", "dv3", "andes"]);
+  });
   it("null site uses score, caps at n", () => {
     const cells = [mk("a", { score: 0.2 }), mk("b", { score: 0.9 }), mk("c", { score: 0.5 })];
-    expect(topForSite(cells, null, 2).map((c) => c.id)).toEqual(["b", "c"]);
+    expect(topForSite(cells, null, 2, 0).map((c) => c.id)).toEqual(["b", "c"]);
   });
 });
 

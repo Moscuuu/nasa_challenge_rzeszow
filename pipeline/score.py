@@ -10,30 +10,32 @@ Filters (a cell must pass all; thresholds in config.py):
     snow-free share of summer >= 10 %                   (bare ground exists: not a glacier or ice sheet)
     glacier / ice-sheet share < 50 %                    (not used in Antarctica, where the map is unusable)
 
-Features (0..1, higher = closer to the Mars conditions):
-    summer_temperature  1 - |Earth - Mars| / 20 K, mean daily maximum of surface temperature in local
-                        summer, compared in kelvin. The only feature that differs between Mars sites.
-    ice_table           1 - ALT / 0.5 m: how close to the surface the never-thawing ground starts
+Features (0..1, higher = closer to the Mars conditions), the same for every region type; which of them a
+Depth Layer uses is config.LAYER_FEATURES (0-1 m: the surface three; 1-5 m: summer_temperature + ground_cold;
+> 5 m: ground_cold only):
+    summer_temperature  1 within +-10 K of Mars (the Mars model's error), then falling linearly to 0 at 30 K. Earth: MODIS Aqua daytime land surface temperature
+                        (~13:30, clear sky) in local summer, averaged over the cell's snow-free permafrost
+                        pixels (fetch_lst.py). Mars: mean daily maximum in local summer (thermal model).
+                        Compared in kelvin. The only feature that differs between Mars sites.
     dryness             rank among the cells that passed the filters, driest = 1; mean of annual
                         precipitation (ERA5-Land) and summer surface wetness (SMAP L4) where each exists
     bare_ground         snow-free share of summer observations (MODIS)
+    ground_cold         (-5 C - ground temperature at the layer depth) / 35 K, 0..1: colder = closer to Mars
+                        (200-208 K at depth, beyond any Earth ground). Used below 1 m only.
 
-Cold is a filter only. Daily amplitude, cracking potential and the percentile match of ice are gone
-(see the spec for why).
+Daily amplitude, cracking potential and the percentile match of ice are gone (see the spec for why).
 
-Region types. Not every feature exists or can be trusted everywhere, so cells are ranked inside their
-region type, on the features that are valid for the whole type (config.TYPE_FEATURES):
-    northern   all four
-    antarctic  no ice_table (CCI active-layer thickness ~0 m is a known underestimate there)
-    pzi_only   cells outside CCI coverage (Andes, other mountains, Arctic coast gaps): dryness and
-               bare_ground only
-A cell that lacks a feature its type uses is left unscored; nothing is filled with 0 or skipped.
+Region types (northern, antarctic, pzi_only = outside CCI coverage) all use the same features,
+so scores are comparable across types; type ranks are kept as extra information. ice_table (1 - ALT / 0.5 m)
+is still computed for context but not scored: ALT is missing outside CCI and ~0 m in Antarctica, and the
+ALT filter already keeps summer thaw in the cover. A cell that lacks a feature (e.g. no clear-sky LST over
+its permafrost pixels) is left unscored; nothing is filled with 0 or skipped.
 
 Mars sites. A site counts in a Depth Layer only if SWIM shows ice there (C > 0.1). The best site of a
 cell is the applicable site with the highest score; ties are common and are reported.
 
 Robustness. The score is recomputed under 20 variants (-5 / -10 C, ALT 0.5 / 1.0 m, each feature left
-out in turn). stability = share of variants in which the cell is in the top 10 % of its region type.
+out in turn, when the layer has more than one). stability = share of variants in which the cell is in the top 10 % of its region type.
 
 Areas. The exported top cells are grouped into areas of at most 5 x 5 cells around the best cell;
 a lone cell is an area of one, so no cell is dropped.
@@ -44,6 +46,7 @@ Usage: python pipeline/score.py data/interim [0-1m|1-5m|gt5m]
 """
 import json
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -63,7 +66,7 @@ def rank01(values: np.ndarray) -> np.ndarray:
 
 def load_cells(interim: Path) -> dict:
     grid = np.load(interim / "earth_grid.npz")
-    era5 = np.load(interim / "era5_skin_2023.npz")
+    lst = np.load(interim / "lst_summer_2023.npz")
     dry = np.load(interim / "dryness_2023.npz")
     surf = np.load(interim / "surface_2023.npz")
     rows, cols = np.nonzero(grid["permafrost"])
@@ -72,12 +75,21 @@ def load_cells(interim: Path) -> dict:
              "temp_source": grid["temp_source"][rows, cols]}
     for name in ("gst", "t_1_5", "t_gt5", "alt", "pfr", "pzi_share", "maat_pf"):
         cells[name] = pick(grid[name])
-    cells["summer_tmax"] = pick(era5["summer_tmax"])
+    cells["summer_tmax"] = pick(lst["lst_summer_pf"])
+    # ERA5-Land summer skin maximum: comparison only (not scored), if the file has it
+    era5_path = interim / "era5_skin_2023.npz"
+    with np.load(era5_path) if era5_path.exists() else nullcontext({}) as era5:
+        cells["summer_tmax_era5"] = pick(era5["summer_tmax"]) if "summer_tmax" in era5 else np.full(rows.size, np.nan)
     precip = pick(dry["precip_mm_yr"])  # masked cells (coast, sea) come back from Earth Engine as -inf or 0
     cells["precip_mm_yr"] = np.where(np.isfinite(precip) & (precip > 0), precip, np.nan)
     cells["wet_summer"] = pick(dry["wet_summer"])
     cells["snow_free_summer"] = pick(surf["snow_free_summer"])
     cells["ice_fraction"] = pick(surf["ice_fraction"])
+    # debris-covered glaciers / rock glaciers (fetch_debris_ice.py): context only, not scored
+    debris_path = interim / "debris_ice_2023.npz"
+    with np.load(debris_path) if debris_path.exists() else nullcontext({}) as deb:
+        for key in ("debris_ice_share", "glacier_share"):
+            cells[key] = pick(deb[key]) if key in deb else np.full(rows.size, np.nan)
     return cells
 
 
@@ -100,7 +112,8 @@ def compute(cells: dict, sites: list, layer: str, t_max: float = C.T_GROUND_MAX_
     n_sites, n = len(sites), region.size
     mars_tmax = np.array([s["temperature"]["summer_tmax"] for s in sites])[:, None]
     feats = {
-        "summer_temperature": 1.0 - np.clip(np.abs(cells["summer_tmax"][None, :] - mars_tmax) / C.SUMMER_T_SCALE_K, 0, 1),
+        "summer_temperature": 1.0 - np.clip((np.abs(cells["summer_tmax"][None, :] - mars_tmax) - C.SUMMER_T_TOLERANCE_K)
+                                            / C.SUMMER_T_SCALE_K, 0, 1),
         "ice_table": np.tile(1.0 - np.clip(alt / alt_max, 0.0, 1.0), (n_sites, 1)),
         "bare_ground": np.tile(cells["snow_free_summer"], (n_sites, 1)),
     }
@@ -109,13 +122,12 @@ def compute(cells: dict, sites: list, layer: str, t_max: float = C.T_GROUND_MAX_
     n_parts = np.isfinite(dry_parts).sum(axis=0)
     dryness = np.where(n_parts > 0, np.nansum(dry_parts, axis=0) / np.maximum(n_parts, 1), np.nan)
     feats["dryness"] = np.tile(dryness, (n_sites, 1))
+    feats["ground_cold"] = np.tile(np.clip((C.T_GROUND_MAX_K - t) / C.GROUND_COLD_SCALE_K, 0.0, 1.0), (n_sites, 1))
 
     overall = np.full((n_sites, n), np.nan)
-    for r, name in enumerate(C.REGION_TYPES):
-        used = [f for f in C.TYPE_FEATURES[name] if f != drop]
-        sel = eligible & (region == r)
-        if used and sel.any():
-            overall[:, sel] = np.mean(np.stack([feats[f][:, sel] for f in used]), axis=0)  # NaN if any is missing
+    used = [f for f in C.LAYER_FEATURES[layer] if f != drop]
+    if used and eligible.any():
+        overall[:, eligible] = np.mean(np.stack([feats[f][:, eligible] for f in used]), axis=0)  # NaN if any missing
 
     site_ok = np.array([s["ice"][layer]["c"] > C.SWIM_ICE_MIN for s in sites])
     masked = np.where(site_ok[:, None], overall, np.nan)
@@ -133,8 +145,9 @@ def compute(cells: dict, sites: list, layer: str, t_max: float = C.T_GROUND_MAX_
 def stability(cells: dict, sites: list, layer: str) -> tuple[np.ndarray, int]:
     """Share of threshold / feature variants in which each cell is in the top 10 % of its region type."""
     hits = np.zeros(cells["region"].size)
+    used = C.LAYER_FEATURES[layer]
     variants = [(t, a, d) for t in (C.T_GROUND_MAX_K, 263.15) for a in (C.ALT_MAX_M, 1.0)
-                for d in (None,) + C.FEATURES]
+                for d in (None,) + (used if len(used) > 1 else ())]
     for t_max, alt_max, drop in variants:
         pct = compute(cells, sites, layer, t_max, alt_max, drop)["type_pct"]
         hits += np.nan_to_num(pct, nan=-1.0) >= C.STABLE_PERCENTILE
@@ -178,7 +191,11 @@ def main(interim: Path, layer: str) -> None:
         idx = idx[np.argsort(-best[idx], kind="stable")]
         type_rank[idx] = np.arange(1, idx.size + 1)
         top.append(idx[: C.TOP_PER_TYPE])
-    top = np.concatenate(top)
+        for i in np.nonzero(res["site_ok"])[0]:  # each site's own best cells of this type
+            v = res["overall"][i, idx]
+            ok = np.isfinite(v)
+            top.append(idx[ok][np.argsort(-v[ok], kind="stable")[: C.TOP_PER_SITE]])
+    top = np.unique(np.concatenate(top))
     stab, n_variants = stability(cells, sites, layer)
     area = group_areas(cells["rows"], cells["cols"], best, top)
 
@@ -205,8 +222,9 @@ def main(interim: Path, layer: str) -> None:
         percentile=pct.astype(np.float32), rank=rank, type_percentile=res["type_pct"].astype(np.float32),
         type_rank=type_rank, stability=stab.astype(np.float32), n_variants=n_variants, top=top, area=area,
         t_ground=cells[C.LAYER_TEMP[layer]], temp_source=cells["temp_source"],
-        **{k: cells[k] for k in ("summer_tmax", "alt", "pfr", "pzi_share", "maat_pf", "precip_mm_yr", "wet_summer",
-                                 "snow_free_summer", "ice_fraction")},
+        **{k: cells[k] for k in ("summer_tmax", "summer_tmax_era5", "alt", "pfr", "pzi_share", "maat_pf", "precip_mm_yr", "wet_summer",
+                                 "snow_free_summer", "ice_fraction",
+                                 "debris_ice_share", "glacier_share")},
         spearman=json.dumps(corr),
     )
     print(layer, "permafrost cells", n, "pass filters", int(res["eligible"].sum()), "scored", int(scored.sum()))

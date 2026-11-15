@@ -2,6 +2,30 @@
 
 Jedna linia na decyzję, najnowsze na górze. Stan obowiązujący opisuje spec `docs/superpowers/specs/2026-11-15-drilling-analog-design.md`; tu jest tylko „co i dlaczego". Decyzję odwracamy nowym wpisem, starego nie kasujemy.
 
+## 2026-11-15 (trzecia runda: cechy zależne od warstwy)
+
+| decyzja | dlaczego |
+|---|---|
+| **Temperatura letnia z tolerancją ±10 K** (pełne dopasowanie), dalej spadek liniowy do 0 przy 30 K | model Marsa różni się od Mars Climate Database o −8,2…+5,1 K (`analysis/mars_tes`): kara od pierwszego kelwina karała szum modelu; po scaleniu modelu z TES kontrast Utqiagvik (285 K = Hellas) przechodził walidację |
+| **Cechy zależą od warstwy:** 0–1 m = temperatura letnia, suchość, goły grunt; 1–5 m = temperatura letnia + zimny grunt w głębi; > 5 m = tylko zimny grunt w głębi | test można przygotować (odwiert wcześniej, rura osłonowa, odgarnięty śnieg): pod powierzchnią warunki powierzchni to logistyka, nie analog. Zastępuje „wiertło zawsze przechodzi przez pokrywę" (suchość) i „temperatura letnia we wszystkich warstwach" |
+| **Zimny grunt w głębi = cecha (zimniej = bliżej Marsa), tylko poniżej 1 m:** (−5 °C − T warstwy) / 35 K | Mars w głębi 200–208 K, każda komórka na Ziemi ≥ 27 K cieplej; przy powierzchni (gdzie Ziemia osiąga Marsa) zostaje zasada „zimniej ≠ bardziej jak Mars". W > 5 m wynik = test „samo zimno" i nie zależy od miejsca na Marsie (różni je tylko SWIM) |
+| **Lodowce pokryte gruzem (GLIMS + MODIS) tylko jako informacja, nie cecha** | wskaźnik działa w Andach i Himalajach, ale nie widzi analogów w Antarktydzie (Mullins = 0): ocena karałaby brak danych, nie brak lodu |
+| **Znane ograniczenie: MODIS MOD10A1 widzi śnieg na gołym dnie Suchych Dolin** (Beacon Valley: NDSI ~64, Landsat: Wright Valley 88 % dni bez śniegu) | zaniża „goły grunt" i zasięg LST w Antarktydzie; do poprawy Landsatem (kolekcje T2) |
+
+## 2026-11-15 (druga runda: porównywalne wyniki)
+
+| decyzja | dlaczego |
+|---|---|
+| **Wszystkie typy regionów oceniane na tych samych 3 cechach:** temperatura letnia, suchość, goły grunt | Andy (`pzi_only`) liczone z 2 cech miały ~0,96 i wygrywały dla każdego miejsca na Marsie; wyniki typów nie były porównywalne, a lista „per miejsce" była prawie identyczna |
+| **Temperatura letnia z MODIS Aqua LST (dzień, ~13:30, bezchmurnie), uśredniona po pikselach zmarzliny (PZI ≥ 0,5, bez śniegu)**, zamiast ERA5-Land | ERA5 (9 km, wygładzona rzeźba) dawało w górach temperaturę średniej wysokości komórki; MODIS ma 1 km i działa też w Andach. ERA5 zostaje w eksporcie do porównania |
+| **`ice_table` (1 − ALT/0,5 m) już nie jest cechą**, tylko filtrem ALT ≤ 0,5 m i kontekstem | ALT jest tylko w CCI (brak w `pzi_only`, ~0 m w Antarktydzie); dublował filtr |
+| **Temperatura letnia zostaje we wszystkich warstwach** | wiertło i zwierciny zawsze pracują na powierzchni (jak przy suchości); temperatura w głębi jest poza zasięgiem Ziemi i zostaje filtrem |
+| **Odrzucone: porównanie SWIM C z `ice_1_5`/`ice_gt5`** | to udział zmarzliny (= 1 w każdej ocenianej komórce), nie ilość lodu; SWIM C to zgodność −1..1 |
+| **Model termiczny Marsa: rozbieg z resetem kolumny** do średniej temperatury powierzchni po 1. roku | 3 lata od 200 K zaniżały temperaturę w głębi do ~6 K (Amazonis 201,6 → 208,1 K); zgodne z 20-letnim przebiegiem do 0,2 K |
+| **Eksport: oprócz top-1000 na typ także top-200 każdego miejsca na Marsie w każdym typie** | listy per miejsce w GUI nie mogą zależeć od komórek wybranych pod inne miejsce |
+| **Typ lodu każdego miejsca na Marsie z literatury** (`ice_type` w `mars_sites.py`): lodowiec pokryty gruzem (Deuteronilus, Hellas, Phlegra, Erebus), pokrywa lodowa pod regolitem (Arcadia, Utopia), lód w porach nad zanikłym lodem (Amazonis) | lód na tych miejscach to w większości lód masywny/nadmiarowy, nie lód w porach jak w typowej zmarzlinie; na razie tylko informacja, nie cecha. Erebus: tylko mapowanie form terenu, brak pomiaru radarowego; cytat „Viola 2015, abstrakt 1011” niezweryfikowany |
+| **Duvanny Yar jest kontrastem tylko w 0–1 m**; w 1–5 m i > 5 m „nie dotyczy" | stratotyp jedomy (40–50 m kompleksu lodowego, do ~80 % obj. lodu): mokra tundra na powierzchni, ale w głębi bogata w lód jak Utopia |
+
 ## 2026-11-15
 
 | decyzja | dlaczego |

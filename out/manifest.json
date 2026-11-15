@@ -1,6 +1,6 @@
 {
- "contract_version": "0.9",
- "generated_at": "2026-11-15T07:13:10Z",
+ "contract_version": "0.10",
+ "generated_at": "2026-11-15T10:20:45Z",
  "mock": false,
  "cell_size_deg": 0.1,
  "layers": [
@@ -23,12 +23,12 @@
  "features": [
   {
    "id": "temperature",
-   "label": "Summer surface temperature (daily maximum)",
+   "label": "Summer surface temperature (midday, clear sky)",
    "comparison": "direct"
   },
   {
    "id": "ground_ice",
-   "label": "Depth to never-thawing ground",
+   "label": "Frozen ground at drilling depth (colder = closer to Mars; scored below 1 m)",
    "comparison": "monotone"
   },
   {
@@ -48,26 +48,15 @@
    "label": "Arctic and northern permafrost",
    "caveats": [
     "Ground temperature and thaw depth are model output (ESA Permafrost CCI), not measurements."
-   ],
-   "features": [
-    "temperature",
-    "ground_ice",
-    "dryness",
-    "bare_ground"
    ]
   },
   {
    "id": "antarctic",
    "label": "Antarctic ice-free ground",
    "caveats": [
-    "Thaw depth is not ranked: CCI gives ~0 m everywhere here, a known underestimate.",
+    "Thaw depth from CCI is ~0 m everywhere here, a known underestimate (it is only a filter).",
     "CCI cannot tell dry-frozen ground (no ice) from ice-cemented ground.",
     "No SMAP soil wetness on permanent ice: dryness rests on precipitation alone."
-   ],
-   "features": [
-    "temperature",
-    "dryness",
-    "bare_ground"
    ]
   },
   {
@@ -75,15 +64,26 @@
    "label": "Outside CCI coverage, PZI map only (Andes, other mountains, Arctic coast gaps)",
    "caveats": [
     "Ground temperature = PZI air temperature + 2 K (assumed), not a ground product.",
-    "No thaw depth and no usable summer surface temperature (ERA5-Land smooths mountain terrain): ranked on dryness and bare ground only.",
+    "No thaw depth: the thaw-depth filter does not apply here.",
+    "Ground temperature is the same for all Depth Layers (one PZI air temperature per cell).",
     "ERA5-Land precipitation is known to be too high in high mountains."
-   ],
-   "features": [
-    "dryness",
-    "bare_ground"
    ]
   }
  ],
+ "layer_features": {
+  "0-1m": [
+   "temperature",
+   "dryness",
+   "bare_ground"
+  ],
+  "1-5m": [
+   "temperature",
+   "ground_ice"
+  ],
+  "gt5m": [
+   "ground_ice"
+  ]
+ },
  "filters": {
   "ground_temperature_max_K": 268.15,
   "active_layer_max_m": 0.5,
@@ -91,7 +91,7 @@
   "ice_fraction_max": 0.5
  },
  "robustness": {
-  "variants": 20,
+  "variants": 16,
   "meaning": "stability = share of variants (-5 / -10 C, thaw depth 0.5 / 1.0 m, each feature left out in turn) in which the cell is in the top 10 % of its region type"
  },
  "sites": [
@@ -192,8 +192,18 @@
    "url": "https://climate.esa.int/en/projects/permafrost/"
   },
   {
+   "id": "modis_lst",
+   "label": "NASA MODIS Aqua MYD11A1 v6.1 daytime land surface temperature, 1 km, local summer 2023, over the cell's snow-free permafrost pixels (via Google Earth Engine)",
+   "url": "https://doi.org/10.5067/MODIS/MYD11A1.061"
+  },
+  {
+   "id": "glims_modis",
+   "label": "Debris-covered glaciers and rock glaciers: GLIMS glacier outlines (2023-06-07 release) that are snow-free in summer by MODIS MOD10A1, plus GLIMS debris-cover and rock-glacier outlines (via Google Earth Engine). Misses the Antarctic Dry Valleys.",
+   "url": "https://www.glims.org"
+  },
+  {
    "id": "era5_land",
-   "label": "ERA5-Land daily aggregates (ECMWF, via Google Earth Engine), 2023",
+   "label": "ERA5-Land daily aggregates (ECMWF, via Google Earth Engine), 2023: precipitation (dryness)",
    "url": "https://doi.org/10.24381/cds.e2161bac"
   },
   {

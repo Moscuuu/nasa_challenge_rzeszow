@@ -24,14 +24,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 166.81,
+      "tmin_K": 166.8,
       "tmax_K": 244.54,
-      "amp_K": 77.73,
-      "summer_tmin_K": 176.78,
-      "summer_tmax_K": 264.47,
+      "amp_K": 77.74,
+      "summer_tmin_K": 176.77,
+      "summer_tmax_K": 264.44,
       "summer_amp_K": 87.68,
-      "t_1_5_K": 199.58,
-      "t_gt5_K": 199.75,
+      "t_1_5_K": 199.05,
+      "t_gt5_K": 199.07,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -61,7 +61,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mid-latitude plains with a widespread shallow excess-ice layer mapped by radar and fresh ice-exposing craters.",
-    "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)"
+    "citation": "Bramson et al. 2015, GRL; Morgan et al. 2021, Nature Astronomy (SWIM)",
+    "ice_type": {
+     "class": "buried_ice_sheet",
+     "summary": "Widespread excess-ice layer, decameters thick, under regolith; purity debated (mostly ice in 2015, more regolith in a 2018 re-mapping).",
+     "confidence": "high (ice), medium (purity)",
+     "sources": "Bramson et al. 2015, GRL 42:6566; Viola et al. 2015, Icarus 248:190"
+    }
    }
   },
   {
@@ -87,14 +93,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 178.68,
-      "tmax_K": 259.64,
-      "amp_K": 80.96,
-      "summer_tmin_K": 186.52,
-      "summer_tmax_K": 274.53,
-      "summer_amp_K": 88.01,
-      "t_1_5_K": 204.94,
-      "t_gt5_K": 202.61,
+      "tmin_K": 178.77,
+      "tmax_K": 259.7,
+      "amp_K": 80.93,
+      "summer_tmin_K": 186.58,
+      "summer_tmax_K": 274.57,
+      "summer_amp_K": 87.98,
+      "t_1_5_K": 211.87,
+      "t_gt5_K": 211.78,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -124,7 +130,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mesas fringed by debris-covered glaciers and lobate aprons holding buried ice.",
-    "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)"
+    "citation": "Head et al. 2015 and Plaut 2015, Exploration Zone Workshop (abstracts 1033, 1044)",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons: radar shows predominantly water ice (later regional survey: 80-90 %), hundreds of metres thick, under a thin debris cover.",
+     "confidence": "high",
+     "sources": "Plaut et al. 2009, GRL 36:L02203"
+    }
    }
   },
   {
@@ -150,14 +162,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 165.24,
+      "tmin_K": 165.25,
       "tmax_K": 254.48,
-      "amp_K": 89.24,
-      "summer_tmin_K": 172.54,
+      "amp_K": 89.23,
+      "summer_tmin_K": 172.53,
       "summer_tmax_K": 268.9,
       "summer_amp_K": 96.36,
-      "t_1_5_K": 200.29,
-      "t_gt5_K": 199.98,
+      "t_1_5_K": 201.81,
+      "t_gt5_K": 201.85,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -187,7 +199,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Mountain range with radar-detected ice in surrounding aprons, proposed for human exploration.",
-    "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)"
+    "citation": "Morgan et al. 2021, Nature Astronomy (SWIM)",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons interpreted as debris-covered glaciers; radar supports nearly pure ice; debris cover estimated ~20 m in one abstract.",
+     "confidence": "medium",
+     "sources": "EPSC2009-635; EGU2009-3955; Morgan et al. 2021, Nature Astronomy (SWIM)"
+    }
    }
   },
   {
@@ -213,14 +231,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 162.35,
+      "tmin_K": 162.36,
       "tmax_K": 260.19,
       "amp_K": 97.84,
       "summer_tmin_K": 169.07,
       "summer_tmax_K": 273.59,
       "summer_amp_K": 104.52,
-      "t_1_5_K": 200.27,
-      "t_gt5_K": 199.99,
+      "t_1_5_K": 202.27,
+      "t_gt5_K": 202.34,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -250,7 +268,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Isolated massifs with ice-rich debris aprons at relatively low latitude.",
-    "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011)"
+    "citation": "Viola et al. 2015, Exploration Zone Workshop (abstract 1011; not verified, 2026-11-15); Sinha & Ray 2021, Icarus",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons mapped as a debris-covered glacial landsystem; no radar ice estimate found for this region.",
+     "confidence": "low",
+     "sources": "Sinha & Ray 2021, Icarus (geomorphic mapping)"
+    }
    }
   },
   {
@@ -276,14 +300,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 154.73,
+      "tmin_K": 154.74,
       "tmax_K": 270.19,
       "amp_K": 115.46,
       "summer_tmin_K": 159.36,
       "summer_tmax_K": 280.32,
       "summer_amp_K": 120.96,
-      "t_1_5_K": 200.01,
-      "t_gt5_K": 200.0,
+      "t_1_5_K": 201.21,
+      "t_gt5_K": 201.26,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -313,7 +337,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "A 2021 impact excavated ice boulders here, the lowest-latitude ice exposure seen.",
-    "citation": "Posiolova et al. 2022, Science"
+    "citation": "Posiolova et al. 2022, Science",
+    "ice_type": {
+     "class": "pore_ice_over_relict_ice",
+     "summary": "Relict, relatively pure ice layer (once up to tens of metres) that is unstable and has nearly vanished, under a pore-ice-cemented cover.",
+     "confidence": "high",
+     "sources": "Posiolova et al. 2022, Science 378:412; Dundas et al. 2023, GRL 50"
+    }
    }
   },
   {
@@ -339,14 +369,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 182.02,
-      "tmax_K": 248.55,
-      "amp_K": 66.53,
-      "summer_tmin_K": 192.83,
-      "summer_tmax_K": 268.41,
-      "summer_amp_K": 75.58,
-      "t_1_5_K": 205.71,
-      "t_gt5_K": 204.3,
+      "tmin_K": 182.1,
+      "tmax_K": 248.61,
+      "amp_K": 66.51,
+      "summer_tmin_K": 192.88,
+      "summer_tmax_K": 268.43,
+      "summer_amp_K": 75.55,
+      "t_1_5_K": 209.65,
+      "t_gt5_K": 209.54,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -376,7 +406,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Scalloped terrain over a radar-detected ice deposit comparable in volume to Lake Superior.",
-    "citation": "Stuurman et al. 2016, GRL"
+    "citation": "Stuurman et al. 2016, GRL",
+    "ice_type": {
+     "class": "buried_ice_sheet",
+     "summary": "Buried ice deposit 80-170 m thick, 50-85 % water ice mixed with dust, under ~1-10 m of soil.",
+     "confidence": "high",
+     "sources": "Stuurman et al. 2016, GRL"
+    }
    }
   },
   {
@@ -402,14 +438,14 @@
     },
     "features": {
      "temperature": {
-      "tmin_K": 172.65,
-      "tmax_K": 253.91,
-      "amp_K": 81.26,
+      "tmin_K": 172.7,
+      "tmax_K": 253.94,
+      "amp_K": 81.24,
       "summer_tmin_K": 186.82,
-      "summer_tmax_K": 284.84,
-      "summer_amp_K": 98.02,
-      "t_1_5_K": 202.3,
-      "t_gt5_K": 201.13,
+      "summer_tmax_K": 284.75,
+      "summer_amp_K": 97.93,
+      "t_1_5_K": 206.08,
+      "t_gt5_K": 206.08,
       "unit": "K (surface: mean daily, whole Mars year and local summer; t_1_5 / t_gt5: annual-mean ground temperature at depth)",
       "source": "mars_thermal_model"
      },
@@ -439,7 +475,13 @@
     },
     "chlorine_wt_pct": null,
     "description": "Lobate debris aprons on the eastern Hellas rim, among the few southern ice-rich candidates.",
-    "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)"
+    "citation": "Holt et al. 2008, Science; Levy & Holt 2015, Exploration Zone Workshop (abstract 1037)",
+    "ice_type": {
+     "class": "debris_covered_glacier",
+     "summary": "Lobate debris aprons with radar properties of massive water ice (no internal rock echoes): buried debris-covered glaciers.",
+     "confidence": "high",
+     "sources": "Holt et al. 2008, Science 322:1235"
+    }
    }
   }
  ]

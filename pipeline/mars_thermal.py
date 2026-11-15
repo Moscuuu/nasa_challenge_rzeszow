@@ -21,7 +21,7 @@ RHO_C = 1.2e6  # volumetric heat capacity [J m-3 K-1]
 T_FROST = 148.0  # CO2 frost point near 6 hPa [K]
 IR_FRAC = 0.04  # downwelling atmospheric IR as a fraction of noon absorbed insolation (Kieffer-style)
 MIN_STEPS_PER_SOL = 192
-YEARS = 3
+YEARS = 4  # 1 spin-up year (then the column is reset to the mean surface temperature) + 3 to settle
 
 
 def ls_of_time(t_sol: np.ndarray) -> np.ndarray:
@@ -59,6 +59,8 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
     surf = np.empty((n_sites, total - last_year_start), dtype=np.float32)
     ls_log = np.empty(total - last_year_start, dtype=np.float32)
     profile_sum = np.zeros_like(T)  # for the annual-mean temperature at depth
+    steps_per_year = int(SOLS_PER_YEAR * steps)
+    spin_sum = np.zeros(n_sites)
 
     for i in range(total):
         t_sol = i / steps
@@ -82,6 +84,13 @@ def run_sites(lat_deg: np.ndarray, albedo: np.ndarray, inertia: np.ndarray) -> d
         dT[:, -1:] = q[:, -1:] * dt / (RHO_C * dz[-1])
         T = T + dT
         T[:, 0] = np.maximum(T[:, 0], T_FROST)
+        # Spin-up: the annual wave takes decades to reach ~5 m from the 200 K start, so after the first
+        # year the whole column below the surface is reset to that year's mean surface temperature
+        # (the deep equilibrium of a column with an insulated bottom); later years only settle the profile.
+        if i < steps_per_year:
+            spin_sum += T[:, 0]
+        elif i == steps_per_year:
+            T[:, 1:] = (spin_sum / steps_per_year)[:, None]
         if i >= last_year_start:
             surf[:, i - last_year_start] = T[:, 0]
             ls_log[i - last_year_start] = np.degrees(ls)

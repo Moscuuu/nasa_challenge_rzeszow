@@ -19,26 +19,39 @@ SNOW_FREE_MIN = 0.10         # at least this share of summer observations snow-f
 ICE_FRACTION_MAX = 0.5       # at most this share of the cell is glacier / ice sheet (not used in Antarctica)
 
 # --- features -------------------------------------------------------------------------------------------
-SUMMER_T_SCALE_K = 20.0      # summer_temperature = 1 - |Earth - Mars| / this, in kelvin (not ranks)
+SUMMER_T_TOLERANCE_K = 10.0  # |Earth - Mars| up to this counts as a full match: the Mars thermal model differs from the
+                             # Mars Climate Database by -8.2..+5.1 K (analysis/mars_tes), so smaller gaps are noise
+SUMMER_T_SCALE_K = 20.0      # beyond the tolerance, summer_temperature falls linearly to 0 over this many kelvin
 SWIM_ICE_MIN = 0.10          # a Mars site counts in a Depth Layer only if its SWIM C there is above this
 
 LAYERS = ("0-1m", "1-5m", "gt5m")
 LAYER_TEMP = {"0-1m": "gst", "1-5m": "t_1_5", "gt5m": "t_gt5"}  # earth_grid variable used by the filter
 
-FEATURES = ("summer_temperature", "ice_table", "dryness", "bare_ground")
+SURFACE_FEATURES = ("summer_temperature", "dryness", "bare_ground")
+FEATURES = SURFACE_FEATURES + ("ground_cold",)  # every feature any layer uses
 REGION_TYPES = ("northern", "antarctic", "pzi_only")
-# Features that are ranked on, per region type. A feature is used only if it is available and reliable
-# for the whole list, so nothing is ever "missing" inside a ranking:
-#   antarctic: CCI active-layer thickness is ~0 m everywhere (known underestimate) -> ice_table not used
-#   pzi_only (outside CCI: Andes and other mountains, gaps on the Arctic coast): no ALT; ERA5-Land skin temperature is wrong on smoothed orography
-TYPE_FEATURES = {
-    "northern": ("summer_temperature", "ice_table", "dryness", "bare_ground"),
-    "antarctic": ("summer_temperature", "dryness", "bare_ground"),
-    "pzi_only": ("dryness", "bare_ground"),
+GROUND_COLD_SCALE_K = 35.0   # ground_cold = (T_GROUND_MAX_K - T at the layer depth) / this: -5 C = 0, 233 K = 1
+# Features per Depth Layer (2026-11-15, third pass). The same for every region type, so scores are comparable
+# across types; they differ by depth because the test can be prepared (pre-drilled hole, casing, snow
+# cleared): below the surface the surface conditions are logistics, not the analog.
+#   0-1 m  the experiment is at the surface: summer surface temperature, dryness of the cover, bare ground
+#   1-5 m  the seasonal wave still reaches 2-3 m on Earth: summer surface temperature + cold ground at depth
+#   > 5 m  only the ground at depth: cold ground. Mars at depth is 200-208 K and every Earth cell is >= 27 K
+#          warmer, so colder = closer to Mars here (unlike at the surface). Site-independent: in this layer
+#          the Mars sites differ only by SWIM ice (which sites count). Equals the "cold only" check baseline.
+#   ice_table (1 - ALT / 0.5 m) is not scored: ALT exists only in CCI and is already the ALT filter.
+#   massive_ice (debris-covered glaciers, fetch_debris_ice.py) is context only: it cannot see the Antarctic
+#   analogs (MODIS snow product and GLIMS outlines fail in the Dry Valleys), so scoring it would penalise
+#   missing data, not missing ice.
+LAYER_FEATURES = {
+    "0-1m": SURFACE_FEATURES,
+    "1-5m": ("summer_temperature", "ground_cold"),
+    "gt5m": ("ground_cold",),
 }
 
 # --- outputs --------------------------------------------------------------------------------------------
-TOP_PER_TYPE = 1000          # exported cells per region type and Depth Layer
+TOP_PER_TYPE = 1000          # exported cells per region type and Depth Layer (by best-site score)
+TOP_PER_SITE = 200           # plus each Mars site's own top cells per region type, so per-site lists are complete
 AREA_MAX_CELLS = 5           # an area spans at most this many cells in each direction (5 x 5)
 STABLE_PERCENTILE = 0.90     # robustness: share of variants in which the cell is in the top 10 % of its type
 
@@ -62,3 +75,7 @@ CHECK_POINTS = [  # name, role, lat, lon  (from analysis/combine)
     ("Adventdalen (Svalbard)", "contrast", 78.20, 15.85),
     ("Beiluhe (Tibet)", "contrast", 34.82, 92.92),
 ]
+# Contrasts that only hold near the surface: Duvanny Yar is the Yedoma stratotype (40-50 m Ice Complex, up to
+# ~80 vol % ice), wet tundra at the surface but ice-rich at depth, like the buried ice sheet of Utopia.
+# In 1-5 m and > 5 m it is reported as not applicable instead of as a failure.
+CONTRAST_SURFACE_ONLY = ("Duvanny Yar",)

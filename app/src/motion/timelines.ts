@@ -124,10 +124,33 @@ export function pickSiteTimeline(lat: number, lon: number, cell: Cell): Tl {
 export const PICK_ZOOM = 1.12 / 1.3;
 const restZoom = () => (appStore.getState().stage === "explore" ? 1 : PICK_ZOOM);
 
+/** The intro tour ends on this site, and Mars stays turned to it (no idle spin) until the user drags. */
+const FOCUS_SITE_ID = "hellas_rim";
+const TOUR_START_S = 0.6; // after the veil has mostly lifted
+const TOUR_STEP_S = 0.8; // time on each site before turning to the next
+
+const focusSite = () => appStore.getState().sites.find((x) => x.id === FOCUS_SITE_ID);
+
+/** Every site once, eastwards, so the tour ends on the focus site. */
+function tourSites() {
+  const { sites } = appStore.getState();
+  const end = focusSite();
+  if (!end) return sites;
+  const east = (lon: number) => ((lon - end.lon) % 360 + 360) % 360 || 360;
+  return [...sites].sort((a, b) => east(a.lon) - east(b.lon));
+}
+
+function focusMarsSite(): void {
+  const site = focusSite();
+  if (site) motion.mars?.rotateTo(site.lat, site.lon, true);
+}
+
 /**
- * Intro. full (~2.6 s): veil lifts on Mars filling the centre frame, the camera eases back as the
- * analog sites flicker in; then they pulse and wait for a pick (Earth and the card come later).
- * short (~0.5 s): veil fade only. Any click or key jumps to the end (see useMotion).
+ * Intro. full (~6 s): veil lifts on Mars filling the centre frame, the camera eases back as the
+ * analog sites flicker in, and the globe turns to every site in turn (there are many to pick from),
+ * eastwards, ending on Hellas rim, where it stays; the sites pulse and wait for a pick (Earth and the
+ * card come later). short (~0.5 s): veil fade, then straight to Hellas rim.
+ * Any click or key jumps to the end (see useMotion).
  */
 export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => void): Tl {
   const { mars } = motion;
@@ -149,6 +172,20 @@ export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => v
     tl.to(s, { veil: 0, duration: 0.8, ease: "power1.inOut" }, 0.1)
       .to(s, { zoom: rest, duration: 2.0, ease: "power2.inOut" }, 0.3) // Mars eases back into place
       .to(s, { pins: 1, duration: 1.2, ease: "none" }, 1.0); // sites flicker in turn
+    // Tour: every site in turn; the last one is the focus site (held in onComplete).
+    // A jump of more than ~half a turn would make rotateTo (shortest way) turn back west: pass a midpoint first.
+    const tour = tourSites();
+    tour.forEach((site, i) => {
+      const t = TOUR_START_S + i * TOUR_STEP_S;
+      const prev = tour[i - 1];
+      const east = prev ? (((site.lon - prev.lon) % 360) + 360) % 360 : 0;
+      if (prev && east > 170) {
+        const mid = { lat: (prev.lat + site.lat) / 2, lon: prev.lon + east / 2 };
+        tl.call(() => mars?.rotateTo(mid.lat, mid.lon), [], t - TOUR_STEP_S / 2);
+      }
+      tl.call(() => mars?.rotateTo(site.lat, site.lon), [], t);
+    });
+    tl.to({}, { duration: 0.01 }, TOUR_START_S + tour.length * TOUR_STEP_S); // end after the last stop
   } else {
     tl.to(s, { veil: 0, duration: 0.35, ease: "power1.out" }, 0);
   }
@@ -156,6 +193,7 @@ export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => v
   tl.eventCallback("onComplete", () => {
     Object.assign(s, { veil: 0, zoom: restZoom(), pins: 1 });
     apply();
+    focusMarsSite();
     onDone?.();
   });
   return tl;
@@ -164,6 +202,7 @@ export function introTimeline(kind: Exclude<IntroKind, "none">, onDone?: () => v
 /** Without an intro, Mars still needs the pick framing. */
 export function settleMars(): void {
   motion.mars?.setIntro({ zoom: restZoom(), pins: 1 });
+  focusMarsSite();
 }
 
 /**

@@ -20,14 +20,29 @@ export interface CardFeatures {
 /** Row order = manifest order. */
 const FEATURE_IDS: FeatureId[] = ["temperature", "ground_ice", "polygons", "dryness"];
 
-export function topForSite(cells: Cell[], siteId: string | null, n = 10): Cell[] {
+/** Cells closer than this to a better match belong to that match's region and are not listed again. */
+export const REGION_RADIUS_KM = 300;
+const KM_PER_DEG = 111.195;
+
+/**
+ * Best match per region: cells sorted by score (best site when siteId is null), then a cell is listed only
+ * if no better listed cell lies within radiusKm. Neighbouring cells of one area (e.g. the Dry Valleys,
+ * dozens of 0.1 deg cells) differ by a few thousandths, so listing each would fill the top with one place.
+ */
+export function topForSite(cells: Cell[], siteId: string | null, n = 10, radiusKm = REGION_RADIUS_KM): Cell[] {
   const val = (c: Cell): number | null => (siteId === null ? c.score : c.site_scores[siteId] ?? null);
-  return cells
+  const sorted = cells
     .map((c) => ({ c, v: val(c) }))
     .filter((x): x is { c: Cell; v: number } => x.v !== null && x.v !== undefined)
-    .sort((a, b) => b.v - a.v)
-    .slice(0, n)
-    .map((x) => x.c);
+    .sort((a, b) => b.v - a.v);
+  const radiusDeg = radiusKm / KM_PER_DEG;
+  const picked: Cell[] = [];
+  for (const { c } of sorted) {
+    if (picked.length >= n) break;
+    if (radiusDeg > 0 && picked.some((p) => distDeg(p.lat, p.lon, c.lat, c.lon) <= radiusDeg)) continue;
+    picked.push(c);
+  }
+  return picked;
 }
 
 const rad = Math.PI / 180;

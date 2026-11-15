@@ -13,8 +13,9 @@
    ],
    "cells": 199,
    "cells_scored": 80,
-   "median_percentile": 91.3,
-   "cold_only_percentile": 69.7,
+   "median_percentile": 98.6,
+   "type_percentile": 71.4,
+   "cold_only_percentile": 98.6,
    "passed": true,
    "applicable": true
   },
@@ -29,9 +30,10 @@
     76.0
    ],
    "cells": 278,
-   "cells_scored": 243,
-   "median_percentile": 61.6,
-   "cold_only_percentile": 85.3,
+   "cells_scored": 277,
+   "median_percentile": 83.1,
+   "type_percentile": 86.0,
+   "cold_only_percentile": 83.1,
    "passed": false,
    "applicable": true
   },
@@ -46,8 +48,9 @@
     71.0
    ],
    "cells": 2481,
-   "cells_scored": 380,
+   "cells_scored": 479,
    "median_percentile": 0.0,
+   "type_percentile": 0.0,
    "cold_only_percentile": 0.0,
    "passed": true,
    "applicable": true
@@ -64,9 +67,10 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 74.1,
-   "cold_only_percentile": 84.9,
-   "passed": false,
+   "median_percentile": 99.3,
+   "type_percentile": 85.7,
+   "cold_only_percentile": 99.3,
+   "passed": true,
    "applicable": true
   },
   {
@@ -81,9 +85,10 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 68.8,
-   "cold_only_percentile": 85.2,
-   "passed": false,
+   "median_percentile": 99.3,
+   "type_percentile": 86.0,
+   "cold_only_percentile": 99.3,
+   "passed": true,
    "applicable": true
   },
   {
@@ -98,8 +103,9 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 92.8,
-   "cold_only_percentile": 75.0,
+   "median_percentile": 98.8,
+   "type_percentile": 76.4,
+   "cold_only_percentile": 98.8,
    "passed": true,
    "applicable": true
   },
@@ -115,8 +121,9 @@
    ],
    "cells": 9,
    "cells_scored": 6,
-   "median_percentile": 95.6,
-   "cold_only_percentile": 53.2,
+   "median_percentile": 97.8,
+   "type_percentile": 55.8,
+   "cold_only_percentile": 97.8,
    "passed": true,
    "applicable": true
   },
@@ -132,8 +139,9 @@
    ],
    "cells": 9,
    "cells_scored": 3,
-   "median_percentile": 86.8,
-   "cold_only_percentile": 87.5,
+   "median_percentile": 85.6,
+   "type_percentile": 88.7,
+   "cold_only_percentile": 85.6,
    "passed": false,
    "applicable": true
   },
@@ -149,8 +157,9 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 67.7,
-   "cold_only_percentile": 85.2,
+   "median_percentile": 83.5,
+   "type_percentile": 86.5,
+   "cold_only_percentile": 83.5,
    "passed": false,
    "applicable": true
   },
@@ -166,8 +175,9 @@
    ],
    "cells": 9,
    "cells_scored": 9,
-   "median_percentile": 72.0,
-   "cold_only_percentile": 88.0,
+   "median_percentile": 86.0,
+   "type_percentile": 89.1,
+   "cold_only_percentile": 86.0,
    "passed": false,
    "applicable": true
   },
@@ -182,9 +192,10 @@
     71.44
    ],
    "cells": 7,
-   "cells_scored": 6,
-   "median_percentile": 22.8,
-   "cold_only_percentile": 19.3,
+   "cells_scored": 7,
+   "median_percentile": 19.2,
+   "type_percentile": 19.6,
+   "cold_only_percentile": 19.2,
    "passed": true,
    "applicable": true
   },
@@ -201,6 +212,7 @@
    "cells": 6,
    "cells_scored": 0,
    "median_percentile": 0.0,
+   "type_percentile": 0.0,
    "cold_only_percentile": 0.0,
    "passed": true,
    "applicable": true
@@ -218,9 +230,10 @@
    "cells": 9,
    "cells_scored": 0,
    "median_percentile": 0.0,
+   "type_percentile": 0.0,
    "cold_only_percentile": 0.0,
-   "passed": true,
-   "applicable": true
+   "passed": null,
+   "applicable": false
   },
   {
    "name": "Adventdalen (Svalbard)",
@@ -235,6 +248,7 @@
    "cells": 9,
    "cells_scored": 0,
    "median_percentile": 0.0,
+   "type_percentile": 0.0,
    "cold_only_percentile": 0.0,
    "passed": true,
    "applicable": true
@@ -252,6 +266,7 @@
    "cells": 9,
    "cells_scored": 0,
    "median_percentile": 0.0,
+   "type_percentile": 0.0,
    "cold_only_percentile": 0.0,
    "passed": true,
    "applicable": true
@@ -260,25 +275,25 @@
  "cells": {
   "permafrost": 401614,
   "pass_filters": 53113,
-  "scored": 46250
+  "scored": 53113
  },
  "weights": {},
  "feature_correlation": {
-  "t_ground~summer_tmax": 0.54,
-  "t_ground~alt": 0.5,
+  "t_ground~summer_tmax": 0.65,
+  "t_ground~alt": 0.48,
   "t_ground~precip_mm_yr": 0.67,
-  "t_ground~wet_summer": 0.06,
-  "t_ground~snow_free_summer": 0.55,
-  "summer_tmax~alt": 0.6,
-  "summer_tmax~precip_mm_yr": 0.13,
-  "summer_tmax~wet_summer": -0.37,
-  "summer_tmax~snow_free_summer": 0.78,
+  "t_ground~wet_summer": 0.1,
+  "t_ground~snow_free_summer": 0.51,
+  "summer_tmax~alt": 0.63,
+  "summer_tmax~precip_mm_yr": 0.35,
+  "summer_tmax~wet_summer": -0.18,
+  "summer_tmax~snow_free_summer": 0.83,
   "alt~precip_mm_yr": 0.37,
-  "alt~wet_summer": 0.15,
-  "alt~snow_free_summer": 0.58,
+  "alt~wet_summer": 0.11,
+  "alt~snow_free_summer": 0.59,
   "precip_mm_yr~wet_summer": 0.33,
   "precip_mm_yr~snow_free_summer": 0.12,
-  "wet_summer~snow_free_summer": -0.13
+  "wet_summer~snow_free_summer": -0.11
  },
- "notes": "Percentile = position among the cells of the same region type that passed the filters. A contrast cell that fails the filters counts as 0. cold_only_percentile is the same check with 'colder ground = better' as the score: where it is as high as median_percentile, the features add nothing beyond cold. Sanity check on a handful of places, not proof."
+ "notes": "Percentile = position among all cells that passed the filters (all region types; they share the same features). type_percentile = the same inside the cell's region type. A contrast cell that fails the filters counts as 0. cold_only_percentile is the same check with 'colder ground = better' as the score: where it is as high as median_percentile, the features add nothing beyond cold. Sanity check on a handful of places, not proof."
 }

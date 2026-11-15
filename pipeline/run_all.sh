@@ -13,6 +13,8 @@ python pipeline/fetch_era5.py data/interim/era5_skin_2023.npz          # Earth E
 python pipeline/fetch_smap.py data/interim/dryness_2023.npz            # Earth Engine: SMAP L4 wetness + ERA5-Land precip
 python pipeline/earth_grid.py data/raw/cci data/raw/pzi data/interim/earth_grid.npz
 python pipeline/fetch_surface.py data/interim/surface_2023.npz data/interim/earth_grid.npz   # Earth Engine: MODIS snow, ice
+python pipeline/fetch_lst.py data/interim/lst_summer_2023.npz data/interim/earth_grid.npz data/raw/pzi   # Earth Engine: MODIS Aqua summer LST (summer_temperature)
+python pipeline/fetch_debris_ice.py data/interim/debris_ice_2023.npz data/interim/earth_grid.npz   # Earth Engine: GLIMS + MODIS debris-covered glaciers (context)
 (cd pipeline && python mars_sites.py ../data/raw/swim ../data/interim/mars_sites.json)       # imports mars_thermal
 
 for layer in 0-1m 1-5m gt5m; do

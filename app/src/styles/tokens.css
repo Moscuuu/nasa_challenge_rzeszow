@@ -248,6 +248,19 @@ body {
   position: relative;
   cursor: grab;
 }
+/* Each globe slot is its own stacking context, Mars above Earth: the pins' inline z-index (drei Html
+   zIndexRange) then only orders pins inside their own slot, and an Earth pin can never cover Mars
+   (nor the card, z-index 3). */
+.layout [data-slot="earth"] {
+  z-index: 1;
+  /* The globe is scissored to this slot; its pins are clipped the same way. A point outside the view
+     (e.g. Earth zoomed in) projects outside the slot, over Mars: it must not show there. */
+  overflow: hidden;
+  overflow: clip;
+}
+.layout [data-slot="mars"] {
+  z-index: 2;
+}
 
 .no-webgl {
   margin: 24px;
