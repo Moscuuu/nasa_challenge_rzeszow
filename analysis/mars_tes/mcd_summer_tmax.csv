@@ -1,0 +1,9 @@
+id,lat,lon,mcd_summer_tmax_K,scenario,ls_samples
+arcadia_planitia,46.58,-165.15,270.55,"climatology (dust=1, average solar)",105 135 165
+deuteronilus_mensae,39.11,23.2,276.24,"climatology (dust=1, average solar)",105 135 165
+phlegra_montes,40.0,164.0,277.1,"climatology (dust=1, average solar)",105 135 165
+erebus_montes,39.0,-167.9,277.68,"climatology (dust=1, average solar)",105 135 165
+amazonis_posiolova,35.1,-170.2,283.52,"climatology (dust=1, average solar)",105 135 165
+utopia_planitia,45.0,95.0,272.23,"climatology (dust=1, average solar)",105 135 165
+hellas_rim,-39.05,101.91,289.69,"climatology (dust=1, average solar)",285 315 345
+phoenix,68.22,-125.75,245.99,"climatology (dust=1, average solar)",105 135 165
