@@ -4,7 +4,7 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { AnalogPoint, AnalogRegion } from "../data/regions";
 import { useAppStore } from "../state/store";
-import { facesCamera, ll2v } from "./geo";
+import { facesCamera, ll2v, slotCalculatePosition } from "./geo";
 
 /** Camera distance below which the globe counts as zoomed in: region pins give way to point pins. */
 export const ZOOM_IN_DIST = 2.4;
@@ -98,6 +98,7 @@ function Pin({ lat, lon, slot, kind, className, label, onClick, children }: PinP
   const group = useRef<THREE.Group>(null);
   const button = useRef<HTMLButtonElement>(null);
   const world = useMemo(() => new THREE.Vector3(), []);
+  const calc = useMemo(() => slotCalculatePosition(slot), [slot]);
   const cam = useMemo(() => new THREE.Vector3(), []);
   useFrame(({ camera }) => {
     const g = group.current;
@@ -110,7 +111,7 @@ function Pin({ lat, lon, slot, kind, className, label, onClick, children }: PinP
   });
   return (
     <group ref={group} position={position}>
-      <Html center portal={slot} zIndexRange={[30, 20]}>
+      <Html center portal={slot} calculatePosition={calc} zIndexRange={[30, 20]}>
         <button ref={button} type="button" className={`apin apin--${kind} apin--hidden ${className ?? ""}`} aria-label={label} onClick={onClick}>
           {children}
         </button>

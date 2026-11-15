@@ -38,15 +38,25 @@ body {
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     "head head head"
-    "mars earth card"
-    "soil earth card"
+    "mars earth earth"
+    "soil earth earth"
     "foot foot foot";
 }
 .layout > header { grid-area: head; }
 .layout [data-slot="mars"] { grid-area: mars; }
 .layout [data-slot="soil"] { grid-area: soil; }
 .layout [data-slot="earth"] { grid-area: earth; }
-.layout [data-slot="card"] { grid-area: card; }
+/* Card floats over the Earth panel, top right; Earth takes the whole centre + right. */
+.layout [data-slot="card"] {
+  grid-area: earth;
+  position: relative;
+  z-index: 3;
+  justify-self: end;
+  align-self: start;
+  width: min(340px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  margin: 16px;
+}
 .layout > footer { grid-area: foot; }
 
 .layout > header {
@@ -86,6 +96,10 @@ body {
   }
   .layout > header { padding: 8px 16px; }
   .layout [data-slot="card"] {
+    grid-area: card;
+    justify-self: stretch;
+    width: auto;
+    margin: 0;
     max-height: 40vh;
     overflow-y: auto;
     border-radius: 14px 14px 0 0;

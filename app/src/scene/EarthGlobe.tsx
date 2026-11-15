@@ -143,11 +143,10 @@ export const EarthGlobe = forwardRef<EarthGlobeHandle, Props>(function EarthGlob
   zoomToRegionRef.current = zoomToRegion;
 
   // The globe follows the focus cell (step, layer change, check highlight). A site pick holds this
-  // until the Mars rings finish; its timeline then flies the globe itself. Zoomed in, the user is
-  // exploring nearby: clicking a point must not swing the view.
+  // until the Mars rings finish; its timeline then flies the globe itself. Clicking a point on the
+  // globe never changes focus, so stepping through matches turns the globe even while zoomed in.
   useEffect(() => {
-    const zoomed = (camera.current?.position.z ?? Infinity) < ZOOM_IN_DIST;
-    if (focus && !motionRegistry.holdFly && !zoomed) flyTo(focus.lat, focus.lon);
+    if (focus && !motionRegistry.holdFly) flyTo(focus.lat, focus.lon);
   }, [focus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setZoom = (zoom: number) => {

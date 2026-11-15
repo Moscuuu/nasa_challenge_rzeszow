@@ -10,7 +10,6 @@ import { hasWebGL, NO_WEBGL_MESSAGE } from "./scene/webgl";
 import { AnalogCard } from "./ui/AnalogCard";
 import { Footer } from "./ui/Footer";
 import { HoldToDrill } from "./ui/HoldToDrill";
-import { MapLegend } from "./ui/MapLegend";
 import { SitePicker } from "./ui/SitePicker";
 import { SoilPicker } from "./ui/SoilPicker";
 import { Starfield } from "./ui/Starfield";
@@ -70,7 +69,6 @@ export default function App() {
             <span className="step">3</span> Matches on Earth
           </h2>
         </div>
-        <MapLegend />
         <button type="button" className="earth-back" data-ui onClick={() => motion.earth?.zoomOut()}>
           ← Whole Earth
         </button>
