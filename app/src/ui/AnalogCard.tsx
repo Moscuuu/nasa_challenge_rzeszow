@@ -71,13 +71,15 @@ export function AnalogCard({ error }: { error?: string | null }) {
     body = (
       <>
         <p className="card-rank">Rank #{cell.rank}</p>
-        {score !== null && (
-          <div className="card-score-row">
-            <span className="card-score">{Math.round(score * 100)}%</span>
-            <small>similar to Mars</small>
-          </div>
-        )}
-        <h2 className="card-place">{place}</h2>
+        <div className="card-title-row">
+          <h2 className="card-place">{place}</h2>
+          {score !== null && (
+            <div className="card-score-row" title="Similarity to Mars">
+              <span className="card-score">{Math.round(score * 100)}%</span>
+              <small>similar to Mars</small>
+            </div>
+          )}
+        </div>
         {place !== coords && <p className="card-sub">{coords}</p>}
         <ul className="features">
           {f.rows.map((r: FeatureRow) => {
